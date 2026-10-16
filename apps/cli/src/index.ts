@@ -96,47 +96,65 @@ async function main(argv: string[]): Promise<void> {
 
 async function doctor(args: string[]): Promise<void> {
   if (args.length > 0) throw new Error("doctor does not accept additional arguments");
-  const requiredTools = ["say", "ffmpeg", "ffprobe"];
+  const requiredTools = process.platform === "darwin" ? ["say", "ffmpeg", "ffprobe"] : ["ffmpeg", "ffprobe"];
   const statuses: { name: string; path: string | null; ready: boolean; detail?: string }[] = [];
   statuses.push({ name: "Node.js >=24", path: process.execPath, ready: Number(process.versions.node.split(".")[0]) >= 24, detail: process.versions.node });
-  statuses.push({ name: "Supported platform (macOS)", path: null, ready: process.platform === "darwin", detail: process.platform });
+  statuses.push({
+    name: "Supported platform (macOS, Linux)",
+    path: null,
+    ready: process.platform === "darwin" || process.platform === "linux",
+    detail: process.platform === "darwin"
+      ? "macOS — Apple speech available"
+      : process.platform === "linux"
+        ? "linux — Apple speech unavailable; build with --tts kokoro"
+        : process.platform,
+  });
   for (const name of requiredTools) {
     const path = findExecutable(name);
     statuses.push({ name, path, ready: path !== null });
   }
 
-  let voices: string[] = [];
-  try {
-    voices = listSystemVoices();
-  } catch {
-    // The missing say binary is already reported as a required tool failure.
-  }
-  const voiceReady = voices.includes(APPLE_VOICE);
-  statuses.push({ name: `Apple voice ${APPLE_VOICE}`, path: "/usr/bin/say", ready: voiceReady, detail: voiceReady ? "available" : "not listed by say -v ?" });
-  let voiceSampleCount = 0;
-  let voiceSampleError = "";
-  if (voiceReady) {
-    const sampleDir = await mkdtemp(join(tmpdir(), "explain-to-me-doctor-"));
+  if (process.platform === "darwin") {
+    let voices: string[] = [];
     try {
-      const wavePath = join(sampleDir, "voice-check.wav");
-      runProcess("/usr/bin/say", [
-        "-v", APPLE_VOICE, "-r", "160", "--file-format=WAVE",
-        `--data-format=LEI16@${PCM_SAMPLE_RATE}`, `--channels=${PCM_CHANNELS}`,
-        "-o", wavePath, "Local speech synthesis check.",
-      ]);
-      voiceSampleCount = extractPcmDataFromWav(await readFile(wavePath)).byteLength / 2;
-    } catch (error) {
-      voiceSampleError = error instanceof Error ? error.message : String(error);
-    } finally {
-      await rm(sampleDir, { recursive: true, force: true });
+      voices = listSystemVoices();
+    } catch {
+      // The missing say binary is already reported as a required tool failure.
     }
+    const voiceReady = voices.includes(APPLE_VOICE);
+    statuses.push({ name: `Apple voice ${APPLE_VOICE}`, path: "/usr/bin/say", ready: voiceReady, detail: voiceReady ? "available" : "not listed by say -v ?" });
+    let voiceSampleCount = 0;
+    let voiceSampleError = "";
+    if (voiceReady) {
+      const sampleDir = await mkdtemp(join(tmpdir(), "explain-to-me-doctor-"));
+      try {
+        const wavePath = join(sampleDir, "voice-check.wav");
+        runProcess("/usr/bin/say", [
+          "-v", APPLE_VOICE, "-r", "160", "--file-format=WAVE",
+          `--data-format=LEI16@${PCM_SAMPLE_RATE}`, `--channels=${PCM_CHANNELS}`,
+          "-o", wavePath, "Local speech synthesis check.",
+        ]);
+        voiceSampleCount = extractPcmDataFromWav(await readFile(wavePath)).byteLength / 2;
+      } catch (error) {
+        voiceSampleError = error instanceof Error ? error.message : String(error);
+      } finally {
+        await rm(sampleDir, { recursive: true, force: true });
+      }
+    }
+    statuses.push({
+      name: "Apple say 24 kHz mono PCM output",
+      path: "/usr/bin/say",
+      ready: voiceSampleCount > 0,
+      detail: voiceSampleCount > 0 ? `${voiceSampleCount} samples synthesized` : voiceSampleError || "synthesis produced no PCM samples",
+    });
+  } else {
+    statuses.push({
+      name: "Apple speech (optional)",
+      path: null,
+      ready: false,
+      detail: "Apple speech is macOS-only; build with --tts kokoro --voice af_heart",
+    });
   }
-  statuses.push({
-    name: "Apple say 24 kHz mono PCM output",
-    path: "/usr/bin/say",
-    ready: voiceSampleCount > 0,
-    detail: voiceSampleCount > 0 ? `${voiceSampleCount} samples synthesized` : voiceSampleError || "synthesis produced no PCM samples",
-  });
 
   const neural = kokoroReadiness();
   statuses.push({ name: "Kokoro neural narrator (optional)", path: null, ready: neural.ready, detail: neural.reason });
@@ -167,16 +185,16 @@ async function doctor(args: string[]): Promise<void> {
   process.stdout.write([
     "",
     "Setup guidance (setup may download dependencies; doctor does not install anything):",
-    "  Node.js: use version 24 or newer. Full video builds currently support macOS.",
+    "  Node.js: use version 24 or newer. Video builds support macOS and Linux (Kokoro narrator on Linux).",
     "  ffmpeg/ffprobe: install FFmpeg, e.g. brew install ffmpeg on macOS with Homebrew.",
-    "  Apple speech: check say -v '?' and install the Samantha voice in macOS settings if missing.",
+    "  Apple speech: check say -v '?' and install the Samantha voice in macOS settings if missing (macOS only; on Linux build with --tts kokoro).",
     "  Browser: follow the README one-time Remotion Headless Shell setup; builds never download it.",
     "  Kokoro (optional): install uv, then run python3 scripts/setup-kokoro.py.",
     "  Local director (optional): install llama.cpp / llama-server, then run python3 scripts/setup-director.py.",
-    "  Optional components may be absent; use the prepared-manifest Apple quickstart first.",
+    "  Optional components may be absent; use the prepared-manifest Apple quickstart first on macOS (on Linux, set up Kokoro first).",
     "",
   ].join("\n"));
-  const coreReady = statuses.filter((item) => !["Kokoro neural narrator (optional)", "Local model director (optional)"].includes(item.name)).every((item) => item.ready);
+  const coreReady = statuses.filter((item) => !["Kokoro neural narrator (optional)", "Local model director (optional)", "Apple speech (optional)"].includes(item.name)).every((item) => item.ready);
   if (!coreReady) throw new Error("Required local audio/video tools are unavailable; install them before building.");
 }
 

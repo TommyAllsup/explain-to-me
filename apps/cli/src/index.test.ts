@@ -55,3 +55,16 @@ test("doctor gives recovery guidance when required tools are missing", () => {
   assert.match(result.stdout, /brew install ffmpeg/u);
   assert.match(result.stdout, /optional.*setup-kokoro\.py/iu);
 });
+
+test("doctor reports linux as a supported platform (kokoro required for speech)", () => {
+  if (process.platform !== "linux") return;
+  const result = spawnSync(process.execPath, ["--import", "tsx", cliPath, "doctor"], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    timeout: 30_000,
+    env: { ...process.env, PATH: "" },
+  });
+  assert.equal(result.error, undefined);
+  assert.match(result.stdout, /OK {2}Supported platform \(macOS, Linux\)/u);
+  assert.match(result.stdout, /OPTIONAL {2}Apple speech \(optional\)/u);
+});

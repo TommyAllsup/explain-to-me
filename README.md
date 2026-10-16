@@ -33,7 +33,7 @@ Your document → story manifest → local narration → measured timeline → v
 
 ## Quickstart: roll your first tiny movie
 
-The first build uses a prepared manifest and Apple's installed voice. **No LLM or Kokoro download required.** You'll need macOS, Node.js 24+ with npm, Git, FFmpeg/ffprobe, and the Samantha voice (`say -v '?'` lists installed voices). With Homebrew, install FFmpeg using `brew install ffmpeg`.
+The first build uses a prepared manifest and Apple's installed voice. **No LLM or Kokoro download required.** You'll need macOS, Node.js 24+ with npm, Git, FFmpeg/ffprobe, and the Samantha voice (`say -v '?'` lists installed voices). Linux is supported for full builds with the optional Kokoro narrator (`--tts kokoro --voice af_heart`) — Apple speech is macOS-only. With Homebrew, install FFmpeg using `brew install ffmpeg`.
 
 ### 1. Bring in the crew
 
