@@ -57,4 +57,6 @@ node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent
 
 Use the commands in [Windows setup](../windows.md) for prepared manifests and private-workspace template jobs. Choose fresh output names/cache roots for independent cold runs.
 
-Windows/Linux static CI was configured but not executed remotely in this local task. A macOS media regression was not run on this Windows host. Automated media checks and sampled-frame inspection do not constitute end-to-end human watch/listen approval. Whole-process egress remains unverified and is reported separately from renderer request auditing.
+The first hosted Windows CI run exposed an ordinary 8.3 temporary-directory spelling being mistaken for a linked path. The correction verifies every ancestor's reparse attributes when canonical spellings differ. A real `GetShortPathNameW` regression fails against the original helper and passes after the correction, including private cache writes/reads and junction refusal. The complete local suite then passed **41 TypeScript tests, 16 Python agent tests, and 4 bridge tests**, with the same two privilege-dependent skips. Remote Windows/Linux status is recorded in [GitHub Actions](https://github.com/TommyAllsup/explain-to-me/actions/workflows/ci.yml).
+
+A macOS media regression was not run on this Windows host. Automated media checks and sampled-frame inspection do not constitute end-to-end human watch/listen approval. Whole-process egress remains unverified and is reported separately from renderer request auditing.

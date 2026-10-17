@@ -49,10 +49,10 @@ export async function assertNoLinkedPath(path: string, checkWindowsAttributes = 
     if (parent === current) break;
     current = parent;
   }
-  if (process.platform === "win32" && relative(absolute, await realpath(absolute)) !== "") {
-    throw new Error("Linked/reparse-point paths are not permitted");
-  }
-  if (process.platform === "win32" && checkWindowsAttributes) {
+  // Windows realpath also expands ordinary 8.3 names (for example RUNNER~1).
+  // A spelling difference requires attribute verification, not link rejection.
+  const canonicalSpellingDiffers = process.platform === "win32" && relative(absolute, await realpath(absolute)) !== "";
+  if (process.platform === "win32" && (checkWindowsAttributes || canonicalSpellingDiffers)) {
     await windowsCheck(absolute, "for($p=$env:ETM_CHECKED_PATH; $p; $p=[IO.Path]::GetDirectoryName($p)) { if(([IO.File]::GetAttributes($p) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse-point paths are not permitted' } }");
   }
 }

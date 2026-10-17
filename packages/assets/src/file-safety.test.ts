@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
+import { join, relative } from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
 import { ContentAddressedCache } from "./cache.js";
-import { assertSupportedFilePath, ensurePrivateDirectory, openRegularFile } from "./file-safety.js";
+import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory, openRegularFile } from "./file-safety.js";
 
 test("Windows ambiguous aliases, device paths, and alternate data streams are rejected", () => {
   for (const path of ["C:relative.md", "C:\\notes.md:secret", "C:\\NUL.txt", "C:\\CONIN$.txt", "C:\\notes.\\file.md", "\\\\server\\share\\file.md", "\\\\?\\C:\\file.md"]) {
@@ -13,6 +13,41 @@ test("Windows ambiguous aliases, device paths, and alternate data streams are re
   }
   assert.doesNotThrow(() => assertSupportedFilePath("C:\\Local notes\\résumé.md", "win32"));
   assert.doesNotThrow(() => assertSupportedFilePath("notes/pixel.png", "win32"));
+});
+
+test("Windows 8.3 directory spellings support private cache writes without allowing junctions", { skip: process.platform !== "win32" }, async (t) => {
+  const scratch = join(process.cwd(), ".cache", "tests");
+  await mkdir(scratch, { recursive: true });
+  const root = await mkdtemp(join(scratch, "ordinary long directory-"));
+  try {
+    const helperSource = join(root, "short-path.cs");
+    const helper = join(root, "short-path.exe");
+    await writeFile(helperSource, [
+      "using System; using System.ComponentModel; using System.Runtime.InteropServices; using System.Text;",
+      "class ShortPath { [DllImport(\"kernel32.dll\", CharSet=CharSet.Unicode, SetLastError=true)] static extern uint GetShortPathName(string source, StringBuilder target, uint size);",
+      "static void Main(string[] args) { var target=new StringBuilder(32768); if(GetShortPathName(args[0],target,(uint)target.Capacity)==0) throw new Win32Exception(); Console.OutputEncoding=new UTF8Encoding(false); Console.Write(target); } }",
+    ].join("\n"));
+    const compiler = join(process.env.SystemRoot!, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe");
+    const run = promisify(execFile);
+    await run(compiler, ["/nologo", "/target:exe", `/out:${helper}`, helperSource], { windowsHide: true, timeout: 60_000 });
+    const { stdout } = await run(helper, [root], { windowsHide: true, timeout: 15_000, encoding: "utf8" });
+    const shortRoot = stdout.trim();
+    if (relative(shortRoot, await realpath(root)) === "") {
+      t.skip("This volume has no 8.3 spelling for the fixture");
+      return;
+    }
+    assert.match(shortRoot, /~\d/u);
+    await assertNoLinkedPath(shortRoot, false);
+    const cache = new ContentAddressedCache(join(shortRoot, "cache"));
+    const key = cache.key("short-path", "ordinary directory");
+    await cache.write(key, Buffer.from("verified value"));
+    assert.deepEqual(await cache.read(key), Buffer.from("verified value"));
+    const linked = join(shortRoot, "linked");
+    await symlink(join(root, "cache"), linked, "junction");
+    await assert.rejects(assertNoLinkedPath(linked, false), /[Ll]inked|[Rr]eparse/u);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("safe readers and cache roots reject junctions without symlink privilege", { skip: process.platform !== "win32" }, async () => {
