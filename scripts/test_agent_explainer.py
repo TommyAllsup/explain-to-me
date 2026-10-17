@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -18,25 +19,40 @@ SPEC.loader.exec_module(agent)
 
 class AgentLauncherTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR'))
+        scratch = Path(os.environ.get('ETM_TEST_TMP', Path(__file__).resolve().parents[1] / '.cache' / 'tests'))
+        scratch.mkdir(parents=True, exist_ok=True)
+        self.temp = tempfile.TemporaryDirectory(dir=scratch)
         self.root = Path(self.temp.name)
         self.software = self.root / 'software'
         self.software.mkdir()
+        self.root_patch = mock.patch.object(agent, 'ROOT', self.software)
+        self.root_patch.start()
         self.workspace = self.root / 'private-workspace'
         self.workspace.mkdir()
 
     def tearDown(self):
+        self.root_patch.stop()
         self.temp.cleanup()
 
     def test_input_and_symlink_escape_are_refused_before_job_creation(self):
         outside = self.root / 'outside.md'
         outside.write_text('neutral fixture')
-        link = self.workspace / 'escape.md'
-        link.symlink_to(outside)
-        for path in [outside, link]:
-            with self.assertRaises(ValueError):
-                agent.checked_source(path, self.workspace, False)
+        with self.assertRaises(ValueError):
+            agent.checked_source(outside, self.workspace, False)
         self.assertFalse((self.workspace / '.explain-to-me').exists())
+
+    def test_file_symlink_escape_is_refused(self):
+        outside = self.root / 'outside.md'
+        outside.write_text('neutral fixture')
+        link = self.workspace / 'escape.md'
+        try:
+            link.symlink_to(outside)
+        except OSError as error:
+            if os.name == 'nt' and error.winerror == 1314:
+                self.skipTest('File symlinks require Developer Mode or symlink privilege; junction coverage remains enabled')
+            raise
+        with self.assertRaises(ValueError):
+            agent.checked_source(link, self.workspace, False)
 
     def test_workspace_inside_software_is_refused(self):
         with self.assertRaises(ValueError):
@@ -52,7 +68,12 @@ class AgentLauncherTests(unittest.TestCase):
         self.assertFalse(one['output'].exists())
 
     def test_cache_symlink_escape_is_refused(self):
-        (self.workspace / '.explain-to-me').symlink_to(self.software, target_is_directory=True)
+        link = self.workspace / '.explain-to-me'
+        if os.name == 'nt':
+            import _winapi
+            _winapi.CreateJunction(str(self.software), str(link))
+        else:
+            link.symlink_to(self.software, target_is_directory=True)
         with self.assertRaises(ValueError):
             agent.create_job(self.workspace, self.software, 'test')
         self.assertFalse((self.software / 'jobs').exists())
@@ -80,11 +101,74 @@ class AgentLauncherTests(unittest.TestCase):
         with self.assertRaises(subprocess.TimeoutExpired):
             agent.run_owned([sys.executable, '-c', 'import time; time.sleep(10)'], self.workspace, dict(os.environ), log, 0.1)
 
+    def test_timeout_stops_owned_descendant(self):
+        heartbeat = self.workspace / 'heartbeat'
+        child = "import pathlib,time,sys; p=pathlib.Path(sys.argv[1]);\nwhile True:\n p.write_text(str(time.monotonic())); time.sleep(0.02)"
+        parent = "import subprocess,sys,time,pathlib; subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]]);\nwhile not pathlib.Path(sys.argv[2]).exists(): time.sleep(0.01)\ntime.sleep(60)"
+        with self.assertRaises(subprocess.TimeoutExpired):
+            agent.run_owned([sys.executable, '-c', parent, child, str(heartbeat)], self.workspace, dict(os.environ), self.workspace / 'tree.log', 1.5)
+        self.assertTrue(heartbeat.exists(), 'Descendant must start before cleanup is exercised')
+        after = heartbeat.read_text()
+        time.sleep(0.25)
+        self.assertEqual(heartbeat.read_text(), after, 'Owned descendant kept running after timeout')
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows Job Object cancellation')
+    def test_cancellation_stops_owned_process(self):
+        def cancel(process, timeout):
+            time.sleep(0.1)
+            raise KeyboardInterrupt()
+
+        with mock.patch.object(agent.OwnedProcess, 'wait', cancel), self.assertRaises(KeyboardInterrupt):
+            agent.run_owned([sys.executable, '-c', 'import time; time.sleep(60)'], self.workspace, dict(os.environ), self.workspace / 'cancel.log', 5)
+        # Closing/removing the log fails if the child still owns its log handle.
+        (self.workspace / 'cancel.log').unlink()
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows Job Object final cleanup')
+    def test_success_closes_owned_descendants(self):
+        heartbeat = self.workspace / 'success-heartbeat'
+        child = "import pathlib,time,sys; p=pathlib.Path(sys.argv[1]);\nwhile True:\n p.write_text(str(time.monotonic())); time.sleep(0.02)"
+        parent = "import subprocess,sys,time,pathlib; subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]]);\nwhile not pathlib.Path(sys.argv[2]).exists(): time.sleep(0.01)"
+        agent.run_owned([sys.executable, '-c', parent, child, str(heartbeat)], self.workspace, dict(os.environ), self.workspace / 'success.log', 5)
+        after = heartbeat.read_text()
+        time.sleep(0.25)
+        self.assertEqual(heartbeat.read_text(), after)
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows handle cleanup')
+    def test_cleanup_errors_still_close_process_and_job_handles(self):
+        import windows_process
+        process = windows_process.OwnedProcess.__new__(windows_process.OwnedProcess)
+        process.job, process.process = 11, 12
+        with mock.patch.object(windows_process, 'terminate_job', side_effect=OSError('fixture cleanup failure')), \
+                mock.patch.object(windows_process, 'close_handle') as close, self.assertRaises(OSError):
+            process.close()
+        self.assertEqual(close.call_args_list, [mock.call(11), mock.call(12)])
+        self.assertIsNone(process.job)
+        self.assertIsNone(process.process)
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows path aliases')
+    def test_windows_aliases_and_streams_are_refused(self):
+        for path in ('C:relative.md', 'C:\\notes.md:secret', 'C:\\NUL.txt', 'C:\\notes.\\file.md', '\\\\server\\share\\file.md', '\\\\?\\C:\\file.md'):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                agent.supported_path(path)
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows junctions work without symlink privilege')
+    def test_junction_input_is_refused(self):
+        import _winapi
+        outside = self.root / 'outside'
+        outside.mkdir()
+        (outside / 'story.md').write_text('neutral fixture')
+        link = self.workspace / 'linked'
+        _winapi.CreateJunction(str(outside), str(link))
+        with self.assertRaises(ValueError):
+            agent.checked_source(link / 'story.md', self.workspace, False)
+
     def test_git_identity_includes_dirty_state_and_untracked_source(self):
         subprocess.run(['git', 'init', '-q', str(self.software)], check=True)
         (self.software / 'package.json').write_text('{"version":"0.2.0"}')
         subprocess.run(['git', 'add', 'package.json'], cwd=self.software, check=True)
-        subprocess.run(['git', '-c', 'user.name=Test Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'fixture'], cwd=self.software, check=True)
+        hooks = self.root / 'empty-hooks'
+        hooks.mkdir()
+        subprocess.run(['git', '-c', 'user.name=Test Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=' + str(hooks), 'commit', '-qm', 'fixture'], cwd=self.software, check=True)
         before = agent.software_identity(self.software)
         self.assertFalse(before['dirty'])
         (self.software / 'new.py').write_text('# unit-test source')
@@ -106,6 +190,9 @@ class AgentLauncherTests(unittest.TestCase):
             result = agent.main(['build', '--workspace', str(self.workspace), '--manifest', str(source), '--tts', 'apple'])
         self.assertEqual(result, 0)
         command = run.call_args.args[0]
+        environment = run.call_args.args[2]
+        self.assertEqual(environment['TEMP'], environment['TMP'])
+        self.assertEqual(environment['TEMP'], environment['TMPDIR'])
         self.assertEqual(command[command.index('--manifest') + 1], str(source.resolve()))
         for option in ['--director', '--audience', '--style']:
             self.assertNotIn(option, command)

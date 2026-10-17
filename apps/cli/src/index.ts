@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { access, mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
-import { accessSync, constants } from "node:fs";
+import { constants } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { performance } from "node:perf_hooks";
@@ -20,6 +20,8 @@ import {
   runProcess,
   synthesizeNarration,
   kokoroReadiness,
+  kokoroSmokeCheck,
+  selectNarrationBackend,
   writeWavFromPcm,
 } from "../../../packages/audio/src/synthesize.js";
 import {
@@ -40,6 +42,8 @@ import { loadDocument, resolveManifestAssets, type SourceDocument, type Resolved
 import { directDocument, localDirectorReadiness } from "../../../packages/director/src/director.js";
 import { prepareNarration } from "../../../packages/audio/src/prepare-narration.js";
 import { ContentAddressedCache } from "../../../packages/assets/src/cache.js";
+import { configureMediaTools, findExecutable } from "../../../packages/runtime/src/tools.js";
+import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DEFAULT_VOICE = "auto";
@@ -69,10 +73,12 @@ type RenderVideo = (request: RenderRequest) => Promise<RendererResult>;
 
 interface RendererModule {
   getBrowserIdentity: () => { path: string; version: string; chromeMode: string } | null;
+  getLauncherReadiness?: () => { ready: boolean; reason: string };
   renderVideo: RenderVideo;
 }
 
 async function main(argv: string[]): Promise<void> {
+  configureMediaTools();
   const [command, ...rest] = argv;
   if (!command || command === "--help" || command === "-h" || command === "help") {
     printHelp();
@@ -96,15 +102,25 @@ async function main(argv: string[]): Promise<void> {
 
 async function doctor(args: string[]): Promise<void> {
   if (args.length > 0) throw new Error("doctor does not accept additional arguments");
-  const requiredTools = ["say", "ffmpeg", "ffprobe"];
-  const statuses: { name: string; path: string | null; ready: boolean; detail?: string }[] = [];
+  const statuses: { name: string; path: string | null; ready: boolean; optional?: boolean; detail?: string }[] = [];
   statuses.push({ name: "Node.js >=24", path: process.execPath, ready: Number(process.versions.node.split(".")[0]) >= 24, detail: process.versions.node });
-  statuses.push({ name: "Supported platform (macOS)", path: null, ready: process.platform === "darwin", detail: process.platform });
-  for (const name of requiredTools) {
+  statuses.push({ name: "Supported platform (macOS / Windows x64)", path: null, ready: process.platform === "darwin" || (process.platform === "win32" && process.arch === "x64"), detail: `${process.platform}/${process.arch}` });
+  for (const name of ["ffmpeg", "ffprobe"]) {
     const path = findExecutable(name);
-    statuses.push({ name, path, ready: path !== null });
+    let detail = "";
+    if (path) { try { detail = runProcess(path, ["-version"]).split(/\r?\n/u)[0] ?? ""; } catch (error) { detail = String(error); } }
+    statuses.push({ name, path, ready: path !== null && !detail.startsWith("Error:"), detail });
   }
+  const neural = kokoroReadiness();
+  let selected: "apple" | "kokoro" | undefined;
+  let selectionError = "";
+  try { selected = selectNarrationBackend("auto", { kokoro: neural }).backend; }
+  catch (error) { selectionError = error instanceof Error ? error.message : String(error); }
+  const smoke = neural.ready ? kokoroSmokeCheck() : neural;
+  statuses.push({ name: "Kokoro neural narrator", path: null, ready: smoke.ready, optional: process.platform === "darwin" && selected !== "kokoro", detail: smoke.reason });
+  if (selectionError) statuses.push({ name: "Usable narrator", path: null, ready: false, detail: selectionError });
 
+  if (process.platform === "darwin") {
   let voices: string[] = [];
   try {
     voices = listSystemVoices();
@@ -112,7 +128,7 @@ async function doctor(args: string[]): Promise<void> {
     // The missing say binary is already reported as a required tool failure.
   }
   const voiceReady = voices.includes(APPLE_VOICE);
-  statuses.push({ name: `Apple voice ${APPLE_VOICE}`, path: "/usr/bin/say", ready: voiceReady, detail: voiceReady ? "available" : "not listed by say -v ?" });
+  statuses.push({ name: `Apple voice ${APPLE_VOICE}`, path: "/usr/bin/say", ready: voiceReady, optional: selected !== "apple", detail: voiceReady ? "available" : "not listed by say -v ?" });
   let voiceSampleCount = 0;
   let voiceSampleError = "";
   if (voiceReady) {
@@ -135,18 +151,22 @@ async function doctor(args: string[]): Promise<void> {
     name: "Apple say 24 kHz mono PCM output",
     path: "/usr/bin/say",
     ready: voiceSampleCount > 0,
+    optional: selected !== "apple",
     detail: voiceSampleCount > 0 ? `${voiceSampleCount} samples synthesized` : voiceSampleError || "synthesis produced no PCM samples",
   });
-
-  const neural = kokoroReadiness();
-  statuses.push({ name: "Kokoro neural narrator (optional)", path: null, ready: neural.ready, detail: neural.reason });
+  }
   const localDirector = localDirectorReadiness();
-  statuses.push({ name: "Local model director (optional)", path: null, ready: localDirector.ready, detail: localDirector.reason });
+  statuses.push({ name: "Local model director", path: null, ready: localDirector.ready, optional: true, detail: localDirector.reason });
   const rendererReady = await pathExists(RENDER_ENTRY);
   let chrome: string | null = null;
   let browserError = "";
+  let launcher = { ready: process.platform !== "win32", reason: "" };
   if (rendererReady) {
-    try { chrome = (await loadRenderer()).getBrowserIdentity()?.path ?? null; }
+    try {
+      const renderer = await loadRenderer();
+      chrome = renderer.getBrowserIdentity()?.path ?? null;
+      launcher = renderer.getLauncherReadiness?.() ?? launcher;
+    }
     catch (error) { browserError = error instanceof Error ? error.message : String(error); }
   }
   statuses.push({
@@ -155,6 +175,7 @@ async function doctor(args: string[]): Promise<void> {
     ready: rendererReady,
     detail: rendererReady ? "ready" : "renderer worker has not added the shared render.ts boundary yet",
   });
+  if (process.platform === "win32") statuses.push({ name: "Windows browser launcher", path: null, ready: launcher.ready, detail: launcher.reason || "Run node scripts/setup.mjs" });
   statuses.push({
     name: "Chrome/Chromium",
     path: chrome,
@@ -162,26 +183,32 @@ async function doctor(args: string[]): Promise<void> {
     detail: chrome ? "installed locally" : browserError || "install the render browser during setup and set CHROME_PATH to its absolute path",
   });
 
-  const checks = statuses.map((item) => `${item.ready ? "OK" : item.name.endsWith("(optional)") ? "OPTIONAL" : "MISSING"}  ${item.name}${item.path ? ` — ${item.path}` : ""}${item.detail ? ` (${item.detail})` : ""}`);
+  const checks = statuses.map((item) => `${item.ready ? "OK" : item.optional ? "OPTIONAL" : "MISSING"}  ${item.name}${item.optional ? " (optional)" : ""}${item.path ? ` — ${item.path}` : ""}${item.detail ? ` (${item.detail})` : ""}`);
   process.stdout.write(`${checks.join("\n")}\n`);
   process.stdout.write([
     "",
     "Setup guidance (setup may download dependencies; doctor does not install anything):",
-    "  Node.js: use version 24 or newer. Full video builds currently support macOS.",
-    "  ffmpeg/ffprobe: install FFmpeg, e.g. brew install ffmpeg on macOS with Homebrew.",
-    "  Apple speech: check say -v '?' and install the Samantha voice in macOS settings if missing.",
-    "  Browser: follow the README one-time Remotion Headless Shell setup; builds never download it.",
-    "  Kokoro (optional): install uv, then run python3 scripts/setup-kokoro.py.",
-    "  Local director (optional): install llama.cpp / llama-server, then run python3 scripts/setup-director.py.",
-    "  Optional components may be absent; use the prepared-manifest Apple quickstart first.",
+    "  Node.js: use version 24 or newer. Supported platforms: macOS and Windows x64.",
+    ...(process.platform === "win32" ? [
+      "  Windows: run node scripts/setup.mjs to prepare Kokoro, the browser, and the launcher. FFmpeg is bundled with Remotion.",
+      "  Kokoro is required on Windows. Setup prepares its isolated Python environment and downloads the pinned model/voices.",
+      "  Use a prepared manifest or --director template; native Windows local AI direction is deferred.",
+    ] : [
+      "  ffmpeg/ffprobe: install FFmpeg, e.g. brew install ffmpeg on macOS with Homebrew.",
+      "  Apple speech: check say -v '?' and install the Samantha voice in macOS settings if missing.",
+      "  Browser: follow the README one-time Remotion Headless Shell setup; builds never download it.",
+      "  Kokoro (optional): install uv, then run python3 scripts/setup-kokoro.py.",
+      "  Local director (optional): install llama.cpp / llama-server, then run python3 scripts/setup-director.py.",
+    ]),
     "",
   ].join("\n"));
-  const coreReady = statuses.filter((item) => !["Kokoro neural narrator (optional)", "Local model director (optional)"].includes(item.name)).every((item) => item.ready);
+  const coreReady = statuses.filter((item) => !item.optional).every((item) => item.ready);
   if (!coreReady) throw new Error("Required local audio/video tools are unavailable; install them before building.");
 }
 
 async function build(options: CliOptions): Promise<void> {
   const invocationStart = performance.now();
+  assertSupportedFilePath(options.inputPath ?? options.manifestPath!);
   await assertBuildPrerequisites(options.voice, options.backend);
   if (options.outputPath && await pathExists(resolve(options.outputPath))) throw new Error("Output target already exists; choose a new directory");
   const stageTimingsMs: Record<string, number> = {};
@@ -191,6 +218,7 @@ async function build(options: CliOptions): Promise<void> {
     finally { stageTimingsMs[name] = roundMs(performance.now() - started); }
   };
   const inputFile = resolve(options.inputPath ?? options.manifestPath!);
+  if (process.platform === "win32") await assertNoLinkedPath(inputFile);
   let rawManifest: unknown;
   let document: SourceDocument | undefined;
   let direction: {
@@ -231,6 +259,8 @@ async function build(options: CliOptions): Promise<void> {
   const stagingPath = join(dirname(finalOutput), `.${finalOutput.split(/[\\/]/u).at(-1)!}.staging-${buildId}`);
   const tempRoot = await mkdtemp(join(tmpdir(), "explain-to-me-build-"));
   await mkdir(stagingPath, { mode: 0o700 });
+  await ensurePrivateDirectory(tempRoot);
+  await ensurePrivateDirectory(stagingPath);
   let executionAssets: NonNullable<RenderRequest["assets"]> = {};
   try {
     executionAssets = await timed("assetCopy", () => materializeAssets(resolvedAssets, stagingPath));
@@ -534,12 +564,12 @@ function parseDuration(value: string): number {
 }
 
 async function assertBuildPrerequisites(voice: string, backend: "auto" | "apple" | "kokoro"): Promise<void> {
+  if (Number(process.versions.node.split(".")[0]) < 24) throw new Error("Node.js 24 or newer is required");
+  if (process.platform === "win32" && process.arch !== "x64") throw new Error("Windows builds currently require an x64 Node.js installation");
   if (!(await pathExists(RENDER_ENTRY))) {
     throw new Error(`Renderer integration is not ready: ${RENDER_ENTRY} is missing. Build can run after the renderer worker supplies the documented renderVideo boundary.`);
   }
-  const neural = kokoroReadiness();
-  if (backend === "kokoro" && !neural.ready) throw new Error(`Kokoro is unavailable: ${neural.reason}. Run python3 scripts/setup-kokoro.py during setup.`);
-  const actualBackend = backend === "auto" ? neural.ready ? "kokoro" : "apple" : backend;
+  const actualBackend = selectNarrationBackend(backend).backend;
   const executables = actualBackend === "apple" ? ["say", "ffmpeg", "ffprobe"] : ["ffmpeg", "ffprobe"];
   for (const executable of executables) {
     if (!findExecutable(executable)) throw new Error(`Required executable "${executable}" was not found on PATH`);
@@ -599,7 +629,7 @@ async function materializeAssets(assets: ResolvedAsset[], stagingPath: string): 
 }
 
 async function rendererSourceHashes(): Promise<Record<string, string>> {
-  const paths = ["apps/renderer-remotion/src/entry.tsx", "apps/renderer-remotion/src/render.ts", "apps/renderer-remotion/src/video.tsx", "packages/renderer-core/src/renderer.ts", "package.json", "pnpm-lock.yaml", "tsconfig.json"];
+  const paths = ["apps/renderer-remotion/src/entry.tsx", "apps/renderer-remotion/src/render.ts", "apps/renderer-remotion/src/video.tsx", "apps/renderer-remotion/src/windows-browser-launcher.ts", "apps/renderer-remotion/src/windows-browser-launcher.cs", "packages/renderer-core/src/renderer.ts", "package.json", "pnpm-lock.yaml", "tsconfig.json"];
   const hashes: Record<string, string> = {};
   for (const path of paths) hashes[path] = createHash("sha256").update(await readFile(join(PROJECT_ROOT, path))).digest("hex");
   return hashes;
@@ -608,6 +638,7 @@ async function rendererSourceHashes(): Promise<Record<string, string>> {
 async function chooseOutputPath(requested: string | undefined, title: string, buildId: string): Promise<string> {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "").slice(0, 48) || "explanation";
   const path = requested ? resolve(requested) : resolve(PROJECT_ROOT, "out", `${slug}-${new Date().toISOString().replace(/[:.]/gu, "-")}-${buildId.slice(0, 8)}`);
+  assertSupportedFilePath(path);
   await mkdir(dirname(path), { recursive: true });
   return path;
 }
@@ -624,23 +655,6 @@ function toolVersion(executable: string): string {
   } catch (error) {
     return error instanceof Error ? `unavailable: ${error.message}` : "unavailable";
   }
-}
-
-function findExecutable(name: string): string | null {
-  if (name === "say") {
-    try { accessSync("/usr/bin/say", constants.X_OK); return "/usr/bin/say"; } catch { return null; }
-  }
-  const pathValue = process.env.PATH ?? "";
-  for (const directory of pathValue.split(":").filter(Boolean)) {
-    const candidate = join(directory, name);
-    try {
-      accessSync(candidate, constants.X_OK);
-      return candidate;
-    } catch {
-      // Check the next PATH entry.
-    }
-  }
-  return null;
 }
 
 async function pathExists(path: string): Promise<boolean> {

@@ -5,12 +5,18 @@ import { createHash } from "node:crypto";
 import { delimiter, dirname, extname, isAbsolute, join, normalize, resolve, sep } from "node:path";
 import { performance } from "node:perf_hooks";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import type { RenderAsset, RenderRequest, RenderResult } from "../../../packages/renderer-core/src/renderer.js";
+import { writeWindowsBrowserLauncher } from "./windows-browser-launcher.js";
+import { ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+export { getLauncherReadiness } from "./windows-browser-launcher.js";
 
 const REMOTION_PIN = "4.0.535";
 const COMPOSITION_ID = "ExplainToMe";
+const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 type ChromeMode = "chrome-for-testing" | "headless-shell";
 type BrowserInstall = { path: string; chromeMode: ChromeMode };
 
@@ -71,7 +77,7 @@ function findInstalledBrowser(): BrowserInstall | undefined {
         ? "win64"
         : undefined;
   if (platform) {
-    const remotionCache = join(process.cwd(), "node_modules", ".remotion");
+    const remotionCache = join(PROJECT_ROOT, "node_modules", ".remotion");
     const shellDirectory = join(remotionCache, "chrome-headless-shell", platform, `chrome-headless-shell-${platform}`);
     const chromeForTestingDirectory = join(remotionCache, "chrome-for-testing", platform, `chrome-${platform}`);
     const remotionCandidates: BrowserInstall[] = [
@@ -129,7 +135,7 @@ function findInstalledBrowser(): BrowserInstall | undefined {
 }
 
 function readPackageVersion(packageName: string): string {
-  const packagePath = join(process.cwd(), "node_modules", ...packageName.split("/"), "package.json");
+  const packagePath = join(PROJECT_ROOT, "node_modules", ...packageName.split("/"), "package.json");
   try {
     return JSON.parse(readFileSync(packagePath, "utf8")).version as string;
   } catch {
@@ -246,7 +252,7 @@ function attemptedUrl(request: IncomingMessage): string {
   }
 }
 
-async function startRestrictingProxy(allowedOrigin: string): Promise<{
+export async function startRestrictingProxy(allowedOrigin: string): Promise<{
   server: Server;
   origin: string;
   attempts: Set<string>;
@@ -309,6 +315,7 @@ async function startRestrictingProxy(allowedOrigin: string): Promise<{
 }
 
 async function writeBrowserWrapper(directory: string, browserPath: string, proxyOrigin: string): Promise<string> {
+  if (process.platform === "win32") return writeWindowsBrowserLauncher(directory, browserPath, proxyOrigin);
   const wrapperPath = join(directory, "renderer-chrome.mjs");
   const script = [
     "#!/usr/bin/env node",
@@ -456,9 +463,7 @@ export async function renderVideo(request: RenderRequest): Promise<RenderResult>
   }
 
   const start = performance.now();
-  const renderScratch = join(process.cwd(), ".cache");
-  await mkdir(renderScratch, { recursive: true });
-  const temporaryRoot = await mkdtemp(join(renderScratch, "explain-to-me-render-"));
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "explain-to-me-render-"));
   const bundleDirectory = join(temporaryRoot, "bundle");
   let bundleServer: Server | undefined;
   let proxyServer: Server | undefined;
@@ -466,10 +471,11 @@ export async function renderVideo(request: RenderRequest): Promise<RenderResult>
   let proxyAttempts = new Set<string>();
   let renderError: unknown;
   try {
+    await ensurePrivateDirectory(temporaryRoot);
     await mkdir(dirname(outputPath), { recursive: true });
     const assetFilesById = await copyAssetsIntoPublicDirectory(request, temporaryRoot);
     const generatedBundle = await bundle({
-      entryPoint: resolve(process.cwd(), "apps/renderer-remotion/src/entry.tsx"),
+      entryPoint: join(PROJECT_ROOT, "apps/renderer-remotion/src/entry.tsx"),
       outDir: bundleDirectory,
       publicDir: join(temporaryRoot, "public-assets"),
       symlinkPublicDir: false,
@@ -557,6 +563,8 @@ export async function renderVideo(request: RenderRequest): Promise<RenderResult>
     proxyServer?.closeAllConnections?.();
     bundleServer?.closeAllConnections?.();
     await Promise.allSettled([close(proxyServer), close(bundleServer)]);
-    await rm(temporaryRoot, { recursive: true, force: true });
+    // Remotion closes its browser asynchronously; Windows locks the launcher
+    // executable briefly until that process has finished exiting.
+    await rm(temporaryRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 }

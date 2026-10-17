@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
-import { allocatePrivateSocketLocation, directDocument } from "./director.js";
+import { allocatePrivateSocketLocation, directDocument, localDirectorReadiness } from "./director.js";
 import type { SourceDocument } from "../../ingest/src/markdown.js";
 
 test("template director keeps source references and compiles bullet, code, and image scenes", async () => {
@@ -85,10 +85,10 @@ test("private socket allocation fits formerly failing roots and refuses oversize
     assert.ok(Buffer.byteLength(join(fittingPath, "etm-d-XXXXXX", "server.sock")) > 100);
     const location = await allocatePrivateSocketLocation(fittingPath);
     try {
-      assert.ok(location.directory.startsWith(fittingPath + "/"));
+      assert.ok(location.directory.startsWith(fittingPath + sep));
       assert.ok(Buffer.byteLength(location.socketPath) <= 100);
       assert.ok(location.socketPath.endsWith(".sock"), "llama-server requires the .sock suffix to select Unix transport");
-      assert.equal((await stat(location.directory)).mode & 0o077, 0);
+      if (process.platform !== "win32") assert.equal((await stat(location.directory)).mode & 0o077, 0);
     } finally {
       await rm(location.directory, { recursive: true, force: true });
     }
@@ -103,4 +103,9 @@ test("private socket allocation fits formerly failing roots and refuses oversize
   } finally {
     await rm(fixture, { recursive: true, force: true });
   }
+});
+
+test("Windows local direction gives the supported template alternative", { skip: process.platform !== "win32" }, () => {
+  assert.equal(localDirectorReadiness().ready, false);
+  assert.match(localDirectorReadiness().reason, /Windows.*--director template/u);
 });

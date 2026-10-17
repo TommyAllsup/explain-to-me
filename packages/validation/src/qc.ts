@@ -99,6 +99,15 @@ export async function probeMedia(path: string): Promise<MediaProbe> {
   return JSON.parse(json) as MediaProbe;
 }
 
+export function decodeMediaFully(path: string): void {
+  // Remotion's Windows build omits null's default wrapped_avframe encoder.
+  // Raw video and PCM still exercise both decoders without compression work.
+  runProcess("ffmpeg", [
+    "-hide_banner", "-loglevel", "error", "-nostdin", "-xerror", "-i", path,
+    "-map", "0:v:0", "-map", "0:a:0", "-c:v", "rawvideo", "-c:a", "pcm_s16le", "-f", "null", "-",
+  ], 300_000);
+}
+
 export function inspectPcm(pcm: Buffer, sampleRate = 24_000): AudioSignalQc {
   if (pcm.byteLength === 0 || pcm.byteLength % 2 !== 0) throw new Error("PCM must contain complete signed 16-bit samples");
   const sampleCount = pcm.byteLength / 2;
@@ -164,7 +173,9 @@ export async function extractSceneBoundarySamples(
       const file = join(outputDir, `scene-${String(index + 1).padStart(2, "0")}-${safeFilePart(scene.sceneId)}-${edge}.png`);
       runProcess("ffmpeg", [
         "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-i", videoPath,
-        "-vf", `select=eq(n\\,${frame})`, "-frames:v", "1", file,
+        // The pinned Windows FFmpeg includes trim but omits select. Frame bounds
+        // keep extraction exact without timestamp seeking or filter escaping.
+        "-vf", `trim=start_frame=${frame}:end_frame=${frame + 1}`, "-frames:v", "1", file,
       ], 120_000);
       const size = (await stat(file)).size;
       if (size <= 0) throw new Error(`Could not extract ${edge} frame for scene ${scene.sceneId}`);
@@ -221,7 +232,7 @@ export async function validateRenderedMedia(options: {
     && (videoFrameCount === null || videoFrameCount === options.timeline.durationInFrames);
   const boundaryPass = options.boundarySamples.length === options.timeline.scenes.length * 2
     && options.boundarySamples.every((sample) => sample.bytes > 0);
-  runProcess("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", "-xerror", "-i", videoPath, "-f", "null", "-"], 300_000);
+  decodeMediaFully(videoPath);
 
   const checks = {
     duration: durationPass,

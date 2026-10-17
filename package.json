@@ -1,14 +1,14 @@
 {
   "name": "explain-to-me",
-  "version": "0.2.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.18.3",
   "scripts": {
     "explain-to-me": "tsx apps/cli/src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test packages/*/src/*.test.ts apps/cli/src/*.test.ts",
-    "test:agent": "python3 -m unittest discover -s scripts -p 'test_agent_explainer.py'",
+    "test": "tsx --test packages/*/src/*.test.ts apps/*/src/*.test.ts",
+    "test:agent": "node scripts/test-agent.mjs",
     "schema:manifest": "tsx packages/contracts/scripts/write-json-schema.ts"
   },
   "description": "Local-first narrated, captioned explainer videos from documents and reviewed manifests",

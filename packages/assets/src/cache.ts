@@ -1,7 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { constants } from "node:fs";
-import { open, mkdir, rename, unlink, type FileHandle } from "node:fs/promises";
+import { lstat, open, rename, unlink, type FileHandle } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory, openRegularFile } from "./file-safety.js";
 
 const KEY_SCHEMA_VERSION = "1";
 const CACHE_FILE_MAGIC = Buffer.from("ETMCACHE", "ascii");
@@ -24,6 +24,7 @@ export class ContentAddressedCache {
   private readonly stats: CacheStats = { hits: 0, misses: 0, writes: 0, corruptions: 0 };
 
   constructor(root: string) {
+    assertSupportedFilePath(root);
     this.root = resolve(root);
   }
 
@@ -45,14 +46,14 @@ export class ContentAddressedCache {
     const entryPath = this.entryPath(key);
     let handle: FileHandle;
     try {
-      handle = await open(entryPath, constants.O_RDONLY | constants.O_NOFOLLOW);
+      handle = await openRegularFile(entryPath, this.root);
     } catch (error) {
       const code = errorCode(error);
       if (code === "ENOENT") {
         this.stats.misses += 1;
         return null;
       }
-      if (code === "ELOOP" || code === "EISDIR") return this.recordCorruption();
+      if (code === "ELOOP" || code === "EISDIR" || code === "EUNSAFEFILE") return this.recordCorruption();
       throw error;
     }
 
@@ -85,7 +86,15 @@ export class ContentAddressedCache {
     const entryPath = this.entryPath(key);
     if (!Buffer.isBuffer(value)) throw new TypeError("Cache values must be Buffers");
 
-    await mkdir(this.root, { recursive: true, mode: 0o700 });
+    try {
+      await assertNoLinkedPath(this.root, false);
+      // A corrupt linked entry is never read. Remove only the owned link so a
+      // replacement can be published without applying ACL inheritance to it.
+      if ((await lstat(entryPath)).isSymbolicLink()) await unlink(entryPath);
+    } catch (error) {
+      if (errorCode(error) !== "ENOENT") throw error;
+    }
+    await ensurePrivateDirectory(this.root);
 
     const stored = Buffer.allocUnsafe(HEADER_SIZE + value.length);
     CACHE_FILE_MAGIC.copy(stored, 0);
@@ -103,6 +112,7 @@ export class ContentAddressedCache {
       await handle.sync();
       await handle.close();
       handle = undefined;
+      await assertNoLinkedPath(this.root, false);
       await rename(temporaryPath, entryPath);
       this.stats.writes += 1;
     } catch (error) {

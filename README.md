@@ -4,13 +4,13 @@
 
 Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrated, captioned explainer videos. A local model can plan the story; deterministic scenes do the drawing; measured speech keeps the whole crew on time.
 
-**v0.2.0 · First open source release · macOS-first · TypeScript CLI · MIT project code**
+**v1.1.1 · Windows x64 + macOS · TypeScript CLI · MIT project code**
 
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
 **[▶ Watch the getting-started movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
 
-*The release movie gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). The 0.2 CLI produces the technical-whiteboard style shown below; custom cartoons and soundtrack mixing are separate production work.*
+*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 1.1.1 produces the technical-whiteboard style shown below; custom cartoons and soundtrack mixing are separate production work. The movie's original Mac setup predates the Windows instructions below.*
 
 *Movie music: “Business As Usual” by tommyallsup.*
 
@@ -29,17 +29,41 @@ Your document → story manifest → local narration → measured timeline → v
 
 ![Actual technical-whiteboard output from the bundled caching example](docs/images/preview.png)
 
-*Real output, not a mockup. Version 0.2 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
+*Real output, not a mockup. Version 1.1.1 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
 
-## Quickstart: roll your first tiny movie
+## Windows: one setup command
+
+Version **1.1.1 supports Windows 11 x64 with Kokoro narration and template direction**. Install **Node.js 24+ with npm** and **Git**, then run these commands in PowerShell:
+
+```powershell
+git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
+cd explain-to-me-v1.1.1
+node scripts/setup.mjs
+node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --output out/first-movie
+Start-Process out/first-movie/video.mp4
+```
+
+Setup prepares pinned pnpm dependencies, a pinned local uv, the render browser and Windows launcher, and an isolated Kokoro Python environment; **no global pnpm, Python, uv, FFmpeg install or manual PATH changes are required**. FFmpeg/ffprobe come from the pinned Remotion distribution. Normal setup runs as an ordinary user; repairing missing Windows runtime components may require administrator access. Rerun the same setup command to recover an interrupted install.
+
+For your own document:
+
+```powershell
+node scripts/explain.mjs build path/to/document.md --director template --duration 60s --output out/my-document
+```
+
+Template direction selects source text; it does not summarize with an AI model. Native Windows local AI direction is deferred. Kokoro is the Windows narrator; Apple speech is available on macOS. See the [Windows setup and troubleshooting guide](docs/windows.md) for private workspaces, diagnostics, and supported paths, or [give your AI harness the installer prompt](#let-your-agent-handle-setup).
+
+<a id="quickstart-roll-your-first-tiny-movie"></a>
+
+## macOS quickstart: roll your first tiny movie
 
 The first build uses a prepared manifest and Apple's installed voice. **No LLM or Kokoro download required.** You'll need macOS, Node.js 24+ with npm, Git, FFmpeg/ffprobe, and the Samantha voice (`say -v '?'` lists installed voices). With Homebrew, install FFmpeg using `brew install ffmpeg`.
 
 ### 1. Bring in the crew
 
 ```bash
-git clone --branch v0.2.0 https://github.com/TommyAllsup/explain-to-me.git
-cd explain-to-me
+git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
+cd explain-to-me-v1.1.1
 
 # Install the pinned package manager and project dependencies.
 npm exec --cache .cache/npm --yes --package=pnpm@10.18.3 -- pnpm install --frozen-lockfile
@@ -77,7 +101,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --duration 60s --output out/document-template
 ```
 
-Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 0.2.
+Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 1.1.1.
 
 ### “Let a local model direct it.”
 
@@ -95,7 +119,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --output out/document-local
 ```
 
-`--director local` requires that backend. `--director auto` tries it and reports an extractive fallback when necessary. `--tts auto` prefers installed Kokoro and reports an Apple fallback. No cloud/subscription model adapter is built in.
+`--director local` requires that backend on macOS. `--director auto` reports an extractive fallback when local direction is unavailable, including on Windows. `--tts auto` prefers installed Kokoro and can fall back to Apple speech on macOS; Windows requires Kokoro. No cloud/subscription model adapter is built in.
 
 ### “I want to edit the script.”
 
@@ -115,24 +139,44 @@ Run `pnpm explain-to-me --help` or `--version` through the cached launcher above
 
 ## Let your agent handle setup
 
-Copy this into your coding agent. Tiny director's chair optional.
+Use your existing local coding agent to install v1.1.1 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
+
+| Harness | Example |
+|---|---|
+| **Codex app or CLI** | Open a local Windows folder in Codex, or start `codex` there. Paste: “Install Explain-to-Me v1.1.1 on this Windows PC using the Windows installer prompt below, then make the bundled demo.” |
+| **Claude Code** | Open a local project in Claude Code, or start `claude` there. Paste: “Set up Explain-to-Me v1.1.1 on this Windows PC. Follow the Windows installer prompt below and return the demo video path.” |
+| **Another local AI harness** | Give it the same prompt with local terminal/file access. A remote chat without access to this PC cannot install local tools. |
+
+Copy the full prompt below, or open the [plain-text installer prompt](docs/install-windows-agent.txt). Your harness may request scoped permission for setup downloads, workspace creation, or native Windows media processes. Follow its normal approval flow. [Codex Windows guidance](https://learn.chatgpt.com/docs/windows/windows-sandbox) · [Claude Code setup](https://code.claude.com/docs/en/setup).
 
 ```text
-Install Explain-to-Me v0.2.0 from https://github.com/TommyAllsup/explain-to-me
-for this Mac. Read README.md and docs/quick-install.md at that tag first and
-follow their pinned setup commands. Use a new checkout, leave existing projects
-alone, and check Node.js 24+, Git, FFmpeg/ffprobe, and the Samantha voice.
-Install project dependencies and the Remotion Headless Shell browser, then run
-doctor. Start with Apple speech and the bundled whisper-vs-tts manifest;
-do not download optional LLM/Kokoro models for this first run.
-Keep my private inputs and generated jobs in a separate workspace outside the
-software checkout. Use scripts/agent-explainer.py for the smoke build, following
-docs/agent-integration.md. Report the exact checkout/tag, doctor result, job JSON,
-video and caption paths, and any remaining prerequisites. Open the video if
-possible. Automated QC is not my approval of the script or finished movie.
+Install Explain-to-Me v1.1.1 on this Windows x64 PC and make its first demo video.
+Repository: https://github.com/TommyAllsup/explain-to-me
+
+1. Use a new checkout of tag v1.1.1 named explain-to-me-v1.1.1. Leave existing
+   projects unchanged. Read README.md, docs/windows.md, and
+   docs/agent-integration.md at that tag before running setup.
+2. Check Node.js 24+ with npm and Git. Resolve missing prerequisites through
+   this machine's approved install process, or report the exact action needed.
+3. From the checkout, run node scripts/setup.mjs. It prepares the pinned package
+   manager, local Python/Kokoro, render browser, and Windows launcher, and uses
+   bundled FFmpeg. Do not install global Python/pnpm/FFmpeg or download a local
+   AI director. Verify node scripts/explain.mjs --version reports 1.1.1.
+4. Create a new private workspace outside the checkout. Copy the bundled
+   fixtures/golden-manifests/whisper-vs-tts.json there as story.json. Follow
+   docs/windows.md to run scripts/agent-explainer.py with the setup-created
+   .venv-kokoro/Scripts/python.exe: doctor, then a prepared-manifest build with
+   --tts kokoro --voice af_heart --duration 60s. For later document builds, use
+   --director template. Keep private inputs, jobs, and caches in that workspace.
+5. Use the harness's normal scoped permission approvals for downloads and local
+   Windows processes if needed. Do not disable its safeguards globally. Report
+   the tag/commit, version, doctor result, job JSON, video/caption/report paths,
+   and any remaining prerequisite. Do not upload private inputs or outputs.
+
+Automated QC is separate from my approval of the script and finished movie.
 ```
 
-[The full agent setup guide](docs/quick-install.md) includes exact commands and the private-workspace workflow. The launcher returns structured JSON and retains failed-job diagnostics; it doesn't install models, update Git, or upload your work.
+[The full agent setup guide](docs/quick-install.md) includes Windows and macOS commands and the private-workspace workflow. The launcher returns structured JSON and retains failed-job diagnostics; it doesn't install models, update Git, or upload your work.
 
 ## What's in the goodie bag?
 
@@ -149,23 +193,23 @@ Approved images are copied into `assets/`; scene-boundary samples support review
 
 - **Browser missing:** run the one-time Headless Shell setup. Builds never download it automatically.
 - **The duration doesn't fit:** review measured attempts; shorten a long script, add reviewed narration to a short one, or change the target. Speech isn't truncated or padded to force a match.
-- **Socket path too long:** use a shorter user-owned `TMPDIR` or private workspace path. Private Unix transport remains required.
+- **macOS local-director socket path too long:** use a shorter user-owned `TMPDIR` or private workspace path. The macOS director retains private Unix transport.
 - **Build failed:** inspect the retained staging/job diagnostics. Redact source text and personal paths before sharing logs.
 
 ## Small release, clear boundaries
 
-Local model inference uses a private Unix socket, and renderer requests are restricted and audited. Whole-process no-egress verification remains open. Local-first isn't a security certification; see [SECURITY.md](SECURITY.md).
+The macOS local model director uses a private Unix socket. Windows uses template direction. Renderer requests are restricted and audited on both platforms. Whole-process no-egress verification remains open. Local-first isn't a security certification; see [SECURITY.md](SECURITY.md).
 
 Model output is constrained manifest data. Approved image paths are bounded, copied, and hash-checked. These controls aren't a sandbox guarantee. Automated checks and source mappings help inspection; they don't establish factual correctness, pleasant narration, or human approval. Watch and listen before sharing.
 
-Custom cartoons, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 0.2 features. The [roadmap](ROADMAP.md) tracks what's next.
+Custom cartoons, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 1.1.1 features. The [roadmap](ROADMAP.md) tracks what's next.
 
 ## Help make the explanations better
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports, small fixes, and synthetic examples are welcome. Linux CI covers typechecking and unit tests; macOS speech and full media builds need their own checks.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports, small fixes, and synthetic examples are welcome. Windows and Linux CI cover typechecking and unit tests; real narration/media builds need their own checks.
 
-- [Changelog](CHANGELOG.md) · [0.2.0 release notes](docs/releases/0.2.0.md)
-- [0.2 verification evidence](docs/benchmarks/0.2-readiness.md) · [Acceptance targets](docs/benchmarks/acceptance.md)
+- [Changelog](CHANGELOG.md) · [1.1.1 release notes](docs/releases/1.1.1.md)
+- [Windows verification evidence](docs/benchmarks/windows-support.md) · [Acceptance targets](docs/benchmarks/acceptance.md)
 - [Agent integration](docs/agent-integration.md) · [System boundaries](docs/architecture/0001-system-boundaries.md) · [Renderer decision](docs/architecture/0002-renderer-selection.md)
 
 Historical benchmark reports retain their original scope; they're not universal performance claims.

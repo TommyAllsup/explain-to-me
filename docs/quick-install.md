@@ -1,6 +1,56 @@
-# An agent, a tiny director's chair, and your first explainer
+# Install Explain-to-Me with your local agent
 
-This guide installs the **v0.2.0 source release on macOS** and renders a bundled example with Apple speech. It doesn't require an LLM or Kokoro model. For the shortest copy/paste request, use the [README installer prompt](../README.md#let-your-agent-handle-setup).
+## Windows 1.1.1 with Codex or Claude Code
+
+Use an existing **Codex** or **Claude Code** session with local terminal access to your Windows 11 x64 computer. Install/sign in to that harness separately using its official instructions. Explain-to-Me requires Node.js 24+ with npm and Git for Windows; its setup prepares local pnpm, uv/Python, Kokoro, FFmpeg/ffprobe, and the rendering browser. Global Python, pnpm, uv, and FFmpeg installs are unnecessary. Existing Windows Visual C++/.NET runtime components are required; repairing a missing system component can require administrator help.
+
+Open the [complete Windows installer prompt](install-windows-agent.txt), copy its text, and paste it into your agent. It pins `v1.1.1`, uses a new checkout and a separate private workspace, runs doctor and the bundled build, and asks for the actual output/QC results. It does not install the agent harness or upload your inputs.
+
+### Codex example
+
+In an installed Codex local chat, or an interactive Codex CLI session started with `codex` in your chosen local parent directory, paste:
+
+```text
+Install Explain-to-Me v1.1.1 on this Windows computer. Read and follow:
+https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v1.1.1/docs/install-windows-agent.txt
+Use the local terminal, preserve existing projects, and report the verified
+checkout version, doctor result, job JSON, and generated video/caption paths.
+```
+
+Codex's active permissions determine filesystem/network access and approvals. See the [official Windows sandbox guidance](https://learn.chatgpt.com/docs/windows/windows-sandbox). If an operation is blocked, request a specific approved command/path exception or give the user the exact PowerShell command; keep unrelated protections in place.
+
+### Claude Code example
+
+In an installed, signed-in Claude Code local terminal session started with `claude` in your chosen local parent directory, paste the same request:
+
+```text
+Install Explain-to-Me v1.1.1 on this Windows computer. Read and follow:
+https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v1.1.1/docs/install-windows-agent.txt
+Use the local terminal, preserve existing projects, and report the verified
+checkout version, doctor result, job JSON, and generated video/caption paths.
+```
+
+Use a native Windows checkout and PowerShell-capable execution for this guide. Follow Claude Code's own tool-permission prompts and organization policy. These are installation requests for an existing harness, not an assurance that every harness permission profile supports media execution. [Claude Code's official setup guide](https://code.claude.com/docs/en/setup) covers its separate installation and Windows prerequisites.
+
+### Run the setup yourself
+
+In PowerShell, choose an unused checkout directory:
+
+```powershell
+git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
+cd explain-to-me-v1.1.1
+node scripts/setup.mjs
+node scripts/explain.mjs --version
+node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --output out/first-movie
+```
+
+The version command must print `explain-to-me 1.1.1`. Existing output directories are refused. See [Windows setup](windows.md) for private-workspace commands, recovery, supported paths, and the difference between automated QC and human review. Native Windows local AI direction is deferred; use Kokoro with prepared manifests or `--director template`.
+
+For the current macOS v1.1.1 commands, use the [README macOS quickstart](../README.md#macos-quickstart-roll-your-first-tiny-movie).
+
+## Historical macOS v0.2.0 agent setup
+
+The preserved instructions below install the **v0.2.0 source release on macOS** and render a bundled example with Apple speech. They do not require an LLM or Kokoro model. The original [v0.2.0 README installer prompt](https://github.com/TommyAllsup/explain-to-me/blob/v0.2.0/README.md#let-your-agent-handle-setup) retains that release's scope.
 
 ## Copy this prompt into your coding agent
 

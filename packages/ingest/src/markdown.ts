@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import { constants } from "node:fs";
-import { open, realpath, stat } from "node:fs/promises";
+import { realpath, stat } from "node:fs/promises";
 import { basename, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { assertNoLinkedPath, assertSupportedFilePath, openRegularFile } from "../../assets/src/file-safety.js";
 
 export interface SourceBlock {
   id: string;
@@ -63,7 +63,9 @@ interface ParsedImage {
 
 export async function loadDocument(inputPath: string, options: LoadDocumentOptions = {}): Promise<SourceDocument> {
   if (typeof inputPath !== "string" || inputPath.length === 0) throw new Error("Input path is required");
+  assertSupportedFilePath(inputPath);
   const requestedPath = resolve(inputPath);
+  if (process.platform === "win32") await assertNoLinkedPath(requestedPath);
   const sourcePath = await realpath(requestedPath);
   const extension = extname(sourcePath).toLowerCase();
   if (extension !== ".md" && extension !== ".txt") throw new Error("Input must be a regular .md or .txt file");
@@ -129,6 +131,8 @@ export async function resolveManifestAssets(
   inputFile: string,
   options: LoadDocumentOptions = {},
 ): Promise<ResolvedAsset[]> {
+  assertSupportedFilePath(inputFile);
+  if (process.platform === "win32") await assertNoLinkedPath(resolve(inputFile));
   const inputPath = await realpath(resolve(inputFile));
   if (!(await stat(inputPath)).isFile()) throw new Error("Prepared manifest input must be a regular file");
   const sourceDirectory = await realpath(join(inputPath, ".."));
@@ -175,6 +179,8 @@ async function resolveImage(source: string, sourceDirectory: string, roots: stri
   }
 
   const candidate = resolve(sourceDirectory, source);
+  assertSupportedFilePath(candidate);
+  if (process.platform === "win32") await assertNoLinkedPath(candidate);
   const canonical = await realpath(candidate);
   const fileStats = await stat(canonical);
   if (!fileStats.isFile()) throw new Error(`Image reference is not a regular file: ${source}`);
@@ -198,8 +204,10 @@ async function resolveManifestImage(
 }
 
 async function optionalAssetsRoot(projectRoot: string): Promise<string | undefined> {
+  assertSupportedFilePath(projectRoot);
   const candidate = resolve(projectRoot, "assets");
   try {
+    if (process.platform === "win32") await assertNoLinkedPath(candidate);
     const canonical = await realpath(candidate);
     const fileStats = await stat(canonical);
     return fileStats.isDirectory() ? canonical : undefined;
@@ -215,7 +223,7 @@ function isWithin(root: string, candidate: string): boolean {
 }
 
 async function readBoundedRegularFile(path: string, maxBytes: number, label: string): Promise<Buffer> {
-  const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  const handle = await openRegularFile(path);
   try {
     const fileStats = await handle.stat();
     if (!fileStats.isFile()) throw new Error(`${label} must be a regular file`);

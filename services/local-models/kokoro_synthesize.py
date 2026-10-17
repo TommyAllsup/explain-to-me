@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,40 @@ VOICE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODEL_PATH = PROJECT_ROOT / ".explain-to-me/models/kokoro/kokoro-v1.0.onnx"
 VOICES_PATH = PROJECT_ROOT / ".explain-to-me/models/kokoro/voices-v1.0.bin"
+
+
+def _runtime_check() -> dict[str, Any]:
+    """Check native imports and eSpeak data without loading the ONNX model."""
+    import importlib.metadata
+    import platform
+
+    import numpy  # noqa: F401 - deliberately exercise native library loading
+    import onnxruntime  # noqa: F401
+    import soundfile  # noqa: F401
+    from kokoro_onnx.tokenizer import Tokenizer
+
+    phonemes = Tokenizer().phonemize("Kokoro is ready.", lang="en-us")
+    if not phonemes.strip():
+        raise RuntimeError("eSpeak returned no phonemes")
+    names = ("kokoro-onnx", "onnxruntime", "numpy", "espeakng-loader", "phonemizer", "soundfile")
+    return {
+        "python": platform.python_version(),
+        "implementation": platform.python_implementation(),
+        "packages": {name: importlib.metadata.version(name) for name in names},
+    }
+
+
+def _smoke_test() -> dict[str, int]:
+    with tempfile.TemporaryDirectory(prefix="kokoro-check-") as temporary:
+        result = _synthesize({
+            "modelPath": str(MODEL_PATH), "voicesPath": str(VOICES_PATH),
+            "voice": "af_heart", "speed": 1,
+            "chunks": [{"id": "smoke", "text": "Kokoro is ready.", "outputPath": str(Path(temporary) / "smoke.pcm")}],
+        })
+        chunk = result["chunks"][0]
+        if not 0 < chunk["samples"] <= 24_000 * 15:
+            raise RuntimeError("Kokoro smoke sample exceeded the 15 second limit")
+        return {"samples": chunk["samples"], "sampleRate": chunk["sampleRate"]}
 
 
 def _bounded_path(value: Any, label: str) -> Path:
@@ -132,14 +167,21 @@ def _synthesize(request: Any) -> dict[str, Any]:
 
 
 def main() -> int:
-    payload = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
-    if len(payload) > MAX_INPUT_BYTES:
-        print(f"Request exceeds {MAX_INPUT_BYTES} bytes", file=sys.stderr)
-        return 2
     try:
-        result = _synthesize(json.loads(payload))
+        if sys.argv[1:] == ["--check"]:
+            result = _runtime_check()
+        elif sys.argv[1:] == ["--smoke"]:
+            result = _smoke_test()
+        elif sys.argv[1:]:
+            raise ValueError("Use no arguments, --check, or --smoke")
+        else:
+            payload = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
+            if len(payload) > MAX_INPUT_BYTES:
+                raise ValueError(f"Request exceeds {MAX_INPUT_BYTES} bytes")
+            result = _synthesize(json.loads(payload))
     except Exception as error:  # keep stdout machine-readable and diagnostics on stderr
-        print(f"kokoro_synthesize: {error}", file=sys.stderr)
+        hint = " On Windows, ensure the Microsoft Visual C++ 2019 or newer runtime is installed." if sys.platform == "win32" and isinstance(error, (ImportError, OSError)) else ""
+        print(f"kokoro_synthesize: {error}{hint}", file=sys.stderr)
         return 2
     sys.stdout.write(json.dumps(result, separators=(",", ":")))
     sys.stdout.write("\n")

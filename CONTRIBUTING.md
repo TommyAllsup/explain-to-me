@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for helping make explanations clearer. This is an early, macOS-first CLI project by Tommy Allsup. Start with the [README](README.md) and [roadmap](ROADMAP.md).
+Thanks for helping make explanations clearer. This is a local-first CLI project by Tommy Allsup, with macOS and Windows 11 x64 workflows. Start with the [README](README.md) and [roadmap](ROADMAP.md).
 
 ## Before starting
 
 For a substantial feature, open an issue to agree on scope. Small fixes, documentation improvements and synthetic examples are welcome. Keep changes focused; do not mix feature work with unrelated refactoring.
 
-Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. Full narration/rendering checks require macOS prerequisites; unit tests and typechecking also run in Linux CI.
+Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. The `v1.1.1` Windows release uses `node scripts/setup.mjs` for Kokoro/template builds; macOS retains Apple speech and optional local models. [Windows setup](docs/windows.md) prepares the local toolchain, and [agent setup](docs/quick-install.md) includes Codex and Claude Code examples. Unit tests and typechecking are configured in Windows and Linux CI.
 
 ## Check a change
 
@@ -16,6 +16,18 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm test
 ```
 
 Tests inherit `TMPDIR`. If your terminal supplies an extremely long temporary path, select a shorter user-owned temporary root before running socket-path tests. No models or browser downloads are needed for the static CI checks.
+
+On Windows, run checks through the setup-local pnpm launcher:
+
+```powershell
+node .cache/setup/node_modules/pnpm/bin/pnpm.cjs typecheck
+node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test
+node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent
+```
+
+Python tests use the local Kokoro interpreter when available, or CI's configured Python. After browser/launcher/Kokoro setup, set `EXPLAIN_TO_ME_RENDER_SMOKE=1` and `EXPLAIN_TO_ME_MEDIA_SMOKE=1` to include real browser/proxy and media-decoding tests. The [Windows validation record](docs/benchmarks/windows-support.md) records the exercised checks and limits.
+
+A restrictive agent sandbox can deny directory access-control changes or Chromium/media execution. Inspect the failure and use the harness's scoped command/path approval when permitted, or run the documented command from an ordinary PowerShell session. This is distinct from administrator elevation; do not disable unrelated safeguards.
 
 - Add a focused regression test for changed behavior; run it before and after the fix.
 - Preserve the validated manifest boundary, bounded local assets, private socket transport and owned-process cleanup.

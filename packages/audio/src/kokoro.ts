@@ -18,16 +18,15 @@ const MAX_CHUNK_CHARS = 1_600;
 const MAX_TOTAL_CHARS = 24_000;
 const RUNTIME_VERSION = "0.6.1";
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const PYTHON = join(PROJECT_ROOT, ".venv-kokoro/bin/python");
+export function kokoroPythonPath(root = PROJECT_ROOT, platform: NodeJS.Platform = process.platform): string {
+  return join(root, ".venv-kokoro", ...(platform === "win32" ? ["Scripts", "python.exe"] : ["bin", "python"]));
+}
+
+const PYTHON = kokoroPythonPath();
 const MODEL = join(PROJECT_ROOT, ".explain-to-me/models/kokoro/kokoro-v1.0.onnx");
 const VOICES = join(PROJECT_ROOT, ".explain-to-me/models/kokoro/voices-v1.0.bin");
 const PROVENANCE = join(PROJECT_ROOT, ".explain-to-me/models/kokoro/provenance.json");
 const BRIDGE = join(PROJECT_ROOT, "services/local-models/kokoro_synthesize.py");
-const METADATA_QUERY = [
-  "import importlib.metadata as m, json, platform",
-  "names = ('kokoro-onnx', 'onnxruntime', 'numpy', 'espeakng-loader', 'phonemizer', 'soundfile')",
-  "print(json.dumps({'python': platform.python_version(), 'implementation': platform.python_implementation(), 'packages': {n: m.version(n) for n in names}}))",
-].join("; ");
 
 export interface KokoroAttempt {
   attempt: number;
@@ -71,7 +70,7 @@ export function kokoroReadiness(): { ready: boolean; reason: string } {
     }
   }
 
-  const result = spawnSync(PYTHON, ["-c", METADATA_QUERY], { encoding: "utf8", timeout: 10_000, maxBuffer: 128 * 1024 });
+  const result = spawnSync(PYTHON, [BRIDGE, "--check"], { encoding: "utf8", timeout: 30_000, maxBuffer: 128 * 1024, windowsHide: true });
   if (result.error || result.status !== 0) {
     const reason = result.error?.message ?? (result.stderr || `exit status ${result.status}`).trim();
     return { ready: false, reason: `Kokoro Python environment is not ready: ${reason}` };
@@ -85,9 +84,30 @@ export function kokoroReadiness(): { ready: boolean; reason: string } {
       if (!parsed.packages[name]) return { ready: false, reason: `Kokoro Python dependency ${name} is missing` };
     }
     runtimeMetadata = parsed;
-    return { ready: true, reason: "Kokoro model, voice pack, bridge, and Python runtime are ready" };
+    return { ready: true, reason: "Kokoro assets, Python imports, and phonemization are ready" };
   } catch (error) {
     return { ready: false, reason: `Kokoro Python environment returned invalid metadata: ${message(error)}` };
+  }
+}
+
+/** Doctor/setup check: load the model and synthesize a short, disposable PCM sample. */
+export function kokoroSmokeCheck(): { ready: boolean; reason: string } {
+  const readiness = kokoroReadiness();
+  if (!readiness.ready) return readiness;
+  const result = spawnSync(PYTHON, [BRIDGE, "--smoke"], {
+    encoding: "utf8", timeout: 120_000, maxBuffer: 128 * 1024, windowsHide: true,
+  });
+  if (result.error || result.status !== 0) {
+    return { ready: false, reason: `Kokoro synthesis smoke test failed: ${result.error?.message ?? (result.stderr || `exit status ${result.status}`).trim()}` };
+  }
+  try {
+    const output: unknown = JSON.parse(result.stdout);
+    if (!isRecord(output) || output.sampleRate !== SAMPLE_RATE || !Number.isSafeInteger(output.samples) || (output.samples as number) < 1 || (output.samples as number) > SAMPLE_RATE * 15) {
+      throw new Error("invalid sample metadata");
+    }
+    return { ready: true, reason: `Kokoro synthesized ${output.samples} samples at ${SAMPLE_RATE} Hz` };
+  } catch (error) {
+    return { ready: false, reason: `Kokoro synthesis smoke test returned invalid output: ${message(error)}` };
   }
 }
 
@@ -200,7 +220,7 @@ async function synthesizeAtSpeed(
 }
 
 function runBridge(input: string): string {
-  const result = spawnSync(PYTHON, [BRIDGE], { encoding: "utf8", input, timeout: 600_000, maxBuffer: 8 * 1024 * 1024 });
+  const result = spawnSync(PYTHON, [BRIDGE], { encoding: "utf8", input, timeout: 600_000, maxBuffer: 8 * 1024 * 1024, windowsHide: true });
   if (result.error) throw new Error(`Kokoro bridge could not run: ${result.error.message}`);
   if (result.status !== 0) {
     const detail = [result.stderr, result.stdout].filter(Boolean).join("\n").trim();
@@ -210,12 +230,9 @@ function runBridge(input: string): string {
 }
 
 function readRuntimeMetadata(): RuntimeMetadata {
-  const result = spawnSync(PYTHON, ["-c", METADATA_QUERY], { encoding: "utf8", timeout: 10_000, maxBuffer: 128 * 1024 });
-  if (result.error || result.status !== 0) throw new Error(`Kokoro Python environment is not ready: ${result.error?.message ?? result.stderr}`);
-  const parsed = JSON.parse(result.stdout) as RuntimeMetadata;
-  if (parsed.packages?.["kokoro-onnx"] !== RUNTIME_VERSION) throw new Error("Kokoro runtime changed after readiness check");
-  runtimeMetadata = parsed;
-  return parsed;
+  const readiness = kokoroReadiness();
+  if (!readiness.ready || !runtimeMetadata) throw new Error(`Kokoro Python environment is not ready: ${readiness.reason}`);
+  return runtimeMetadata;
 }
 
 function validateChunks(chunks: NarrationChunk[]): void {

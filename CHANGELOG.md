@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — 2026-10-17
+
+- Native Windows x64 builds with Kokoro narration, prepared manifests, and template-directed Markdown/plain text.
+- One-command Windows setup with local tooling, isolated Python, pinned model assets, render browser, and an automatically compiled Windows launcher. Reuses Remotion's bundled FFmpeg/ffprobe.
+- Platform-aware doctor/backend/tool discovery, Windows owned-process cleanup, private directory controls and file-boundary checks.
+- Windows/Linux CI and focused backend, launcher, path, and cleanup regressions. Native Windows local AI direction remains deferred.
+- Version-pinned Windows installation prompts for Codex, Claude Code, and other local coding agents, plus updated README/homepage quickstarts.
+
 ## 0.2.0 — 2026-10-15
 
 First open source release.

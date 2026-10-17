@@ -1,0 +1,24 @@
+Install Explain-to-Me v1.1.1 on this Windows x64 PC and make its first demo video.
+Repository: https://github.com/TommyAllsup/explain-to-me
+
+1. Use a new checkout of tag v1.1.1 named explain-to-me-v1.1.1. Leave existing
+   projects unchanged. Read README.md, docs/windows.md, and
+   docs/agent-integration.md at that tag before running setup.
+2. Check Node.js 24+ with npm and Git. Resolve missing prerequisites through
+   this machine's approved install process, or report the exact action needed.
+3. From the checkout, run node scripts/setup.mjs. It prepares the pinned package
+   manager, local Python/Kokoro, render browser, and Windows launcher, and uses
+   bundled FFmpeg. Do not install global Python/pnpm/FFmpeg or download a local
+   AI director. Verify node scripts/explain.mjs --version reports 1.1.1.
+4. Create a new private workspace outside the checkout. Copy the bundled
+   fixtures/golden-manifests/whisper-vs-tts.json there as story.json. Follow
+   docs/windows.md to run scripts/agent-explainer.py with the setup-created
+   .venv-kokoro/Scripts/python.exe: doctor, then a prepared-manifest build with
+   --tts kokoro --voice af_heart --duration 60s. For later document builds, use
+   --director template. Keep private inputs, jobs, and caches in that workspace.
+5. Use the harness's normal scoped permission approvals for downloads and local
+   Windows processes if needed. Do not disable its safeguards globally. Report
+   the tag/commit, version, doctor result, job JSON, video/caption/report paths,
+   and any remaining prerequisite. Do not upload private inputs or outputs.
+
+Automated QC is separate from my approval of the script and finished movie.

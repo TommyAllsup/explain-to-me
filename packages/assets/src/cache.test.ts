@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import { ContentAddressedCache } from "./cache.js";
@@ -57,6 +57,39 @@ test("cache entries copied under a different request key are rejected", async ()
     await writeFile(join(root, `${second}.cache`), await readFile(join(root, `${first}.cache`)));
     assert.equal(await cache.read(second), null);
     assert.equal(cache.snapshotStats().corruptions, 1);
+  });
+});
+
+test("directory entries are corruption misses", async () => {
+  await withCacheRoot(async (root) => {
+    const cache = new ContentAddressedCache(root);
+    const key = cache.key("unsafe", "directory");
+    await mkdir(join(root, `${key}.cache`));
+    assert.equal(await cache.read(key), null);
+    assert.equal(cache.snapshotStats().corruptions, 1);
+  });
+});
+
+test("linked entries are corruption misses and replacements preserve the target", async (t) => {
+  await withCacheRoot(async (root) => {
+    const cache = new ContentAddressedCache(root);
+    const key = cache.key("unsafe", "symlink");
+    const target = join(root, "keep.txt");
+    await writeFile(target, "preserve target");
+    try {
+      await symlink(target, join(root, `${key}.cache`), "file");
+    } catch (error) {
+      if (process.platform === "win32" && error && typeof error === "object" && "code" in error && error.code === "EPERM") {
+        t.skip("File symlinks require Developer Mode or symlink privilege; junction root coverage remains enabled");
+        return;
+      }
+      throw error;
+    }
+    assert.equal(await cache.read(key), null);
+    assert.equal(cache.snapshotStats().corruptions, 1);
+    await cache.write(key, Buffer.from("replacement"));
+    assert.deepEqual(await cache.read(key), Buffer.from("replacement"));
+    assert.equal(await readFile(target, "utf8"), "preserve target");
   });
 });
 

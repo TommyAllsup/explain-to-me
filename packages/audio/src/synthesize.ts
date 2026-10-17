@@ -9,7 +9,7 @@ import type { ProductionManifest } from "../../contracts/src/production-manifest
 import { normalizeTokens } from "../../contracts/src/production-manifest.js";
 import { kokoroReadiness, synthesizeKokoro } from "./kokoro.js";
 import { narrationDurationError } from "./duration-error.js";
-export { kokoroReadiness } from "./kokoro.js";
+export { kokoroReadiness, kokoroSmokeCheck } from "./kokoro.js";
 
 export const PCM_SAMPLE_RATE = 24_000;
 export const PCM_CHANNELS = 1;
@@ -74,6 +74,24 @@ const SAY_EXECUTABLE = "/usr/bin/say";
 const narrationItems = (manifest: ProductionManifest) => manifest.scenes.flatMap((scene) => scene.narration);
 const spokenText = (chunk: ReturnType<typeof narrationItems>[number]) => chunk.spokenText ?? chunk.text;
 
+export function selectNarrationBackend(
+  requested: "auto" | "apple" | "kokoro" = "auto",
+  options: { platform?: NodeJS.Platform; kokoro?: { ready: boolean; reason: string } } = {},
+): { backend: "apple" | "kokoro"; warnings: string[] } {
+  const platform = options.platform ?? process.platform;
+  if (requested === "apple") {
+    if (platform !== "darwin") throw new Error("Apple narration requires macOS. Use --tts kokoro or --tts auto on Windows.");
+    return { backend: "apple", warnings: [] };
+  }
+  const readiness = options.kokoro ?? kokoroReadiness();
+  if (readiness.ready) return { backend: "kokoro", warnings: [] };
+  if (requested === "auto" && platform === "darwin") {
+    return { backend: "apple", warnings: [`Kokoro is unavailable; using Apple say. ${readiness.reason}`] };
+  }
+  const setupCommand = platform === "win32" ? "node scripts/setup.mjs" : "python3 scripts/setup-kokoro.py";
+  throw new Error(`Kokoro backend is unavailable: ${readiness.reason}. Run ${setupCommand} during setup, then retry.`);
+}
+
 export async function synthesizeNarration(options: SynthesisOptions): Promise<NarrationSynthesis> {
   const chunks = narrationItems(options.manifest);
   const wordCount = chunks.reduce((total, chunk) => total + normalizeTokens(spokenText(chunk)).length, 0);
@@ -82,18 +100,7 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
     throw new Error("Target duration must be a positive number of milliseconds");
   }
 
-  const warnings: string[] = [];
-  let backend = options.backend ?? "apple";
-  if (backend === "auto" || backend === "kokoro") {
-    const readiness = kokoroReadiness();
-    if (!readiness.ready) {
-      if (backend === "kokoro") throw new Error(`Kokoro backend is unavailable: ${readiness.reason}`);
-      backend = "apple";
-      warnings.push(`Kokoro is unavailable; using Apple say. ${readiness.reason}`);
-    } else {
-      backend = "kokoro";
-    }
-  }
+  const { backend, warnings } = selectNarrationBackend(options.backend ?? (process.platform === "darwin" ? "apple" : "auto"));
 
   let requestedVoice = options.voice;
   if (backend === "apple" && requestedVoice !== "auto" && /^(af|am|bf|bm)_/u.test(requestedVoice) && options.backend === "auto") {
@@ -172,7 +179,7 @@ export function extractPcmDataFromWav(wave: Buffer): Buffer {
 }
 
 export function runProcess(command: string, args: string[], timeoutMs = 120_000, input?: string): string {
-  const result = spawnSync(command, args, { encoding: "utf8", timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024, input });
+  const result = spawnSync(command, args, { encoding: "utf8", timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024, input, windowsHide: true });
   if (result.error) throw new Error(`${command} could not run: ${result.error.message}`);
   if (result.status !== 0) {
     const diagnostic = [result.stderr, result.stdout].filter(Boolean).join("\n").trim();

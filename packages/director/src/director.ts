@@ -187,6 +187,9 @@ export function localDirectorReadiness(): LocalDirectorReadiness {
 }
 
 function checkReadiness(workDir: string): LocalDirectorReadiness {
+  if (process.platform === "win32") {
+    return { ready: false, reason: "Local AI direction is not available on Windows yet; use --director template" };
+  }
   try {
     if (!statSync(LOCAL_SERVER_PATH).isFile()) return { ready: false, reason: "llama-server is not a regular file at /opt/homebrew/bin/llama-server" };
     accessSync(LOCAL_SERVER_PATH, fsConstants.X_OK);
