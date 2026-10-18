@@ -1,6 +1,8 @@
 # Changelog
 
-## 1.1.1 — 2026-10-17
+## 0.2.1 — 2026-10-17
+
+Release number corrected to 0.2.1 on 2026-10-18. The Windows feature scope is unchanged.
 
 - Native Windows x64 builds with Kokoro narration, prepared manifests, and template-directed Markdown/plain text.
 - One-command Windows setup with local tooling, isolated Python, pinned model assets, render browser, and an automatically compiled Windows launcher. Reuses Remotion's bundled FFmpeg/ffprobe.

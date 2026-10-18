@@ -6,7 +6,7 @@ Thanks for helping make explanations clearer. This is a local-first CLI project 
 
 For a substantial feature, open an issue to agree on scope. Small fixes, documentation improvements and synthetic examples are welcome. Keep changes focused; do not mix feature work with unrelated refactoring.
 
-Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. The `v1.1.1` Windows release uses `node scripts/setup.mjs` for Kokoro/template builds; macOS retains Apple speech and optional local models. [Windows setup](docs/windows.md) prepares the local toolchain, and [agent setup](docs/quick-install.md) includes Codex and Claude Code examples. Unit tests and typechecking are configured in Windows and Linux CI.
+Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. The `v0.2.1` Windows release uses `node scripts/setup.mjs` for Kokoro/template builds; macOS retains Apple speech and optional local models. [Windows setup](docs/windows.md) prepares the local toolchain, and [agent setup](docs/quick-install.md) includes Codex and Claude Code examples. Unit tests and typechecking are configured in Windows and Linux CI.
 
 ## Check a change
 

@@ -1,10 +1,10 @@
 # Agent integration
 
-## Windows v1.1.1
+## Windows v0.2.1
 
-Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-111-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.
+Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-021-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.
 
-On Windows 11 x64, clone `v1.1.1` and run `node scripts/setup.mjs` once, then use the setup-created `.venv-kokoro/Scripts/python.exe` with `scripts/agent-explainer.py`. No global Python, pnpm, uv, or FFmpeg installation is needed. Select `--tts kokoro` and `--director template` for document inputs. Prepared manifests bypass direction. Native Windows local AI direction is deferred.
+On Windows 11 x64, clone `v0.2.1` and run `node scripts/setup.mjs` once, then use the setup-created `.venv-kokoro/Scripts/python.exe` with `scripts/agent-explainer.py`. No global Python, pnpm, uv, or FFmpeg installation is needed. Select `--tts kokoro` and `--director template` for document inputs. Prepared manifests bypass direction. Native Windows local AI direction is deferred.
 
 The launcher uses Windows Job Objects for owned cleanup and sets the job's `TEMP`, `TMP`, and `TMPDIR`. See [Windows setup](windows.md) for exact commands and supported local paths. Scoped harness approval may be needed for setup downloads, private workspace access, Chromium/media execution, or Windows directory protection. Report the blocked operation when policy prevents it; do not change unrelated harness settings.
 
@@ -20,4 +20,4 @@ Job files live under `<workspace>/.explain-to-me/jobs/<unique-id>/`: `job.json`,
 
 `state: automated-ready` is not human approval. Read `humanReview` and `egress` separately. Failures/cancellations return nonzero and retain diagnostics; do not share logs without redaction. A source/input change during a job refuses readiness. Do not edit the software tree while a build is running.
 
-Per-project agent skills should point to this launcher and document explicit input/output bindings. Music, custom cartoons, and per-sentence rate settings remain separate production workflows; v1.1.1 adds no flags for them. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.
+Per-project agent skills should point to this launcher and document explicit input/output bindings. Music, custom cartoons, and per-sentence rate settings remain separate production workflows; v0.2.1 adds no flags for them. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.

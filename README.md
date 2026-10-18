@@ -4,13 +4,13 @@
 
 Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrated, captioned explainer videos. A local model can plan the story; deterministic scenes do the drawing; measured speech keeps the whole crew on time.
 
-**v1.1.1 · Windows x64 + macOS · TypeScript CLI · MIT project code**
+**v0.2.1 · Windows x64 + macOS · TypeScript CLI · MIT project code**
 
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
 **[▶ Watch the getting-started movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
 
-*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 1.1.1 produces the technical-whiteboard style shown below; custom cartoons and soundtrack mixing are separate production work. The movie's original Mac setup predates the Windows instructions below.*
+*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 0.2.1 produces the technical-whiteboard style shown below; custom cartoons and soundtrack mixing are separate production work. The movie's original Mac setup predates the Windows instructions below.*
 
 *Movie music: “Business As Usual” by tommyallsup.*
 
@@ -29,15 +29,15 @@ Your document → story manifest → local narration → measured timeline → v
 
 ![Actual technical-whiteboard output from the bundled caching example](docs/images/preview.png)
 
-*Real output, not a mockup. Version 1.1.1 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
+*Real output, not a mockup. Version 0.2.1 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
 
 ## Windows: one setup command
 
-Version **1.1.1 supports Windows 11 x64 with Kokoro narration and template direction**. Install **Node.js 24+ with npm** and **Git**, then run these commands in PowerShell:
+Version **0.2.1 supports Windows 11 x64 with Kokoro narration and template direction**. Install **Node.js 24+ with npm** and **Git**, then run these commands in PowerShell:
 
 ```powershell
-git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
-cd explain-to-me-v1.1.1
+git clone --branch v0.2.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.1
+cd explain-to-me-v0.2.1
 node scripts/setup.mjs
 node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --output out/first-movie
 Start-Process out/first-movie/video.mp4
@@ -62,8 +62,8 @@ The first build uses a prepared manifest and Apple's installed voice. **No LLM o
 ### 1. Bring in the crew
 
 ```bash
-git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
-cd explain-to-me-v1.1.1
+git clone --branch v0.2.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.1
+cd explain-to-me-v0.2.1
 
 # Install the pinned package manager and project dependencies.
 npm exec --cache .cache/npm --yes --package=pnpm@10.18.3 -- pnpm install --frozen-lockfile
@@ -101,7 +101,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --duration 60s --output out/document-template
 ```
 
-Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 1.1.1.
+Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 0.2.1.
 
 ### “Let a local model direct it.”
 
@@ -139,21 +139,21 @@ Run `pnpm explain-to-me --help` or `--version` through the cached launcher above
 
 ## Let your agent handle setup
 
-Use your existing local coding agent to install v1.1.1 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
+Use your existing local coding agent to install v0.2.1 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
 
 | Harness | Example |
 |---|---|
-| **Codex app or CLI** | Open a local Windows folder in Codex, or start `codex` there. Paste: “Install Explain-to-Me v1.1.1 on this Windows PC using the Windows installer prompt below, then make the bundled demo.” |
-| **Claude Code** | Open a local project in Claude Code, or start `claude` there. Paste: “Set up Explain-to-Me v1.1.1 on this Windows PC. Follow the Windows installer prompt below and return the demo video path.” |
+| **Codex app or CLI** | Open a local Windows folder in Codex, or start `codex` there. Paste: “Install Explain-to-Me v0.2.1 on this Windows PC using the Windows installer prompt below, then make the bundled demo.” |
+| **Claude Code** | Open a local project in Claude Code, or start `claude` there. Paste: “Set up Explain-to-Me v0.2.1 on this Windows PC. Follow the Windows installer prompt below and return the demo video path.” |
 | **Another local AI harness** | Give it the same prompt with local terminal/file access. A remote chat without access to this PC cannot install local tools. |
 
 Copy the full prompt below, or open the [plain-text installer prompt](docs/install-windows-agent.txt). Your harness may request scoped permission for setup downloads, workspace creation, or native Windows media processes. Follow its normal approval flow. [Codex Windows guidance](https://learn.chatgpt.com/docs/windows/windows-sandbox) · [Claude Code setup](https://code.claude.com/docs/en/setup).
 
 ```text
-Install Explain-to-Me v1.1.1 on this Windows x64 PC and make its first demo video.
+Install Explain-to-Me v0.2.1 on this Windows x64 PC and make its first demo video.
 Repository: https://github.com/TommyAllsup/explain-to-me
 
-1. Use a new checkout of tag v1.1.1 named explain-to-me-v1.1.1. Leave existing
+1. Use a new checkout of tag v0.2.1 named explain-to-me-v0.2.1. Leave existing
    projects unchanged. Read README.md, docs/windows.md, and
    docs/agent-integration.md at that tag before running setup.
 2. Check Node.js 24+ with npm and Git. Resolve missing prerequisites through
@@ -161,7 +161,7 @@ Repository: https://github.com/TommyAllsup/explain-to-me
 3. From the checkout, run node scripts/setup.mjs. It prepares the pinned package
    manager, local Python/Kokoro, render browser, and Windows launcher, and uses
    bundled FFmpeg. Do not install global Python/pnpm/FFmpeg or download a local
-   AI director. Verify node scripts/explain.mjs --version reports 1.1.1.
+   AI director. Verify node scripts/explain.mjs --version reports 0.2.1.
 4. Create a new private workspace outside the checkout. Copy the bundled
    fixtures/golden-manifests/whisper-vs-tts.json there as story.json. Follow
    docs/windows.md to run scripts/agent-explainer.py with the setup-created
@@ -202,13 +202,13 @@ The macOS local model director uses a private Unix socket. Windows uses template
 
 Model output is constrained manifest data. Approved image paths are bounded, copied, and hash-checked. These controls aren't a sandbox guarantee. Automated checks and source mappings help inspection; they don't establish factual correctness, pleasant narration, or human approval. Watch and listen before sharing.
 
-Custom cartoons, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 1.1.1 features. The [roadmap](ROADMAP.md) tracks what's next.
+Custom cartoons, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 0.2.1 features. The [roadmap](ROADMAP.md) tracks what's next.
 
 ## Help make the explanations better
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports, small fixes, and synthetic examples are welcome. Windows and Linux CI cover typechecking and unit tests; real narration/media builds need their own checks.
 
-- [Changelog](CHANGELOG.md) · [1.1.1 release notes](docs/releases/1.1.1.md)
+- [Changelog](CHANGELOG.md) · [0.2.1 release notes](docs/releases/0.2.1.md)
 - [Windows verification evidence](docs/benchmarks/windows-support.md) · [Acceptance targets](docs/benchmarks/acceptance.md)
 - [Agent integration](docs/agent-integration.md) · [System boundaries](docs/architecture/0001-system-boundaries.md) · [Renderer decision](docs/architecture/0002-renderer-selection.md)
 

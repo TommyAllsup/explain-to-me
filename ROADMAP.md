@@ -1,6 +1,6 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v1.1.1 is the authorized Windows release, following the first public v0.2.0 release. The broader product milestones below remain proposed, not blanket implementation authorization.
+**Status:** v0.2.1 is the Windows patch release following the published v0.2.0 release. The broader product milestones below remain proposed, not blanket implementation authorization.
 **Baseline:** v0.1.0, tagged at `1d62754`.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
@@ -8,17 +8,17 @@
 
 > This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan only for the next approved slice. Historical implementation plans and benchmark records remain evidence, not an instruction to execute every deferred idea.
 
-## Current release: v1.1.1 — Windows installation and local agent workflow
+## Current release: v0.2.1 — Windows installation and local agent workflow
 
-Windows 11 x64 now has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/1.1.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
+Windows 11 x64 now has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
 
-Native Windows local AI direction, ARM64, whole-process egress proof, general music/cartoon controls, and the broader review/project workflow remain deferred. The v1.1.1 package number does not mean the historical product milestones below have all shipped. Their original numbers describe the earlier planning sequence; scope future release tags separately.
+Native Windows local AI direction, ARM64, whole-process egress proof, general music/cartoon controls, and the broader review/project workflow remain deferred. The v0.2.1 package number does not mean the historical product milestones below have all shipped. Their original numbers describe the earlier planning sequence; scope future release tags separately.
 
 ## What 1.0 means
 
 A user on the documented supported platform can install the tool, provide local material, review and revise a story, choose narration and visuals, add optional music, and export a usable captioned video through documented commands. Revisions preserve approved work and rebuild only affected stages. The workflow does not require hand-editing private scripts or an agent repairing every build.
 
-This broader milestone means a dependable, bounded product—not every possible input, voice, effect or deployment platform. The v1.1.1 source supports macOS and Windows 11 x64; Windows uses Kokoro and template direction, with local AI direction deferred. See [Windows validation](docs/benchmarks/windows-support.md). Other platforms require separate validation. Repository visibility and software licensing are explicit owner decisions, not automatic consequences of completing a milestone.
+This broader milestone means a dependable, bounded product—not every possible input, voice, effect or deployment platform. The v0.2.1 source supports macOS and Windows 11 x64; Windows uses Kokoro and template direction, with local AI direction deferred. See [Windows validation](docs/benchmarks/windows-support.md). Other platforms require separate validation. Repository visibility and software licensing are explicit owner decisions, not automatic consequences of completing a milestone.
 
 ## Baseline: 0.1 — Released
 
@@ -181,8 +181,8 @@ Tag 1.0 when these outcomes are demonstrated, not merely when the version sequen
 - Broad fault/egress/acceptance runs belong at the relevant milestone gates, not every commit.
 - Use existing review evidence when code is unchanged. Independent reviews are for substantive safety/architecture changes, not repeated ceremonial passes.
 - Keep private production material, model weights and credentials out of source releases. Include only deliberately selected, documented demonstration media.
-- Preserve the historical v0.2.0 release and the authorized v1.1.1 Windows scope; future release scope still requires an owner decision.
+- Preserve the historical v0.2.0 release and the authorized v0.2.1 Windows scope; future release scope still requires an owner decision.
 
 ## Next recommended slice
 
-After v1.1.1, prioritize the narration-pacing and imported-music outcomes in the historical 0.3 milestone, with a separately agreed release number and scope. That converts the strongest demonstrated production improvements into ordinary product behavior before expanding formats or building a UI.
+After v0.2.1, prioritize the narration-pacing and imported-music outcomes in the historical 0.3 milestone, with a separately agreed release number and scope. That converts the strongest demonstrated production improvements into ordinary product behavior before expanding formats or building a UI.

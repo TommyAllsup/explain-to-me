@@ -1,18 +1,18 @@
-# Explain-to-Me 1.1.1 on Windows
+# Explain-to-Me 0.2.1 on Windows
 
-Version **1.1.1** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
+Version **0.2.1** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
 
 ## Let your local agent install it
 
-Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-111-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
+Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-021-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
 
 ## Install once
 
 Install [Node.js 24 LTS or newer with npm](https://nodejs.org/en/download) and [Git for Windows](https://git-scm.com/downloads/win). Open a new PowerShell terminal after installing Node, then:
 
 ```powershell
-git clone --branch v1.1.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v1.1.1
-cd explain-to-me-v1.1.1
+git clone --branch v0.2.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.1
+cd explain-to-me-v0.2.1
 git rev-parse HEAD
 node scripts/setup.mjs
 ```
@@ -85,4 +85,4 @@ Setup needs download access and write access to the checkout. Agent jobs also ne
 
 The recorded Windows validation encountered sandbox denials for Chromium/media execution and directory access-control changes. If that happens, inspect the exact error and request approval for the specific setup or build command and required directories, according to the harness and organization policy. Running an approved command as the ordinary Windows user is separate from administrator elevation. If policy prevents the needed operation, report it and let the user run the documented command in PowerShell. Keep unrelated permissions and protections in place.
 
-The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [1.1.1 release notes](releases/1.1.1.md) describe the shipped scope and remaining limits.
+The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.2.1 release notes](releases/0.2.1.md) describe the shipped scope and remaining limits.
