@@ -44,6 +44,8 @@ export async function renderCharacterTest(options: {
   inputProps: Record<string, unknown>;
   durationInFrames: number;
   fps?: number;
+  entryPoint?: string;
+  compositionId?: string;
 }): Promise<CharacterRenderResult> {
   const { inputProps, durationInFrames } = options;
   const fps = options.fps ?? 24;
@@ -80,7 +82,7 @@ export async function renderCharacterTest(options: {
     await ensurePrivateDirectory(temporaryRoot);
     const bundleDirectory = join(temporaryRoot, "bundle");
     const generatedBundle = await bundle({
-      entryPoint: ENTRY_POINT,
+      entryPoint: options.entryPoint ?? ENTRY_POINT,
       outDir: bundleDirectory,
       publicDir: null,
       webpackOverride: (config) => ({
@@ -114,7 +116,7 @@ export async function renderCharacterTest(options: {
     } as const;
     let renderError: unknown;
     try {
-      const composition = await selectComposition({ ...sharedOptions, id: "ClaudiaCharacterTest" });
+      const composition = await selectComposition({ ...sharedOptions, id: options.compositionId ?? "ClaudiaCharacterTest" });
       if (composition.width !== 1280 || composition.height !== 720 || composition.fps !== fps || composition.durationInFrames !== durationInFrames) {
         throw new Error("Character composition dimensions or timing do not match the prepared experiment.");
       }
