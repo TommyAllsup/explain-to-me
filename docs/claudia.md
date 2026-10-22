@@ -22,6 +22,20 @@ node scripts/explain.mjs build --manifest out/claudia-movie/manifest.json --tts 
 
 Keep `manifest.json` and its adjacent `assets/` together when moving an output. Existing output directories are refused; source manifests and packs are not modified.
 
+## Voice casting experiment
+
+Three local speaking-voice auditions are configured in [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json): A (`af_bella`), B (`af_heart`), and C (`af_nicole`). Each uses the same text at speed 1.0, with natural duration and matched loudness. No voice is selected automatically. The short stylized animation test is pending the user's choice.
+
+The creator describes a shared singer across the first three films; the agent-made CLODYSSEY/BLISS takes reused a Suno Voice derived from ESCAPE VELOCITY. That voice lives in its creator's account. Later films deliberately vary the voice. These local Kokoro auditions are casting alternatives, not that original Voice or measured matches to it. [Creator's voice notes](https://claudia.gallery/wiki/song/), checked 2026-10-22.
+
+To regenerate with the setup-created Python and an existing FFmpeg executable, select a fresh output directory whose parent already exists:
+
+```powershell
+.venv-kokoro/Scripts/python.exe scripts/claudia-voice-auditions.py --output out/claudia-voice-auditions --ffmpeg node_modules/.pnpm/@remotion+compositor-win32-x64-msvc@4.0.535/node_modules/@remotion/compositor-win32-x64-msvc/ffmpeg.exe
+```
+
+On macOS use `.venv-kokoro/bin/python` and the absolute path to installed FFmpeg. The helper reuses the project's local synthesis bridge. It produces playable WAVs, raw WAVs, script/config copies, and `auditions.json` with hashes, duration, and measured loudness. It performs no downloads, voice cloning, pitch changes, or duration correction. The first run produced A 14.73 s, B 14.48 s, C 22.28 s; all three decoded, retained their sample counts, and measured within 0.5 LU of the -19 LUFS target. Audio stays under ignored `out/`.
+
 ## Make your own pack
 
 Start from [the example pack](../fixtures/presenters/claudia/pack.json). A pack contains `version: "1"` and one `asset`:

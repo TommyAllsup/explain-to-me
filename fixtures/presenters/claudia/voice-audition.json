@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "purpose": "Speaking-voice casting candidates, not the original Suno Claudia Voice",
+  "text": "I'm Claudia. Let's make this simpler. A cache remembers work we've already done. The interesting question is when to forget. Keep it too long, and yesterday's answer looks like today's truth. So, what should we keep, and what should we refresh?",
+  "speed": 1.0,
+  "candidates": [
+    { "label": "A", "voice": "af_bella" },
+    { "label": "B", "voice": "af_heart" },
+    { "label": "C", "voice": "af_nicole" }
+  ],
+  "reference": "https://claudia.gallery/wiki/song/#her-voice"
+}
