@@ -44,6 +44,8 @@ import { prepareNarration } from "../../../packages/audio/src/prepare-narration.
 import { ContentAddressedCache } from "../../../packages/assets/src/cache.js";
 import { configureMediaTools, findExecutable } from "../../../packages/runtime/src/tools.js";
 import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+import { projectCommand, assertProjectUnchanged, type ProjectExecution } from "./project-workflow.js";
+import { mixSoundtrack } from "../../../packages/audio/src/soundtrack.js";
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DEFAULT_VOICE = "auto";
@@ -54,7 +56,7 @@ const DEFAULT_FPS = 24;
 const DURATION_PATTERN = /^(\d+(?:\.\d+)?)(ms|s|m)$/u;
 const RENDER_ENTRY = resolve(PROJECT_ROOT, "apps/renderer-remotion/src/render.ts");
 
-interface CliOptions {
+export interface CliOptions {
   manifestPath?: string;
   inputPath?: string;
   directorMode: "auto" | "template" | "local";
@@ -67,6 +69,7 @@ interface CliOptions {
   voice: string;
   backend: "apple" | "kokoro" | "auto";
   cacheDir: string;
+  project?: ProjectExecution;
 }
 
 type RenderVideo = (request: RenderRequest) => Promise<RendererResult>;
@@ -92,6 +95,10 @@ async function main(argv: string[]): Promise<void> {
   }
   if (command === "doctor") {
     await doctor(rest);
+    return;
+  }
+  if (command === "plan" || command === "preview" || (command === "build" && rest.includes("--project"))) {
+    await projectCommand(command, rest, build);
     return;
   }
   if (command !== "build") {
@@ -226,7 +233,9 @@ async function build(options: CliOptions): Promise<void> {
     cacheStats: { hits: number; misses: number; writes: number; corruptions: number };
     sourceReferences: Record<string, string[]>;
   } = { method: "prepared-manifest", warnings: [], provenance: {}, cacheStats: { hits: 0, misses: 0, writes: 0, corruptions: 0 }, sourceReferences: {} };
-  if (options.inputPath) {
+  if (options.project) {
+    rawManifest = options.project.manifest;
+  } else if (options.inputPath) {
     document = await timed("ingestion", () => loadDocument(inputFile, { projectRoot: process.cwd() }));
     direction = await timed("direction", async () => {
       const directed = await directDocument(document!, {
@@ -249,10 +258,12 @@ async function build(options: CliOptions): Promise<void> {
   const parsed = productionManifestSchema.safeParse(rawManifest);
   if (!parsed.success) throw new Error(`Manifest validation failed:\n${formatManifestIssues(parsed.error).map((issue) => `  - ${issue}`).join("\n")}`);
   const initialManifest = (options.targetDurationMs === undefined ? parsed.data : { ...parsed.data, targetDurationMs: options.targetDurationMs }) as ProductionManifest;
-  const pronunciationConfig = await loadPronunciations(options.pronunciationPath);
-  const prepared = await timed("narrationPreparation", async () => prepareNarration(initialManifest, pronunciationConfig.map));
+  const pronunciationConfig = options.project
+    ? { map: options.project.project.config.narration.pronunciations, provenance: { source: options.project.project.path, sha256: options.project.project.sha256 } }
+    : await loadPronunciations(options.pronunciationPath);
+  const prepared = await timed("narrationPreparation", async () => prepareNarration(initialManifest, pronunciationConfig.map, { preserveReviewedSpeech: Boolean(options.project) }));
   let manifest: ProductionManifest = productionManifestSchema.parse(prepared.manifest) as ProductionManifest;
-  const resolvedAssets = await timed("assetResolution", () => resolveManifestAssets(manifest, inputFile, { projectRoot: process.cwd() }));
+  const resolvedAssets = await timed("assetResolution", () => resolveManifestAssets(manifest, inputFile, { projectRoot: options.project?.planPath ?? process.cwd() }));
   const buildId = randomUUID();
   const finalOutput = await chooseOutputPath(options.outputPath, manifest.title, buildId);
   if (await pathExists(finalOutput)) throw new Error(`Output target already exists; choose a new path: ${finalOutput}`);
@@ -265,7 +276,7 @@ async function build(options: CliOptions): Promise<void> {
   try {
     executionAssets = await timed("assetCopy", () => materializeAssets(resolvedAssets, stagingPath));
     if (manifest.assets?.length) {
-      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/${asset.id}.${assetExtension(asset.mimeType)}` })) };
+      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/asset-${asset.id}.${assetExtension(asset.mimeType)}` })) };
     }
     const synthesis = await timed("narrationSynthesis", () => synthesizeNarration({
       manifest,
@@ -274,6 +285,12 @@ async function build(options: CliOptions): Promise<void> {
       cacheDir: options.cacheDir,
       targetDurationMs: manifest.targetDurationMs,
       workDir: tempRoot,
+      ...(options.project ? {
+        pacing: options.project.project.config.narration.pacing,
+        durationPolicy: options.project.project.config.output.durationPolicy,
+        passageOrigins: prepared.originByChunkId,
+        ...(options.project.project.config.narration.delivery ? { delivery: options.project.project.config.narration.delivery } : {}),
+      } : {}),
     }));
     await timed("wavEncoding", () => writeWavFromPcm(synthesis.pcmPath, join(stagingPath, "audio.wav")));
 
@@ -336,7 +353,10 @@ async function build(options: CliOptions): Promise<void> {
       throw new Error(`Renderer reported external network attempts: ${rendered.network.externalAttempts.join(", ")}`);
     }
 
-    await timed("audioVideoMux", () => muxAudioIntoVideo(rendered.outputPath, join(stagingPath, "audio.wav"), join(stagingPath, "video.mp4")));
+    const soundtrack = options.project?.music ? await timed("soundtrackMix", () => mixSoundtrack({
+      music: options.project!.music!, narrationPath: join(stagingPath, "audio.wav"), outputDir: stagingPath, totalSamples: synthesis.totalSamples,
+    })) : undefined;
+    await timed("audioVideoMux", () => muxAudioIntoVideo(rendered.outputPath, soundtrack?.mixedPath ?? join(stagingPath, "audio.wav"), join(stagingPath, "video.mp4")));
     const boundarySamples = await timed("boundaryFrameSamples", () => extractSceneBoundarySamples(
       join(stagingPath, "video.mp4"), timeline.timeline, join(stagingPath, "samples"),
     ));
@@ -345,7 +365,7 @@ async function build(options: CliOptions): Promise<void> {
       pcmPath: synthesis.pcmPath,
       timeline: timeline.timeline,
       captions: timeline.captions,
-      targetDurationMs: manifest.targetDurationMs,
+      targetDurationMs: options.project?.project.config.output.durationPolicy === "paced" ? synthesis.durationMs : manifest.targetDurationMs,
       rendererFrameCount: rendered.durationInFrames,
       boundarySamples,
     }));
@@ -363,6 +383,16 @@ async function build(options: CliOptions): Promise<void> {
     const report = {
       reportVersion: 1,
       buildId,
+      ...(options.project ? { project: {
+        source: options.project.project.path, sha256: options.project.project.sha256,
+        config: options.project.project.config, plan: options.project.planPath, planSha256: options.project.planSha256,
+        planning: options.project.provenance, scriptReview: "caller-selected editable plan; human approval not asserted",
+        durationPolicy: options.project.project.config.output.durationPolicy,
+        desiredDurationMs: manifest.targetDurationMs,
+        durationDifferenceMs: synthesis.durationMs - manifest.targetDurationMs,
+        pacing: options.project.project.config.narration.pacing, originByChunkId: prepared.originByChunkId,
+      } } : {}),
+      ...(soundtrack ? { soundtrack: soundtrack.report } : {}),
       input: {
         kind: document ? document.sourcePath.endsWith(".txt") ? "plain-text" : "markdown" : "prepared-manifest",
         sourcePath: document?.sourcePath ?? inputFile,
@@ -378,7 +408,7 @@ async function build(options: CliOptions): Promise<void> {
       profile: manifest.profile,
       targetDurationMs: manifest.targetDurationMs,
       manifest: { title: manifest.title, sha256: manifestHash },
-      artifacts: ["video.mp4", "audio.wav", "captions.vtt", "captions.srt", "manifest.json", "report.json"],
+      artifacts: ["video.mp4", "audio.wav", "captions.vtt", "captions.srt", "manifest.json", "report.json", ...(soundtrack ? ["music.wav", "mixed.wav"] : [])],
       timingsMs: {
         stages: stageTimingsMs,
         totalThroughAutomatedValidation: wallThroughValidationMs,
@@ -388,7 +418,7 @@ async function build(options: CliOptions): Promise<void> {
         engine: synthesis.engine,
         backend: synthesis.backend,
         voice: synthesis.voice,
-        ...(synthesis.finalRateWpm === undefined ? {} : { rateWpm: synthesis.finalRateWpm, rateBoundsWpm: { min: MIN_RATE_WPM, max: MAX_RATE_WPM } }),
+        ...(synthesis.finalRateWpm === undefined ? {} : { rateWpm: synthesis.finalRateWpm, rateBoundsWpm: options.project ? { min: 111, max: 213 } : { min: MIN_RATE_WPM, max: MAX_RATE_WPM } }),
         ...(synthesis.speed === undefined ? {} : { speed: synthesis.speed }),
         warnings: synthesis.warnings,
         provenance: synthesis.provenance,
@@ -396,13 +426,14 @@ async function build(options: CliOptions): Promise<void> {
         channels: synthesis.channels,
         totalSamples: synthesis.totalSamples,
         measuredDurationMs: synthesis.durationMs,
-        chunks: synthesis.chunks.map((chunk) => ({ id: chunk.id, sampleCount: chunk.samples })),
+        chunks: synthesis.chunks.map(({ samples, ...chunk }) => ({ ...chunk, sampleCount: samples })),
+        synthesisWorkCount: synthesis.synthesisWorkCount,
         durationAttempts: synthesis.attempts,
       },
       cache: {
         directory: options.cacheDir,
         narration: synthesis.cacheStats,
-        render: { hit: renderCacheHit, key: renderKey, ...renderCache.snapshotStats() },
+        render: { hit: renderCacheHit, workCount: renderCacheHit ? 0 : 1, key: renderKey, ...renderCache.snapshotStats() },
       },
       timeline: {
         fps: timeline.timeline.fps,
@@ -437,6 +468,7 @@ async function build(options: CliOptions): Promise<void> {
         thresholds: {
           audio: "packages/validation/src/qc.ts AUDIO_QC_THRESHOLDS",
           requestedDurationToleranceMs: 1_000,
+          durationReference: options.project?.project.config.output.durationPolicy === "paced" ? "measured narration; desired duration is advisory" : "requested duration",
           avAndCaptionEndToleranceMs: 250,
         },
         sceneBoundarySamples: media.boundarySamples,
@@ -484,6 +516,7 @@ async function build(options: CliOptions): Promise<void> {
     report.timingsMs.stages.reportWrite = stageTimingsMs.reportWrite;
     await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
     await confirmAllArtifacts(stagingPath);
+    if (options.project) await assertProjectUnchanged(options.project);
     if (await pathExists(finalOutput)) throw new Error(`Output target appeared during the build; refusing to replace it: ${finalOutput}`);
     await rename(stagingPath, finalOutput);
 
@@ -621,7 +654,7 @@ async function materializeAssets(assets: ResolvedAsset[], stagingPath: string): 
     if (bytes.length > 8 * 1024 * 1024 || createHash("sha256").update(bytes).digest("hex") !== asset.sha256) {
       throw new Error(`Asset changed after approved resolution: ${asset.id}`);
     }
-    const path = join(directory, `${asset.id}.${assetExtension(asset.mimeType)}`);
+    const path = join(directory, `asset-${asset.id}.${assetExtension(asset.mimeType)}`);
     await writeFile(path, bytes, { mode: 0o600 });
     result[asset.id] = { path, sha256: asset.sha256, mimeType: asset.mimeType };
   }
@@ -677,12 +710,16 @@ function printHelp(): void {
     "Commands:",
     "  explain-to-me --version",
     "  explain-to-me doctor",
+    "  explain-to-me plan --project <project.json> --output <new-plan-dir>",
+    "  explain-to-me preview --project <project.json> --plan <plan-dir> [--passage <id>|--scene <id>] --output <new-dir>",
+    "  explain-to-me build --project <project.json> --plan <reviewed-plan-dir> [--output <new-dir>]",
     "  explain-to-me build <input.md|input.txt> [--director auto|local|template] [--duration 60s] [--audience <text>] [--style <hint>]",
     "  explain-to-me build --manifest <file.json> [--duration 60s]",
     "  Options: --output <new-dir> --tts auto|apple|kokoro --voice <id> --cache-dir <dir> --pronunciations <map.json>",
     "",
     "Models are installed during setup only; runtime direction stays local. Template mode is extractive, not AI summarization.",
     "Build output is written only to a new directory. Current visual theme/profile is technical-whiteboard/preview.",
+    "Project pacing wins over desired runtime; strict duration is an opt-in measurement check. Legacy builds retain duration fitting.",
   ].join("\n") + "\n");
 }
 

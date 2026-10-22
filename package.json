@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test packages/*/src/*.test.ts apps/*/src/*.test.ts",
     "test:agent": "node scripts/test-agent.mjs",
-    "schema:manifest": "tsx packages/contracts/scripts/write-json-schema.ts"
+    "schema:manifest": "tsx packages/contracts/scripts/write-json-schema.ts",
+    "schema:project": "tsx packages/contracts/scripts/write-project-schema.ts"
   },
   "description": "Local-first narrated, captioned explainer videos from documents and reviewed manifests",
   "author": "Tommy Allsup",

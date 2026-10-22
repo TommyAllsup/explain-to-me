@@ -1,5 +1,32 @@
 # Agent integration
 
+## Repository GitHub identity
+
+This repository uses `TommyAllsup` for GitHub operations and `Tommy Allsup <tommy.allsup@gmail.com>` for Git authorship. Run `git gh <command>` using the configured repository-local alias, or `node scripts/gh.mjs <command>`. The wrapper privately retrieves that stored account's token, verifies the authenticated login, and passes it only to the requested child process. Inherited authentication overrides are removed. Authentication changes and token output are deliberately unavailable through this wrapper.
+
+The local Git credential helper uses the same verification for HTTPS `github.com`; failures stop credential fallback. The local alias/helper configuration is shared by linked worktrees, uses absolute paths to Node and this checkout's script, and must be restored if those paths move. New clones need their own local configuration. Raw `gh` is not intercepted and may use a different globally active account; agents must use the wrapper. Global Git/GitHub settings are left unchanged.
+
+Check with `git gh api user --jq .login`, and run the isolated identity regressions with `node --test scripts/gh.test.mjs`. No token is stored in this repository. Authentication maintenance, if needed, happens outside the wrapper; never paste tokens into commands, logs, or project files.
+
+To restore local configuration in a new or moved checkout, substitute the actual absolute Node/script paths below (POSIX shell or Git Bash):
+
+```sh
+git config --local user.name 'Tommy Allsup'
+git config --local user.email 'tommy.allsup@gmail.com'
+git config --local credential.https://github.com.username TommyAllsup
+git config --local --replace-all credential.https://github.com.helper ''
+git config --local --add credential.https://github.com.helper '!"/absolute/path/to/node" "/absolute/path/to/explain-to-me/scripts/gh.mjs" --git-credential'
+git config --local alias.gh '!"/absolute/path/to/node" "/absolute/path/to/explain-to-me/scripts/gh.mjs"'
+```
+
+## Saved projects in the 0.3 working tree
+
+An agent with local file/terminal access can invoke the [project CLI](projects.md) directly: `plan --project ... --output ...`, review/edit the saved `manifest.json`, then `preview --project ... --plan ...` and `build --project ... --plan ...`. Keep private projects, plans, output revisions, and caches in the selected private workspace. Paths inside project JSON are relative to that file's directory. Use new output directories and retain the project, plan, provenance, and report with the exact reviewed artifact.
+
+`scripts/agent-explainer.py` remains the legacy source/prepared-manifest job launcher. It has no project/plan flags or project JSON job contract in 0.3. Invoke `node scripts/explain.mjs` from the updated software checkout for project commands; do not claim the legacy launcher's structured job guarantees for those invocations. The CLI retains staging diagnostics and checks selected project/source/plan bindings during production.
+
+Project pacing overrides desired duration; `strict` checks the chosen pace without rate fitting or rewriting. Use a preview for pronunciation/pacing review, then inspect the full movie. Automated QC, scripted fixture edits, and an agent selecting `--plan` do not certify human approval. Music source hashes and supplied rights text record provenance without certifying permission. The [project guide](projects.md) documents artifact meanings and music-only reuse checks. Native Windows 0.3 media verification remains pending/unavailable; supported Windows choices are Kokoro plus prepared manifests/template direction.
+
 ## Windows v0.2.1
 
 Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-021-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.
@@ -20,4 +47,4 @@ Job files live under `<workspace>/.explain-to-me/jobs/<unique-id>/`: `job.json`,
 
 `state: automated-ready` is not human approval. Read `humanReview` and `egress` separately. Failures/cancellations return nonzero and retain diagnostics; do not share logs without redaction. A source/input change during a job refuses readiness. Do not edit the software tree while a build is running.
 
-Per-project agent skills should point to this launcher and document explicit input/output bindings. Music, custom cartoons, and per-sentence rate settings remain separate production workflows; v0.2.1 adds no flags for them. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.
+Per-project agent skills using the legacy job contract should point to this launcher and document explicit input/output bindings. Version 0.2.1 has no music or per-passage pace flags; the 0.3 project CLI above adds those settings separately. Custom cartoons remain outside both workflows. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.

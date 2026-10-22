@@ -9,6 +9,8 @@ import type { ProductionManifest } from "../../contracts/src/production-manifest
 import { normalizeTokens } from "../../contracts/src/production-manifest.js";
 import { kokoroReadiness, synthesizeKokoro } from "./kokoro.js";
 import { narrationDurationError } from "./duration-error.js";
+import { appleRateForPace, assertPacedDuration, resolveChunkPacing, type DurationPolicy, type NarrationPacing } from "./pacing.js";
+import { buildConnectedGroups, type ConnectedDelivery } from "./connected.js";
 export { kokoroReadiness, kokoroSmokeCheck } from "./kokoro.js";
 
 export const PCM_SAMPLE_RATE = 24_000;
@@ -30,6 +32,9 @@ export interface SpeechRateAttempt {
 export interface SynthesizedChunk {
   id: string;
   samples: number;
+  pace?: number;
+  rateWpm?: number;
+  speed?: number;
 }
 
 export interface NarrationSynthesis {
@@ -44,6 +49,8 @@ export interface NarrationSynthesis {
   engine: string;
   warnings: string[];
   cacheStats: CacheStats;
+  /** Actual uncached engine calls: passages, or context groups in connected mode. */
+  synthesisWorkCount: number;
   provenance: Record<string, unknown>;
   finalRateWpm?: number;
   speed?: number;
@@ -57,6 +64,10 @@ export interface SynthesisOptions {
   workDir: string;
   backend?: "apple" | "kokoro" | "auto";
   cacheDir?: string;
+  pacing?: NarrationPacing;
+  durationPolicy?: DurationPolicy;
+  passageOrigins?: Record<string, string>;
+  delivery?: ConnectedDelivery;
 }
 
 interface SynthesisOutput {
@@ -66,6 +77,7 @@ interface SynthesisOutput {
   totalSamples: number;
   durationMs: number;
   attempts: SpeechRateAttempt[];
+  synthesisWorkCount: number;
 }
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -99,8 +111,17 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
   if (!Number.isFinite(options.targetDurationMs) || options.targetDurationMs <= 0) {
     throw new Error("Target duration must be a positive number of milliseconds");
   }
+  const durationPolicy = options.durationPolicy ?? (options.pacing ? "paced" : undefined);
+  const pacedRequest = durationPolicy === undefined ? undefined : {
+    policy: durationPolicy,
+    defaultPace: options.pacing?.default ?? 1,
+    paceByChunkId: resolveChunkPacing(options.manifest, options.pacing, options.passageOrigins),
+  };
 
   const { backend, warnings } = selectNarrationBackend(options.backend ?? (process.platform === "darwin" ? "apple" : "auto"));
+  if (options.delivery && (backend !== "kokoro" || !pacedRequest)) {
+    throw new Error("Connected delivery requires Kokoro with explicit project pacing; it cannot fall back to Apple or legacy duration fitting");
+  }
 
   let requestedVoice = options.voice;
   if (backend === "apple" && requestedVoice !== "auto" && /^(af|am|bf|bm)_/u.test(requestedVoice) && options.backend === "auto") {
@@ -109,7 +130,11 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
   }
   const voice = resolveVoice(requestedVoice, backend);
   if (backend === "kokoro") {
-    const output = await synthesizeKokoro(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir);
+    const connected = options.delivery ? {
+      delivery: options.delivery,
+      groups: buildConnectedGroups(options.manifest, pacedRequest!.paceByChunkId),
+    } : undefined;
+    const output = await synthesizeKokoro(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir, pacedRequest, connected);
     return {
       ...output,
       sampleRate: PCM_SAMPLE_RATE,
@@ -121,7 +146,7 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
     };
   }
 
-  const appleOutput = await synthesizeApple(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir);
+  const appleOutput = await synthesizeApple(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir, pacedRequest);
   return {
     ...appleOutput,
     sampleRate: PCM_SAMPLE_RATE,
@@ -131,7 +156,7 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
     engine: "macOS say",
     warnings,
     cacheStats: appleOutput.cacheStats ?? { hits: 0, misses: 0, writes: 0, corruptions: 0 },
-    provenance: { backend: "apple", engine: "macOS say", executable: SAY_EXECUTABLE, voice, sampleRate: PCM_SAMPLE_RATE },
+    provenance: { backend: "apple", engine: "macOS say", executable: SAY_EXECUTABLE, voice, sampleRate: PCM_SAMPLE_RATE, ...(pacedRequest ? { durationPolicy, pacing: options.pacing ?? { default: 1 } } : {}) },
     finalRateWpm: appleOutput.attempts.at(-1)!.rateWpm!,
   };
 }
@@ -194,6 +219,7 @@ async function synthesizeApple(
   targetDurationMs: number,
   workDir: string,
   cacheDir?: string,
+  pacedRequest?: { policy: DurationPolicy; defaultPace: number; paceByChunkId: Record<string, number> },
 ): Promise<SynthesisOutput> {
   const cache = new ContentAddressedCache(cacheDir ?? join(PROJECT_ROOT, ".explain-to-me/cache"));
   const identity = {
@@ -201,14 +227,26 @@ async function synthesizeApple(
     saySha256: createHash("sha256").update(await readFile(SAY_EXECUTABLE)).digest("hex"),
     platform: process.platform, arch: process.arch, node: process.version, osRelease: release(),
   };
+  if (pacedRequest) {
+    const rateWpm = appleRateForPace(pacedRequest.defaultPace);
+    const output = await synthesizeAppleAtRate(chunks, voice, rateWpm, workDir, 1, cache, identity, pacedRequest.paceByChunkId);
+    const durationMs = output.totalSamples / PCM_SAMPLE_RATE * 1_000;
+    assertPacedDuration(pacedRequest.policy, durationMs, targetDurationMs);
+    return {
+      ...output, durationMs, cacheStats: cache.snapshotStats(),
+      attempts: [{ attempt: 1, rateWpm, sampleCount: output.totalSamples, durationMs, withinTolerance: Math.abs(durationMs - targetDurationMs) <= DURATION_TOLERANCE_MS }],
+    };
+  }
   const wordCount = chunks.reduce((total, chunk) => total + normalizeTokens(spokenText(chunk)).length, 0);
   let rateWpm = clampRate(Math.round((wordCount * 60_000) / targetDurationMs));
   const attempts: SpeechRateAttempt[] = [];
   let lastOutput: Omit<SynthesisOutput, "attempts" | "durationMs"> | undefined;
   let durationMs = 0;
+  let synthesisWorkCount = 0;
 
   for (let attempt = 1; attempt <= MAX_DURATION_CORRECTIONS + 1; attempt += 1) {
     const attemptResult = await synthesizeAppleAtRate(chunks, voice, rateWpm, workDir, attempt, cache, identity);
+    synthesisWorkCount += attemptResult.synthesisWorkCount;
     durationMs = (attemptResult.totalSamples / PCM_SAMPLE_RATE) * 1_000;
     const withinTolerance = Math.abs(durationMs - targetDurationMs) <= DURATION_TOLERANCE_MS;
     attempts.push({ attempt, rateWpm, sampleCount: attemptResult.totalSamples, durationMs, withinTolerance });
@@ -231,7 +269,7 @@ async function synthesizeApple(
       `Narration could not reach ${(targetDurationMs / 1_000).toFixed(3)}s within ±1.000s after ${attempts.length} synthesis attempt(s) (rate bounds ${MIN_RATE_WPM}-${MAX_RATE_WPM} WPM). Measured: ${summary}`,
     );
   }
-  return { ...lastOutput, durationMs, attempts, cacheStats: cache.snapshotStats() };
+  return { ...lastOutput, durationMs, attempts, cacheStats: cache.snapshotStats(), synthesisWorkCount };
 }
 
 async function synthesizeAppleAtRate(
@@ -242,17 +280,22 @@ async function synthesizeAppleAtRate(
   attempt: number,
   cache: ContentAddressedCache,
   identity: Record<string, unknown>,
+  paceByChunkId?: Record<string, number>,
 ): Promise<Omit<SynthesisOutput, "attempts" | "durationMs">> {
   const pcmBuffers: Buffer[] = [];
   const measuredChunks: SynthesizedChunk[] = [];
+  let synthesisWorkCount = 0;
   for (const [index, chunk] of chunks.entries()) {
     const base = join(workDir, `attempt-${attempt}-chunk-${String(index + 1).padStart(2, "0")}`);
     const wavePath = `${base}.wav`;
     const text = spokenText(chunk);
-    const key = cache.key("apple-pcm-chunk-v1", { ...identity, voice, text, rateWpm, sampleRate: PCM_SAMPLE_RATE, channels: PCM_CHANNELS });
+    const pace = paceByChunkId?.[chunk.id];
+    const chunkRateWpm = pace === undefined ? rateWpm : appleRateForPace(pace);
+    const key = cache.key("apple-pcm-chunk-v1", { ...identity, voice, text, rateWpm: chunkRateWpm, sampleRate: PCM_SAMPLE_RATE, channels: PCM_CHANNELS });
     const pcm = await cache.getOrCreate(key, async () => {
+      synthesisWorkCount += 1;
       runProcess(SAY_EXECUTABLE, [
-        "-v", voice, "-r", String(rateWpm), "--file-format=WAVE",
+        "-v", voice, "-r", String(chunkRateWpm), "--file-format=WAVE",
         `--data-format=LEI16@${PCM_SAMPLE_RATE}`, `--channels=${PCM_CHANNELS}`,
         "-o", wavePath, text,
       ]);
@@ -263,13 +306,13 @@ async function synthesizeAppleAtRate(
       }
     });
     if (pcm.length < 2 || pcm.length % 2 !== 0) throw new Error(`Cached Apple PCM is invalid for ${chunk.id}`);
-    measuredChunks.push({ id: chunk.id, samples: pcm.byteLength / 2 });
+    measuredChunks.push({ id: chunk.id, samples: pcm.byteLength / 2, rateWpm: chunkRateWpm, ...(pace === undefined ? {} : { pace }) });
     pcmBuffers.push(pcm);
   }
   const combined = Buffer.concat(pcmBuffers);
   const outputPath = join(workDir, `narration-attempt-${attempt}.pcm`);
   await writeFile(outputPath, combined);
-  return { pcmPath: outputPath, chunks: measuredChunks, totalSamples: combined.byteLength / 2 };
+  return { pcmPath: outputPath, chunks: measuredChunks, totalSamples: combined.byteLength / 2, synthesisWorkCount };
 }
 
 function resolveVoice(requestedVoice: string, backend: "apple" | "kokoro"): string {

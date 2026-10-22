@@ -50,3 +50,22 @@ test("prepares sentence and phrase chunks, literal pronunciations, and cue-relat
     preparedScene.narration.map((chunk) => chunk.id),
   );
 });
+
+test("project preparation preserves edited spoken text while applying chosen pronunciations", async () => {
+  const manifest = productionManifestSchema.parse(JSON.parse(await readFile(fixturePath, "utf8"))) as ProductionManifest;
+  const scene = manifest.scenes[0]!;
+  scene.narration = [{
+    id: "reviewed-speech",
+    text: "The display has two sentences. Captions stay reviewed too.",
+    spokenText: "The approved spoken explanation uses JSON and different sentence boundaries.",
+  }];
+  const prepared = prepareNarration(manifest, { JSON: "jay son" }, { preserveReviewedSpeech: true });
+  const narration = prepared.manifest.scenes[0]!.narration;
+  assert.equal(narration.length, 1);
+  assert.equal(narration[0]!.id, "reviewed-speech");
+  assert.equal(narration[0]!.text, scene.narration[0]!.text);
+  assert.equal(narration[0]!.spokenText, "The approved spoken explanation uses jay son and different sentence boundaries.");
+  assert.equal(prepared.originByChunkId["reviewed-speech"], "reviewed-speech");
+  const legacy = prepareNarration(manifest, { JSON: "jay son" });
+  assert.equal(legacy.manifest.scenes[0]!.narration.length, 2);
+});

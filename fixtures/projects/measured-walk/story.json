@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "title": "Measuring a short walk",
+  "profile": "preview",
+  "targetDurationMs": 30000,
+  "theme": "technical-whiteboard",
+  "scenes": [
+    {
+      "id": "start", "kind": "title", "title": "Measuring a short walk",
+      "narration": [{ "id": "start-passage", "text": "Imagine walking from a quiet park to the library. Before leaving, we estimate how long the walk will take." }],
+      "visual": { "subtitle": "An estimate becomes a measurement" }
+    },
+    {
+      "id": "measure", "kind": "bullets", "title": "Measure the elapsed time",
+      "narration": [{ "id": "measure-passage", "text": "Here is the important step. Record the start time and the arrival time, then subtract to find the elapsed time." }],
+      "visual": { "lines": ["Record the start", "Record the arrival", "Find the difference"] }
+    },
+    {
+      "id": "finish", "kind": "outro", "title": "Keep the measurement",
+      "narration": [{ "id": "finish-passage", "text": "Our recording follows the same principle. We count PCM samples to measure speech, then place captions and scenes on that timeline." }],
+      "visual": { "subtitle": "Timing follows the measured sound" }
+    }
+  ]
+}

@@ -6,6 +6,8 @@ Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrat
 
 **v0.2.1 · Windows x64 + macOS · TypeScript CLI · MIT project code**
 
+The working tree also includes the unreleased [0.3 saved-project workflow](docs/projects.md): review a script before speech, preview narration, choose pacing, and add one local music track. The tag-pinned quickstarts below still describe the published 0.2.1 release.
+
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
 **[▶ Watch the getting-started movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
@@ -137,6 +139,24 @@ Useful knobs:
 
 Run `pnpm explain-to-me --help` or `--version` through the cached launcher above. This is a source checkout CLI; no global executable or npm package is published.
 
+## Save a project and review before production (0.3 working tree)
+
+With the updated checkout installed, create the neutral example and save its editable plan:
+
+```sh
+node scripts/create-example-project.mjs --output out/measured-walk
+node scripts/explain.mjs plan --project out/measured-walk/project.json --output out/measured-walk/plan
+```
+
+Review and edit `plan/manifest.json`, then preview and build:
+
+```sh
+node scripts/explain.mjs preview --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/preview
+node scripts/explain.mjs build --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/movie
+```
+
+Project pacing takes precedence over desired runtime; strict duration checking is opt-in. `audio.wav` remains narration; music projects also emit `music.wav` and `mixed.wav`. Music-only changes reuse speech and rendered frames. See [project settings, slower passages, soundtrack rights, revisions, and verification](docs/projects.md). Automated QC and human script/watch/listen approval remain separate.
+
 ## Let your agent handle setup
 
 Use your existing local coding agent to install v0.2.1 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
@@ -183,7 +203,8 @@ Automated QC is separate from my approval of the script and finished movie.
 | File | Contents |
 |---|---|
 | `video.mp4` / `audio.wav` | The movie and narration audio. |
-| `captions.vtt` / `captions.srt` | Captions timed to measured sentence/phrase audio chunks. |
+| `music.wav` / `mixed.wav` | For 0.3 projects with music: processed music stem and narration-plus-music mix. |
+| `captions.vtt` / `captions.srt` | Separate caption files timed to measured sentence/phrase audio chunks. The MP4 draws captions into its frames without an additional selectable subtitle track. |
 | `manifest.json` | The validated script and scene plan. |
 | `report.json` | Automated media checks, timings, cache state, assets, and provenance. |
 
@@ -202,7 +223,7 @@ The macOS local model director uses a private Unix socket. Windows uses template
 
 Model output is constrained manifest data. Approved image paths are bounded, copied, and hash-checked. These controls aren't a sandbox guarantee. Automated checks and source mappings help inspection; they don't establish factual correctness, pleasant narration, or human approval. Watch and listen before sharing.
 
-Custom cartoons, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 0.2.1 features. The [roadmap](ROADMAP.md) tracks what's next.
+Imported music and explicit pacing are available in the [unreleased 0.3 project workflow](docs/projects.md), but not in 0.2.1. Custom cartoons, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI remain deferred. The [roadmap](ROADMAP.md) tracks what's next.
 
 ## Help make the explanations better
 
