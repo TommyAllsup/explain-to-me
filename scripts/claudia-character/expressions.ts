@@ -6,6 +6,19 @@ export type FacialPose = {
   browLeft: number; browRight: number; browTiltLeft: number; browTiltRight: number;
   cheek: number; smile: number;
 };
+export type AlignedFacialWord = { text: string; start: number; end: number };
+type ExpressionIntent = "welcome" | "reassure" | "explain" | "curious" | "caution" | "invite"
+  | "emphasis" | "questionAccent" | "contrast";
+type FacialWindow = { start: number; arrive: number; leave: number; end: number };
+export type FacialExpressionCue = FacialWindow & { intent: ExpressionIntent; intensity: number; anchor: string };
+export type FacialGazeCue = FacialWindow & { x: number; y: number; anchor: string };
+export type FacialActingTrack = {
+  version: 1;
+  source: "word-alignment";
+  expressions: FacialExpressionCue[];
+  gaze: FacialGazeCue[];
+  blinks: number[];
+};
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
 const settle = (n: number) => { const t = clamp(n); return t * t * t * (10 + t * (-15 + 6 * t)); };
@@ -17,8 +30,112 @@ export function blinkAt(time: number, start: number): number {
   return ease((time - start) / .065) * (1 - ease((time - start - .115) / .14));
 }
 
+const wordKey = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/gu, "");
+
+/** Author intent around the new recording's aligned words, not Bella's old clock. */
+export function buildFacialActingTrack(words: AlignedFacialWord[], beats: CharacterBeat[]): FacialActingTrack {
+  if (beats.length !== 6 || !words.length) throw new Error("The Claudia facial performance requires six aligned sentences");
+  let previousEnd = 0;
+  for (const word of words) {
+    if (!wordKey(word.text) || !Number.isFinite(word.start) || !Number.isFinite(word.end)
+      || word.start < 0 || word.start < previousEnd - .001 || word.end <= word.start) throw new Error("Invalid facial word alignment");
+    previousEnd = word.end;
+  }
+  if (previousEnd > beats.at(-1)!.endMs / 1000 + .001) throw new Error("Facial word alignment extends past the recording");
+  let cursor = 0;
+  const sentences = beats.map((beat) => {
+    const tokens = beat.text.split(/\s+/u).map(wordKey).filter(Boolean);
+    const aligned = words.slice(cursor, cursor + tokens.length);
+    if (tokens.length !== aligned.length || tokens.some((token, i) => token !== wordKey(aligned[i]!.text))) {
+      throw new Error("Facial word alignment must match the complete reviewed script");
+    }
+    cursor += tokens.length;
+    return aligned;
+  });
+  if (cursor !== words.length) throw new Error("Facial word alignment has extra words");
+  const find = (sentence: number, token: string) => {
+    const word = sentences[sentence]!.find((candidate) => wordKey(candidate.text) === wordKey(token));
+    if (!word) throw new Error(`Missing facial acting anchor: ${token}`);
+    return word;
+  };
+  const window = (first: AlignedFacialWord, last: AlignedFacialWord, accent = false): FacialWindow => {
+    const start = Math.max(0, first.start - (accent ? .1 : .16));
+    const arrive = Math.max(start + .01, Math.min(first.start + (accent ? .09 : .28), last.end - .04));
+    const leave = Math.max(arrive, last.end - (accent ? .015 : .08));
+    return { start, arrive, leave, end: Math.max(leave + .01, last.end + (accent ? .23 : .35)) };
+  };
+  const intents = ["welcome", "reassure", "explain", "curious", "caution", "invite"] as const;
+  const expressions: FacialExpressionCue[] = sentences.map((sentence, i) => ({
+    ...window(sentence[0]!, sentence.at(-1)!), intent: intents[i]!, intensity: 1,
+    anchor: sentence.map((word) => word.text).join(" "),
+  }));
+  const accent = (sentence: number, token: string, intent: ExpressionIntent, intensity: number) => {
+    const word = find(sentence, token);
+    expressions.push({ ...window(word, word, true), intent, intensity, anchor: word.text });
+  };
+  // Only meaningful contrasts receive an accent. Syllable-by-syllable eyebrow
+  // pulses would make the face compete with the speech and the mouth shapes.
+  accent(2, "remembers", "emphasis", .65);
+  accent(3, "forget", "questionAccent", .9);
+  accent(4, "yesterday's", "contrast", .65);
+  accent(4, "today's", "emphasis", .9);
+  accent(5, "keep", "questionAccent", .45);
+  accent(5, "refresh", "questionAccent", .85);
+
+  const cache = find(2, "cache"), remembers = find(2, "remembers");
+  const interesting = find(3, "interesting"), question = find(3, "question");
+  const diagramLeave = Math.max(cache.start + .12, Math.min(remembers.end, cache.end + .28));
+  const reflectLeave = Math.max(interesting.start + .2, Math.min(question.end, interesting.end + .18));
+  const gaze: FacialGazeCue[] = [
+    { start: Math.max(0, cache.start - .18), arrive: Math.max(.01, cache.start - .06),
+      leave: diagramLeave, end: diagramLeave + .13, x: 5.1, y: .6, anchor: cache.text },
+    { start: interesting.start - .05, arrive: interesting.start + .07,
+      leave: reflectLeave, end: reflectLeave + .13, x: -3.7, y: -1.8, anchor: interesting.text },
+  ];
+  // Put relaxed blinks at thought boundaries, finishing before the next phrase
+  // is established. Sparse events keep the closing question fully engaged.
+  const blinks: number[] = [];
+  for (const sentence of sentences.slice(1)) {
+    const start = Math.max(0, sentence[0]!.start - .255);
+    if (start >= .3 && (!blinks.length || start - blinks.at(-1)! >= 1.6)) blinks.push(start);
+  }
+  return { version: 1, source: "word-alignment", expressions, gaze, blinks };
+}
+
+const expressionWeights: Record<ExpressionIntent, Partial<Omit<FacialPose, "gazeX" | "gazeY" | "blink">>> = {
+  welcome: { squint: .3, browLeft: .3, browRight: .2, cheek: .65, smile: .4 },
+  reassure: { squint: .13, browLeft: .25, browRight: .15, cheek: .3, smile: .2 },
+  explain: { openness: .02, browLeft: .45, browRight: .45, smile: .06 },
+  curious: { openness: .035, browLeft: 1.65, browRight: .3, browTiltLeft: .5, browTiltRight: -.15 },
+  caution: { openness: -.075, squint: .16, browLeft: -.2, browRight: -.4, browTiltLeft: -.18, browTiltRight: .18, smile: -.1 },
+  invite: { squint: .28, browLeft: .8, browRight: .45, browTiltLeft: .15, browTiltRight: -.08, cheek: .72, smile: .46 },
+  emphasis: { openness: .012, browLeft: .42, browRight: .42 },
+  questionAccent: { openness: .018, browLeft: .7, browRight: .18, browTiltLeft: .12 },
+  contrast: { openness: -.012, browLeft: -.2, browRight: -.12 },
+};
+
+function alignedFacialAt(time: number, track: FacialActingTrack): FacialPose {
+  const pose: FacialPose = { gazeX: .35, gazeY: 0, blink: 0, openness: 1, squint: 0,
+    browLeft: 0, browRight: 0, browTiltLeft: 0, browTiltRight: 0, cheek: 0, smile: .15 };
+  for (const cue of track.expressions) {
+    const weight = hold(time, cue.start, cue.arrive, cue.leave, cue.end) * cue.intensity;
+    for (const [key, amount] of Object.entries(expressionWeights[cue.intent])) {
+      pose[key as keyof typeof expressionWeights[ExpressionIntent]] += amount * weight;
+    }
+  }
+  for (const cue of track.gaze) {
+    const weight = hold(time, cue.start, cue.arrive, cue.leave, cue.end);
+    pose.gazeX += cue.x * weight;
+    pose.gazeY += cue.y * weight;
+  }
+  pose.blink = Math.max(0, ...track.blinks.map((start) => blinkAt(time, start)));
+  pose.smile = clamp(pose.smile); pose.cheek = clamp(pose.cheek); pose.squint = clamp(pose.squint);
+  return pose;
+}
+
 /** A small authored performance, tied to these six sentences rather than audio volume. */
-export function facialAt(time: number, beats: CharacterBeat[]): FacialPose {
+export function facialAt(time: number, beats: CharacterBeat[], track?: FacialActingTrack): FacialPose {
+  if (track) return alignedFacialAt(time, track);
   const at = (i: number) => beats[i]!.startMs / 1000;
   const end = beats.at(-1)!.endMs / 1000;
   const welcome = hold(time, .08, .5, .95, 1.5);

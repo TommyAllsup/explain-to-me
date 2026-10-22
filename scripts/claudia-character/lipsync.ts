@@ -90,7 +90,7 @@ function lipSeal(time: number, phoneme: Articulation, fps: number): number {
 }
 
 /**
- * Build continuous mouth controls from Kokoro's second-based IPA intervals and
+ * Build continuous mouth controls from synthesis or forced-aligned IPA intervals and
  * normalized speech energy. Samples are frame-centred like mouthEnvelope().
  * Timed articulation controls shape; energy adjusts jaw strength only. This is
  * a deterministic viseme approximation, not measured human lip movement.

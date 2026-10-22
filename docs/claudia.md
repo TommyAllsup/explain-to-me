@@ -30,6 +30,8 @@ The [animated character test](../scripts/claudia-character/README.md) pairs a ti
 
 The [local prosody comparison](../scripts/claudia-prosody/README.md) auditions that accepted Bella recording against IndexTTS-2.5 and original English Chatterbox. Both new engines receive the same script and Bella audio reference. The listening files have matched loudness and preserve each model's timing, with raw audio, pinned model provenance, and local wording checks retained. This experiment does not change the selected voice or the character animation.
 
+The [Chatterbox character trial](../scripts/claudia-character/README.md#chatterbox-performance-trial) then pairs audition C with its own acoustic phoneme alignment, word-timed facial cues, and smoothly retimed body gestures. It reuses that exact recording so the whole performance can be compared with Bella v4.
+
 The creator describes a shared singer across the first three films; the agent-made CLODYSSEY/BLISS takes reused a Suno Voice derived from ESCAPE VELOCITY. That voice lives in its creator's account. Later films deliberately vary the voice. These local Kokoro auditions are casting alternatives, not that original Voice or measured matches to it. [Creator's voice notes](https://claudia.gallery/wiki/song/), checked 2026-10-22.
 
 To regenerate with the setup-created Python and an existing FFmpeg executable, select a fresh output directory whose parent already exists:

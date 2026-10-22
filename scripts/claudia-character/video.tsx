@@ -8,7 +8,7 @@ export type { CharacterTestProps } from "./motion.js";
 const ink = "#26352e", olive = "#63765c", paper = "#f5f3ec";
 const ease = (n: number) => { const t = Math.max(0, Math.min(1, n)); return t * t * (3 - 2 * t); };
 
-export function CharacterTest({fps, mouth, beats, voiceLabel}: CharacterTestProps) {
+export function CharacterTest({fps, mouth, beats, voiceLabel, facialActing, retimeBody}: CharacterTestProps) {
   const frame = useCurrentFrame();
   const time = frame / fps;
   const now = time * 1000;
@@ -23,12 +23,12 @@ export function CharacterTest({fps, mouth, beats, voiceLabel}: CharacterTestProp
 
   return <AbsoluteFill style={{background: paper, color: ink, fontFamily: "Arial, sans-serif"}}>
     <div style={{position:"absolute", left:48, right:48, top:34, display:"flex", justifyContent:"space-between", fontSize:15, letterSpacing:2.1, fontWeight:700}}>
-      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / 04</span></span>
+      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / {retimeBody ? "05" : "04"}</span></span>
       <span style={{color:olive, letterSpacing:1}}>{voiceLabel}</span>
     </div>
     <div style={{position:"absolute", left:42, top:100, width:476, height:490, borderRadius:"50% 50% 18px 18px", background:"#e5e8dc"}}/>
     <div style={{position:"absolute", left:14, top:44, width:535, height:570, overflow:"hidden"}}><div style={{height:620}}>
-      <Claudia mouth={mouth[frame]!} acting={actingAt(time, beats)}/>
+      <Claudia mouth={mouth[frame]!} acting={actingAt(time, beats, {...(facialActing ? {facialActing} : {}), ...(retimeBody !== undefined ? {retimeBody} : {})})}/>
     </div></div>
     <div style={{position:"absolute", left:570, right:62, top:143, ...cardStyle}}>
       <div style={{fontSize:14, letterSpacing:2.5, fontWeight:700, color:olive, marginBottom:23}}>{["HELLO, I'M CLAUDIA", "ONE USEFUL IDEA", "THE CATCH", "A BETTER QUESTION"][scene]}</div>

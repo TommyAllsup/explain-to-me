@@ -2,18 +2,26 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { CaptionSegment, Timeline } from "../../packages/timeline/src/timeline.js";
 import type { MouthPose } from "./lipsync.js";
+import type { FacialActingTrack } from "./expressions.js";
 
 const sample = z.number().int().nonnegative().max(720_000);
-export const performanceTimingSchema = z.object({
-  version: z.literal(1), voice: z.literal("af_bella"), sampleRate: z.literal(24_000),
+const timingShape = {
+  sampleRate: z.literal(24_000),
   samples: sample.positive(), audioSha256: z.string().regex(/^[a-f0-9]{64}$/u),
   method: z.string().min(1).max(300), text: z.string().min(1).max(1600),
   cues: z.array(z.object({text: z.string().min(1).max(200), startSample: sample, endSample: sample})).length(6),
   phonemes: z.array(z.object({phoneme: z.string().min(1).max(8), start: z.number().finite().nonnegative(), end: z.number().finite().nonnegative()})).min(1).max(1600),
-});
+};
+export const performanceTimingSchema = z.discriminatedUnion("version", [
+  z.object({...timingShape, version: z.literal(1), voice: z.literal("af_bella")}),
+  z.object({...timingShape, version: z.literal(2), voice: z.literal("chatterbox-bella"),
+    referenceSha256: z.literal("3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1733"),
+    words: z.array(z.object({text: z.string().min(1).max(80), start: z.number().finite().nonnegative(), end: z.number().finite().nonnegative()})).min(1).max(400),
+  }),
+]);
 export type PerformanceTiming = z.infer<typeof performanceTimingSchema>;
 export type CharacterBeat = { id: string; startMs: number; endMs: number; text: string; gesture: "greet" | "explain" | "think" | "settle" };
-export type CharacterTestProps = { durationInFrames: number; fps: number; mouth: MouthPose[]; beats: CharacterBeat[]; voiceLabel: string };
+export type CharacterTestProps = { durationInFrames: number; fps: number; mouth: MouthPose[]; beats: CharacterBeat[]; voiceLabel: string; facialActing?: FacialActingTrack; retimeBody?: boolean };
 export const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 export function verifyTiming(input: unknown, wav: Buffer, pcm: Buffer, expectedText: string): PerformanceTiming {
@@ -30,6 +38,23 @@ export function verifyTiming(input: unknown, wav: Buffer, pcm: Buffer, expectedT
   for (const phoneme of timing.phonemes) {
     if (phoneme.start < previousStart || phoneme.end < phoneme.start || phoneme.end > timing.samples / timing.sampleRate + 1 / timing.sampleRate) throw new Error("Invalid model phoneme timing");
     previousStart = phoneme.start;
+  }
+  if (timing.version === 2) {
+    const scriptWords = timing.text.toLowerCase().replaceAll("’", "'").match(/[a-z]+(?:'[a-z]+)?/gu);
+    const alignedWords = timing.words.map((word) => {
+      const tokens = word.text.toLowerCase().replaceAll("’", "'").match(/[a-z]+(?:'[a-z]+)?/gu);
+      return tokens?.length === 1 ? tokens[0] : undefined;
+    });
+    if (JSON.stringify(alignedWords) !== JSON.stringify(scriptWords)) {
+      throw new Error("Aligned words must exactly cover the reviewed audition script in order");
+    }
+    let previousEnd = 0;
+    for (const word of timing.words) {
+      if (word.start < previousEnd || word.end <= word.start || word.end > timing.samples / timing.sampleRate + 1 / timing.sampleRate) {
+        throw new Error("Invalid aligned word timing");
+      }
+      previousEnd = word.end;
+    }
   }
   return timing;
 }

@@ -59,3 +59,62 @@ test("whole-body motion is bounded, deterministic and continuous between frames"
     }
   }
 });
+
+const authoredBounds = [0, 28584, 64584, 129384, 190584, 290184, 353344].map((sample) => sample / 24000);
+const speechBounds = [0, 1.42, 3.1, 5.75, 8.32, 11.9, 14.84];
+const withBounds = (boundaries: number[]): CharacterBeat[] => beats.map((beat, i) => ({
+  ...beat, startMs: boundaries[i]! * 1000, endMs: boundaries[i + 1]! * 1000,
+}));
+const authoredBeats = withBounds(authoredBounds), speechBeats = withBounds(speechBounds);
+
+test("retimed body reaches the accepted poses at the new speech boundaries while face keeps its speech clock", () => {
+  for (let i = 0; i < speechBounds.length; i++) {
+    const retimed = actingAt(speechBounds[i]!, speechBeats, {retimeBody:true});
+    const authored = actingAt(authoredBounds[i]!, authoredBeats);
+    assert.deepEqual(retimed.body, authored.body);
+    assert.equal(retimed.headTilt, authored.headTilt);
+    assert.equal(retimed.nod, authored.nod);
+    assert.equal(retimed.reveal, authored.reveal);
+    assert.equal(retimed.invite, authored.invite);
+    assert.deepEqual(retimed.face, actingAt(speechBounds[i]!, speechBeats).face);
+  }
+  const laterReach = actingAt(4.4, speechBeats, {retimeBody:true});
+  assert.equal(laterReach.reveal, 1, "The reaching hand still has a held explaining pose");
+  assert.equal(laterReach.body.shoulder, 0, "Retiming must not turn the reach into a held shrug");
+});
+
+test("retiming preserves overlapping body motion through uneven sentence speeds without snaps or velocity resets", () => {
+  const wristAt = (time: number) => bodyRig(actingAt(time, speechBeats, {retimeBody:true}).body).near.wrist;
+  const step = .0001;
+  for (const time of speechBounds.slice(1, -1)) {
+    const before = wristAt(time - step), at = wristAt(time), after = wristAt(time + step);
+    const leftVelocity = {x:(at.x - before.x) / step, y:(at.y - before.y) / step};
+    const rightVelocity = {x:(after.x - at.x) / step, y:(after.y - at.y) / step};
+    assert.ok(Math.hypot(leftVelocity.x - rightVelocity.x, leftVelocity.y - rightVelocity.y) < .05,
+      "A sentence boundary must not reset wrist velocity");
+  }
+  const closingBoundary = speechBounds[5]!;
+  const beforeClose = wristAt(closingBoundary - step), atClose = wristAt(closingBoundary);
+  assert.ok(Math.hypot(atClose.x - beforeClose.x, atClose.y - beforeClose.y) / step > .1,
+    "The closing gesture's preparation must continue through the sentence boundary");
+  let previous = actingAt(0, speechBeats, {retimeBody:true});
+  for (let frame = 1; frame < Math.ceil((speechBounds.at(-1)! + 1) * 24); frame++) {
+    const pose = actingAt(frame / 24, speechBeats, {retimeBody:true});
+    const wrist = bodyRig(pose.body).near.wrist, previousWrist = bodyRig(previous.body).near.wrist;
+    const neck = warpTorsoPoint(NECK, pose.body), previousNeck = warpTorsoPoint(NECK, previous.body);
+    assert.ok(Math.hypot(wrist.x - previousWrist.x, wrist.y - previousWrist.y) < 9);
+    assert.ok(Math.hypot(neck.x - previousNeck.x, neck.y - previousNeck.y) < 1.8);
+    assert.ok(pose.reveal >= 0 && pose.reveal <= 1 && pose.invite >= 0 && pose.invite <= 1);
+    previous = pose;
+  }
+});
+
+test("optional retiming rejects malformed speech cues and the default path stays unchanged", () => {
+  for (const invalid of [speechBeats.slice(0, 5), speechBeats.map((beat, i) => i === 2 ? {...beat, startMs:beat.startMs + 20} : beat),
+    speechBeats.map((beat, i) => i === 2 ? {...beat, endMs:NaN} : beat)]) {
+    assert.throws(() => actingAt(4, invalid, {retimeBody:true}), /six continuous, increasing speech beats/u);
+  }
+  for (const time of [0, 2.4, 4, 5.7, 8.5, 12.4, 14.7]) {
+    assert.deepEqual(actingAt(time, beats, {retimeBody:false}), actingAt(time, beats));
+  }
+});

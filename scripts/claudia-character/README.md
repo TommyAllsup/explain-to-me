@@ -2,6 +2,86 @@
 
 This branch experiment pairs the selected **A — Bella (`af_bella`)** voice with an authored SVG character, expressive poses, and a small cache explanation. It generates a fresh Bella performance using the audition's script and natural speed, with matched loudness and no pitch or duration changes. Bella is our chosen local speaking voice, not the creator's Suno singing-voice preset.
 
+## Chatterbox performance trial
+
+The fifth study uses the exact **C — Chatterbox** recording from the
+[local prosody auditions](../claudia-prosody/README.md). It keeps the recording's
+14.84-second delivery and gives it its own phoneme alignment, captions, facial
+cues, and body timing. It is a performance comparison; the accepted Bella v4
+movie remains available in `out/claudia-character-v4/`.
+
+`prepare-chatterbox-performance.py` copies the audition WAV byte-for-byte and
+aligns its actual audio to the reviewed script with a pinned
+[Meta phoneme acoustic model](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft).
+Contextual eSpeak transcription supplies the expected phonemes; constrained CTC
+alignment locates them in the recording. The report preserves model hashes,
+raw acoustic token frames, confidence, and the interpretation of blank gaps.
+The model has 20 ms frames. Short blank gaps are divided between neighboring
+sounds, and diphthongs receive visual subdivisions inside their aligned interval.
+These are automatic timing estimates, not human annotations or measured lip motion.
+
+The aligned words anchor restrained expression accents on “remembers,” “forget,”
+“yesterday's,” “today's,” “keep,” and “refresh.” Diagram and reflective glances
+have held targets and return to direct eye contact for the closing question.
+Blinks sit near phrase boundaries. Facial intentions are authored for this
+script; the system does not infer emotion from voice pitch or volume.
+
+The accepted shoulder, chest, arm, finger, and head movement is smoothly retimed
+to the new sentence boundaries. Its overlapping movement stays connected across
+boundaries. Lip closures and rounded vowels keep priority over smiles. Bella's
+original facial and body behavior remains the default when no new acting track
+is supplied.
+
+The trial uses the existing `C:/Python311/python.exe` CPU environment with Torch,
+Transformers, NumPy, and SciPy, plus the existing Kokoro environment solely for
+its eSpeak phonemizer. Model weights live on D:. Run from the repository root,
+using fresh performance and render output directories:
+
+```powershell
+$phoneModels = 'D:/CodexModels/ClaudiaAuditions20261022/alignment/wav2vec2-phoneme'
+& C:/Python311/python.exe scripts/claudia-character/prepare-chatterbox-performance.py --prepare --model-directory $phoneModels
+& C:/Python311/python.exe scripts/claudia-character/prepare-chatterbox-performance.py --model-directory $phoneModels --output out/claudia-chatterbox-performance
+node --import tsx scripts/claudia-character/main.ts --performance out/claudia-chatterbox-performance --output out/claudia-character-chatterbox
+```
+
+Use Node 24 as required by the repository. Preparation refuses changed audition
+audio and records the exact script, reference, aligner, and waveform hashes.
+Rendering validates complete word coverage and ordered timing before accepting
+the performance. It uses the installed local renderer and browser; no speech
+model is loaded during rendering.
+
+### Chatterbox validation — 2026-10-22
+
+The finished movie is `out/claudia-character-chatterbox/video.mp4`:
+1280 × 720, 24 fps, 357 frames (14.875 seconds). Its source is the exact
+356,160-sample audition WAV, SHA-256
+`20cd6bb34b566fadee4a2e37d1897a86e472d8cc060409bc2f2477fbfe2b6767`.
+The audio/video endpoint difference is 35 ms. All 11 media checks pass, with no
+browser errors or external browser requests. `character-closeup.mp4` retains the
+audio with a 560 × 620 crop; its full decode also passes.
+
+The aligner produced 41 words, 159 IPA intervals, and six caption cues. Strict
+checkpoint loading confirmed every tensor was supplied; two legacy weight-norm
+names are migrated to the current Torch names without changing tensor values.
+Median phoneme posterior is .945; eight low-confidence phones remain identified
+in the report. Eight independently recognized word onsets agree within 47 ms.
+These measurements support inspection, rather than certify perfect lip sync.
+
+TypeScript checking and all 42 character tests pass. Review sheets inspect eight
+expressions, four full blinks, three bilabial contacts, two rounded vowels, and
+the final resting mouth. The sampled m/b/p frames show complete contact with no
+visible mouth interior; rounded vowels retain their shape during facial acting.
+The blink samples show closed lids without iris leakage. A full composition
+frame checks the connected gesture, teaching graphic, and caption clearance.
+The sheets are `expressions-review.png`, `mouth-review.png`, and
+`blink-review.png` alongside the movie. Human playback remains the test of
+delivery and personality.
+
+Final movie SHA-256:
+`33b1bdceeee3a8656f3abb05cbcd4e4d5ec20e02dfd5da29dea78486970f72f6`.
+
+## Bella's accepted facial and body performance
+
 The fourth iteration adds facial acting: a brief glance toward the diagram before the explaining gesture, an upward reflective glance during the question, and direct eye contact during the caution and closing invitation. Gaze moves quickly between held targets. The eyelids close over fixed-size irises and pupils, with full contact and a slower reopening. Asymmetric brows, lower-lid tension, cheek lift, and mouth corners distinguish warmth, curiosity, and thoughtful caution. These cues are authored for the six sentences in this study; they do not infer emotion from arbitrary narration.
 
 The accepted third-iteration body motion stays intact. The pelvis stays planted while the chest shifts and turns through a continuous spine deformation. The shoulder prepares each reach, then relaxes as the upper arm, forearm, and fingers arrive in sequence. Both arms keep their segment lengths and attach to the moving shoulders. The jacket, collar, lapels, and neck share the same deformation; the head follows the neck with a small delayed counter-tilt. A reflective weight shift and a smaller closing invitation give the performance contrast without continuous swaying.

@@ -65,6 +65,28 @@ test("caption timing rejects gaps, overlaps, backwards intervals, and missing au
   }
 });
 
+test("Chatterbox timing binds exact aligned words and the accepted Bella reference to its own audio", () => {
+  const {timing, wav, pcm, text} = fixture();
+  const tokens = text.split(/\s+/u);
+  const duration = timing.samples / timing.sampleRate;
+  const aligned = {...timing, version: 2, voice: "chatterbox-bella",
+    referenceSha256: "3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1733",
+    words: tokens.map((word, i) => ({text:word, start:i * duration / tokens.length, end:(i + 1) * duration / tokens.length})),
+  };
+  assert.equal(verifyTiming(aligned, wav, pcm, text).voice, "chatterbox-bella");
+  assert.throws(() => verifyTiming({...aligned, referenceSha256:"0".repeat(64)}, wav, pcm, text));
+  assert.throws(() => verifyTiming({...aligned, words:aligned.words.slice(1)}, wav, pcm, text), /Aligned words/u);
+  const changed = structuredClone(aligned);
+  changed.words[0]!.text = "Goodbye";
+  assert.throws(() => verifyTiming(changed, wav, pcm, text), /Aligned words/u);
+  changed.words = structuredClone(aligned.words);
+  changed.words[1]!.start = 0;
+  assert.throws(() => verifyTiming(changed, wav, pcm, text), /Invalid aligned word/u);
+  changed.words = structuredClone(aligned.words);
+  changed.words.at(-1)!.end = duration + .1;
+  assert.throws(() => verifyTiming(changed, wav, pcm, text), /Invalid aligned word/u);
+});
+
 test("phoneme timing cannot run backwards or beyond the associated audio", () => {
   const { timing, wav, pcm, text } = fixture();
   const beyondAudio = structuredClone(timing);

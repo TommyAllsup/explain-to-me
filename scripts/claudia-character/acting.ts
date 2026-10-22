@@ -1,11 +1,51 @@
 import type { CharacterBeat } from "./motion.js";
 import type { BodyPose } from "./posture.js";
-import { facialAt, type FacialPose } from "./expressions.js";
+import { facialAt, type FacialPose, type FacialActingTrack } from "./expressions.js";
 
 export type ActingPose = {
   reveal: number; invite: number; body: BodyPose; headTilt: number; nod: number;
   face: FacialPose;
 };
+export type ActingOptions = { retimeBody?: boolean; facialActing?: FacialActingTrack };
+
+// The accepted Bella take is the authored gesture clock, in exact 24 kHz
+// sample boundaries. Retiming changes when its poses happen, not the rig or
+// the chest/shoulder/arm/finger overlap that made the gesture feel connected.
+const referenceBoundaries = [0, 28584, 64584, 129384, 190584, 290184, 353344].map((sample) => sample / 24000);
+const referenceBeats: CharacterBeat[] = referenceBoundaries.slice(0, -1).map((start, i) => ({
+  id: `body-reference-${i}`, startMs: start * 1000, endMs: referenceBoundaries[i + 1]! * 1000,
+  text: "Authored body gesture timing", gesture: "settle",
+}));
+
+/** Monotone cubic time warp: hit every speech boundary without a velocity jump. */
+function bodyTimeAt(time: number, beats: CharacterBeat[]): number {
+  if (!Number.isFinite(time) || beats.length !== referenceBeats.length || beats[0]!.startMs !== 0
+    || beats.some((beat, i) => !Number.isFinite(beat.startMs) || !Number.isFinite(beat.endMs)
+      || beat.endMs <= beat.startMs || (i > 0 && Math.abs(beat.startMs - beats[i - 1]!.endMs) > .001))) {
+    throw new Error("Body retiming needs six continuous, increasing speech beats starting at zero");
+  }
+  const boundaries = [...beats.map((beat) => beat.startMs / 1000), beats.at(-1)!.endMs / 1000];
+  const widths = boundaries.slice(1).map((end, i) => end - boundaries[i]!);
+  const slopes = widths.map((width, i) => (referenceBoundaries[i + 1]! - referenceBoundaries[i]!) / width);
+  // Weighted harmonic tangents preserve monotonicity through uneven sentences.
+  // Unlike a separate ease on every sentence, shared tangents do not force
+  // the whole body to stop and restart at each spoken boundary.
+  const tangents = [slopes[0]!, ...slopes.slice(1).map((right, i) => {
+    const left = slopes[i]!, before = widths[i]!, after = widths[i + 1]!;
+    const a = 2 * after + before, b = after + 2 * before;
+    return (a + b) / (a / left + b / right);
+  }), slopes.at(-1)!];
+  if (time <= boundaries[0]!) return referenceBoundaries[0]! + (time - boundaries[0]!) * tangents[0]!;
+  const last = boundaries.length - 1;
+  if (time >= boundaries[last]!) return referenceBoundaries[last]! + (time - boundaries[last]!) * tangents[last]!;
+  const i = boundaries.findIndex((end) => end > time) - 1;
+  const width = widths[i]!, t = (time - boundaries[i]!) / width;
+  const t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * referenceBoundaries[i]!
+    + (t3 - 2 * t2 + t) * width * tangents[i]!
+    + (-2 * t3 + 3 * t2) * referenceBoundaries[i + 1]!
+    + (t3 - t2) * width * tangents[i + 1]!;
+}
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 // Minimum-jerk travel: zero speed and acceleration at a held pose.
 export const settle = (n: number) => { const t = clamp(n); return t * t * t * (10 + t * (-15 + 6 * t)); };
@@ -15,7 +55,12 @@ function phrase(time: number, start: number, arrive: number, leave: number, end:
 }
 
 /** Acting beats have intent and holds. They are not a loop or a response to loudness. */
-export function actingAt(time: number, beats: CharacterBeat[]): ActingPose {
+export function actingAt(time: number, beats: CharacterBeat[], options: ActingOptions = {}): ActingPose {
+  const facialTime = time, facialBeats = beats;
+  if (options.retimeBody) {
+    time = bodyTimeAt(time, beats);
+    beats = referenceBeats;
+  }
   const at = (i: number) => beats[i]!.startMs / 1000;
   const duration = beats.at(-1)!.endMs / 1000;
   const reveal = phrase(time, at(2) - .15, at(2) + 1.0, at(3) + .15, at(3) + 1.65);
@@ -51,6 +96,6 @@ export function actingAt(time: number, beats: CharacterBeat[]): ActingPose {
     // root inherits the spine transform immediately and stays attached.
     headTilt: thought * -2.2 + caution * .65 + invite * -.7 - chestRoll(time - .1) * .55,
     nod: welcome * 1.6 + caution * .7,
-    face: facialAt(time, beats),
+    face: facialAt(facialTime, facialBeats, options.facialActing),
   };
 }
