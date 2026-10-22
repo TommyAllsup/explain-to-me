@@ -2,6 +2,33 @@
 
 This branch experiment pairs the selected **A — Bella (`af_bella`)** voice with an authored SVG character, expressive poses, and a small cache explanation. It generates a fresh Bella performance using the audition's script and natural speed, with matched loudness and no pitch or duration changes. Bella is our chosen local speaking voice, not the creator's Suno singing-voice preset.
 
+## Compare Bella and Chatterbox
+
+Run `python scripts/claudia-character/compare-performances.py` from the repository
+root to package the accepted Bella v4 and Chatterbox movies. It uses the installed
+FFmpeg/FFprobe and Pillow; `--ffmpeg`, `--ffprobe`, and `--font` can supply local
+paths. Use `--output` with a fresh directory for later comparisons.
+
+The output `out/claudia-character-comparison/index.html` opens directly in a
+browser. Both characters appear at the same scale, with their own captions.
+**Hear Bella** and **Hear Chatterbox** switch the audible take while preserving
+the playhead, play/pause state, and volume. Use the native fullscreen control for
+closer facial review. `comparison.mp4` offers the same picture twice, with Bella
+audio first and Chatterbox audio second; each pass labels the audible side.
+
+Both recordings retain their natural speed. A shared start does not align every
+word: the performances have different pauses and emphasis. Bella's last picture
+holds for three extra frames to match Chatterbox's 357-frame duration; neither
+performance is stretched. This compares the accepted complete performances,
+including their separately authored facial timing. It does not change the
+selected default voice.
+
+The packager checks the accepted source hashes and their passing render reports,
+copies the original AAC audio packets without transcoding, and verifies audio
+packet equality, complete decode, dimensions, frame counts, and durations. Its
+`report.json` records source/output hashes and all media checks. Generated media
+stays under ignored `out/`; the script and player template live on this branch.
+
 ## Chatterbox performance trial
 
 The fifth study uses the exact **C — Chatterbox** recording from the
