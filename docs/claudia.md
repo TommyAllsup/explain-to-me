@@ -24,7 +24,9 @@ Keep `manifest.json` and its adjacent `assets/` together when moving an output. 
 
 ## Voice casting experiment
 
-Three local speaking-voice auditions are configured in [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json): A (`af_bella`), B (`af_heart`), and C (`af_nicole`). Each uses the same text at speed 1.0, with natural duration and matched loudness. No voice is selected automatically. The short stylized animation test is pending the user's choice.
+Three local speaking-voice auditions are configured in [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json): A (`af_bella`), B (`af_heart`), and C (`af_nicole`). Each uses the same text at speed 1.0, with natural duration and matched loudness. The user selected **A — Bella** on 2026-10-22; [selected-voice.json](../fixtures/presenters/claudia/selected-voice.json) records that choice and the reviewed audition hash.
+
+The [animated character test](../scripts/claudia-character/README.md) pairs a fresh, timed Bella performance with a layered SVG Claudia: greeting, explanation, thinking, settling, blinks, and speech-reactive mouth motion. The standalone 14.75-second Remotion composition uses the existing local renderer and media checks. It is a separate experiment, not a new animation field in the production manifest. Mouth motion follows audio energy rather than phonetic lip sync.
 
 The creator describes a shared singer across the first three films; the agent-made CLODYSSEY/BLISS takes reused a Suno Voice derived from ESCAPE VELOCITY. That voice lives in its creator's account. Later films deliberately vary the voice. These local Kokoro auditions are casting alternatives, not that original Voice or measured matches to it. [Creator's voice notes](https://claudia.gallery/wiki/song/), checked 2026-10-22.
 

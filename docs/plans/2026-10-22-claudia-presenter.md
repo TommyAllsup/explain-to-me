@@ -49,7 +49,7 @@ Preparation accepts at most eight assets, 8 MiB per image, 32 MiB of images tota
 
 ## Deferred work
 
-Motion clips, facial animation, lip sync, automatic gallery selection, built-in image generation, paid providers, character-aware direction, and a new visual theme are separate experiments. Start with one reviewed still; evaluate instructional value before adding motion or service dependencies.
+The follow-on [character study](../../scripts/claudia-character/README.md), requested after voice casting, now tests a manually authored SVG rig with selected Bella speech, model-timed captions, reusable poses, blinks, and audio-energy mouth movement. It stays in a standalone composition while the user evaluates the character. Production-manifest animation, phonetic lip sync, automatic gallery selection, built-in image generation, paid providers, and character-aware direction remain deferred.
 
 ## Research grounding
 

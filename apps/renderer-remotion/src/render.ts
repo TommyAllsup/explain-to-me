@@ -144,7 +144,7 @@ function readPackageVersion(packageName: string): string {
   }
 }
 
-function assertPinnedRendererVersions(): string {
+export function assertPinnedRendererVersions(): string {
   const actual = ["remotion", "@remotion/bundler", "@remotion/renderer"].map((name) => ({ name, version: readPackageVersion(name) }));
   const incompatible = actual.filter((pkg) => pkg.version !== REMOTION_PIN);
   if (incompatible.length > 0) {
@@ -215,7 +215,7 @@ function isWithin(root: string, candidate: string): boolean {
   return candidate === root || candidate.startsWith(`${root}${sep}`);
 }
 
-async function startBundleServer(bundleDir: string): Promise<{ server: Server; origin: string }> {
+export async function startBundleServer(bundleDir: string): Promise<{ server: Server; origin: string }> {
   const root = resolve(bundleDir);
   const server = createServer(async (request, response) => {
     const relative = requestPath(request);
@@ -315,7 +315,7 @@ export async function startRestrictingProxy(allowedOrigin: string): Promise<{
   };
 }
 
-async function writeBrowserWrapper(directory: string, browserPath: string, proxyOrigin: string): Promise<string> {
+export async function writeBrowserWrapper(directory: string, browserPath: string, proxyOrigin: string): Promise<string> {
   if (process.platform === "win32") return writeWindowsBrowserLauncher(directory, browserPath, proxyOrigin);
   const wrapperPath = join(directory, "renderer-chrome.mjs");
   const script = [
