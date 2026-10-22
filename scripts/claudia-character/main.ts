@@ -9,6 +9,7 @@ import { renderSrt, renderWebVtt } from "../../packages/timeline/src/timeline.js
 import { confirmAllArtifacts, extractSceneBoundarySamples, muxAudioIntoVideo, validateRenderedMedia } from "../../packages/validation/src/qc.js";
 import { mouthEnvelope, prepareTimeline, sha256, verifyTiming, type CharacterTestProps } from "./motion.js";
 import { renderCharacterTest } from "./render.js";
+import { buildMouthTrack } from "./lipsync.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -37,20 +38,20 @@ async function main(): Promise<void> {
   const pcm = extractPcmDataFromWav(wav);
   const timing = verifyTiming(JSON.parse(timingBytes.toString("utf8")), wav, pcm, config.text);
   const {timeline, captions, beats} = prepareTimeline(timing);
-  const mouth = mouthEnvelope(pcm, timeline.fps);
+  const mouth = buildMouthTrack(timing.phonemes, mouthEnvelope(pcm, timeline.fps), timeline.fps);
   const props: CharacterTestProps = {durationInFrames: timeline.durationInFrames, fps: timeline.fps, mouth, beats, voiceLabel:"BELLA / A"};
   await assertNoLinkedPath(dirname(outputDirectory));
   await mkdir(outputDirectory, {recursive:false});
   await ensurePrivateDirectory(outputDirectory);
   const write = (name: string, data: string | Buffer) => writeFile(join(outputDirectory, name), data, {flag:"wx"});
   const json = (value: unknown) => JSON.stringify(value, null, 2) + "\n";
-  const sourcePaths = ["Claudia.tsx", "video.tsx", "motion.ts", "entry.tsx", "render.ts", "main.ts", "prepare-performance.py"];
+  const sourcePaths = ["Claudia.tsx", "Body.tsx", "Mouth.tsx", "acting.ts", "lipsync.ts", "video.tsx", "motion.ts", "entry.tsx", "render.ts", "main.ts", "prepare-performance.py"];
   const sourceHashes = Object.fromEntries(await Promise.all(sourcePaths.map(async (name) => [name, sha256(await readFile(join(root, "scripts/claudia-character", name)))])));
   const manifest = {
-    schema: "claudia-character-test/v1", purpose:"Standalone animation experiment; not a ProductionManifest",
+    schema: "claudia-character-test/v2", purpose:"Standalone animation experiment; not a ProductionManifest",
     title:"Claudia — remember the work", selectedVoice: selected,
     character:{name:"Claudia", origin:"manual-svg-rig", credit:"Claudia by anabology", canonUrl:"https://claudia.gallery/claudia/", canonReviewedAt:"2026-10-22", aiAssisted:true},
-    motion:{mouth:"frame RMS envelope; not phonetic lip sync", poses:["greet", "explain", "think", "settle"], determinism:"frame-derived; no random values, timers or live services"},
+    motion:{mouth:"blended IPA visemes from saved model timing; audio energy is secondary", body:"continuous sleeves, constrained arm lengths, authored wrist paths and held poses", acting:"welcome nod, one explanation, thoughtful glance, small closing invitation", determinism:"frame-derived; no random values, timers or live services"},
     fps:timeline.fps, width:1280, height:720, durationInFrames:timeline.durationInFrames, samples:timing.samples,
     audioSha256:sha256(wav), timingSha256:sha256(timingBytes), text:timing.text, beats, sourceHashes,
   };

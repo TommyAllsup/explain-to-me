@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { CaptionSegment, Timeline } from "../../packages/timeline/src/timeline.js";
+import type { MouthPose } from "./lipsync.js";
 
 const sample = z.number().int().nonnegative().max(720_000);
 export const performanceTimingSchema = z.object({
@@ -12,7 +13,7 @@ export const performanceTimingSchema = z.object({
 });
 export type PerformanceTiming = z.infer<typeof performanceTimingSchema>;
 export type CharacterBeat = { id: string; startMs: number; endMs: number; text: string; gesture: "greet" | "explain" | "think" | "settle" };
-export type CharacterTestProps = { durationInFrames: number; fps: number; mouth: number[]; beats: CharacterBeat[]; voiceLabel: string };
+export type CharacterTestProps = { durationInFrames: number; fps: number; mouth: MouthPose[]; beats: CharacterBeat[]; voiceLabel: string };
 export const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 export function verifyTiming(input: unknown, wav: Buffer, pcm: Buffer, expectedText: string): PerformanceTiming {

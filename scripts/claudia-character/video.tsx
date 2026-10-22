@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { Claudia } from "./Claudia.js";
+import { actingAt } from "./acting.js";
 import type { CharacterTestProps } from "./motion.js";
 export type { CharacterTestProps } from "./motion.js";
 
@@ -15,8 +16,6 @@ export function CharacterTest({fps, mouth, beats, voiceLabel}: CharacterTestProp
   const index = matching < 0 ? beats.length - 1 : matching;
   const active = beats[index] ?? beats.at(-1)!;
   const greeting = index < 2;
-  const startMs = greeting ? 0 : active.startMs;
-  const endMs = greeting ? beats[1]!.endMs : active.endMs;
   const scene = greeting ? 0 : index < 4 ? 1 : index === 4 ? 2 : 3;
   const sceneStart = scene === 0 ? 0 : scene === 1 ? beats[2]!.startMs : active.startMs;
   const enter = ease((now - sceneStart) / 400);
@@ -24,12 +23,12 @@ export function CharacterTest({fps, mouth, beats, voiceLabel}: CharacterTestProp
 
   return <AbsoluteFill style={{background: paper, color: ink, fontFamily: "Arial, sans-serif"}}>
     <div style={{position:"absolute", left:48, right:48, top:34, display:"flex", justifyContent:"space-between", fontSize:15, letterSpacing:2.1, fontWeight:700}}>
-      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / 01</span></span>
+      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / 02</span></span>
       <span style={{color:olive, letterSpacing:1}}>{voiceLabel}</span>
     </div>
     <div style={{position:"absolute", left:42, top:100, width:476, height:490, borderRadius:"50% 50% 18px 18px", background:"#e5e8dc"}}/>
     <div style={{position:"absolute", left:14, top:44, width:535, height:570, overflow:"hidden"}}><div style={{height:620}}>
-      <Claudia time={time} mouth={mouth[frame] ?? 0} gesture={active.gesture} gestureTime={(now - startMs) / 1000} gestureRemaining={(endMs - now) / 1000} emphasis={(mouth[frame] ?? 0) * .45}/>
+      <Claudia mouth={mouth[frame]!} acting={actingAt(time, beats)}/>
     </div></div>
     <div style={{position:"absolute", left:570, right:62, top:143, ...cardStyle}}>
       <div style={{fontSize:14, letterSpacing:2.5, fontWeight:700, color:olive, marginBottom:23}}>{["HELLO, I'M CLAUDIA", "ONE USEFUL IDEA", "THE CATCH", "A BETTER QUESTION"][scene]}</div>
