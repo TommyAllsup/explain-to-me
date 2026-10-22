@@ -77,7 +77,9 @@ The `ProductionManifest` is the stable contract between direction and execution.
 - preserve narration, scene intent, cue intent, bounded asset references, profile, and target duration; and
 - be emitted as `manifest.json` as renderer-neutral production intent, without provider- or renderer-specific execution fields.
 
-Exact reproduction requires the complete build record rather than the manifest alone: `manifest.json`, `report.json` provenance, resolved asset hashes, and pinned adapter/model versions, configuration, seeds, and environment. Provider/renderer metadata and resolved execution details belong in `report.json` or associated provenance records, never in `ProductionManifest`.
+Exact reproduction requires the complete build record rather than the manifest alone: `manifest.json`, `report.json` provenance, resolved asset hashes, and pinned adapter/model versions, configuration, seeds, and environment. Provider/renderer execution metadata and resolved execution details belong in `report.json` or associated provenance records.
+
+**Experimental amendment, 2026-10-22:** bounded, renderer-neutral asset-origin declarations may travel with `assets[].provenance`, including attribution and exact prompt/identity records. These describe imported material, not provider execution settings or verified claims. `visual.presenter.assetId` records composition intent for an approved local still. See the [Claudia experiment](../plans/2026-10-22-claudia-presenter.md).
 
 Each cacheable stage is content-addressed. Cache keys include normalized inputs and relevant adapter versions/configuration. A warm rerender must perform no redundant TTS, capture, or generation work when its inputs are unchanged.
 

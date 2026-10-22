@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { z } from "zod";
 
 export type SceneKind = "title" | "statement" | "diagram" | "comparison" | "code" | "outro" | "bullets" | "image";
@@ -13,6 +14,21 @@ export interface LocalAssetIntent {
   source: string;
   sha256: string;
   mimeType: "image/png" | "image/jpeg" | "image/webp";
+  provenance?: AssetProvenance;
+}
+
+/** Declared reproducibility metadata; it does not certify an asset's authenticity. */
+export interface AssetProvenance {
+  character: string;
+  origin: "gallery" | "generated" | "manual";
+  sourceUrl?: string;
+  prompt?: string;
+  identityText?: string;
+  identitySha256?: string;
+  canonUrl?: string;
+  canonRetrievedAt?: string;
+  credit: string;
+  aiGenerated: boolean;
 }
 
 export interface VisualNode {
@@ -42,6 +58,7 @@ export interface Scene {
     right?: { title: string; lines: string[] };
     code?: string;
     assetId?: string;
+    presenter?: { assetId: string };
   };
   cues?: Cue[];
 }
@@ -63,6 +80,32 @@ export const MANIFEST_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const boundedId = z.string().min(1).max(64).regex(MANIFEST_ID_PATTERN);
 const shortText = z.string().min(1).max(180);
 const lineList = z.array(z.string().min(1).max(240)).min(1).max(12);
+const sha256Digest = z.string().regex(/^[a-f0-9]{64}$/);
+const provenanceUrl = z.string().max(2_048).url().regex(/^https?:\/\//iu, "Provenance URLs must use HTTP or HTTPS");
+const provenanceText = (maximum: number) => z.string().min(1).max(maximum)
+  .refine((value) => value.trim().length > 0, "Provenance text must not be blank");
+
+export const assetProvenanceSchema = z.strictObject({
+  character: provenanceText(80),
+  origin: z.enum(["gallery", "generated", "manual"]),
+  sourceUrl: provenanceUrl.optional(),
+  prompt: provenanceText(6_000).optional(),
+  identityText: provenanceText(2_000).optional(),
+  identitySha256: sha256Digest.optional(),
+  canonUrl: provenanceUrl.optional(),
+  canonRetrievedAt: z.iso.date().optional(),
+  credit: provenanceText(180),
+  aiGenerated: z.boolean(),
+}).superRefine((provenance, ctx) => {
+  if (provenance.origin === "generated" && provenance.prompt === undefined) {
+    ctx.addIssue({ code: "custom", path: ["prompt"], message: "Generated assets require their declared prompt" });
+  }
+  if ((provenance.identityText === undefined) !== (provenance.identitySha256 === undefined)) {
+    ctx.addIssue({ code: "custom", path: [provenance.identityText === undefined ? "identityText" : "identitySha256"], message: "Identity text and its SHA-256 digest must be supplied together" });
+  } else if (provenance.identityText !== undefined && provenance.identitySha256 !== createHash("sha256").update(provenance.identityText, "utf8").digest("hex")) {
+    ctx.addIssue({ code: "custom", path: ["identitySha256"], message: "Identity SHA-256 must match the exact identity text" });
+  }
+});
 
 const narrationChunkSchema = z.strictObject({
   id: boundedId,
@@ -82,6 +125,7 @@ const visualSchema = z.strictObject({
   right: z.strictObject({ title: shortText, lines: lineList }).optional(),
   code: z.string().min(1).max(2_400).optional(),
   assetId: boundedId.optional(),
+  presenter: z.strictObject({ assetId: boundedId }).optional(),
 });
 
 const cueSchema = z.strictObject({
@@ -101,11 +145,12 @@ const sceneSchema = z.strictObject({
   cues: z.array(cueSchema).max(64).optional(),
 });
 
-const localAssetSchema = z.strictObject({
+export const localAssetSchema = z.strictObject({
   id: boundedId,
   source: z.string().min(1).max(512).refine((value) => !value.startsWith("/") && !value.includes("\\") && !value.includes("\0") && !/^[a-z][a-z0-9+.-]*:/i.test(value) && !value.split("/").includes(".."), "Asset source must be a bounded relative local path without traversal"),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  sha256: sha256Digest,
   mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  provenance: assetProvenanceSchema.optional(),
 });
 
 const productionManifestStructureSchema = z.strictObject({
@@ -124,6 +169,7 @@ export const productionManifestSchema = productionManifestStructureSchema.superR
   let narrationWords = 0;
   let narrationCharacters = 0;
   const assetIds = new Set<string>();
+  const assetsById = new Map((manifest.assets ?? []).map((asset) => [asset.id, asset]));
   for (const [assetIndex, asset] of (manifest.assets ?? []).entries()) {
     if (assetIds.has(asset.id)) ctx.addIssue({ code: "custom", path: ["assets", assetIndex, "id"], message: "Duplicate asset id" });
     assetIds.add(asset.id);
@@ -153,6 +199,18 @@ export const productionManifestSchema = productionManifestStructureSchema.superR
     }
     if (scene.kind !== "image" && scene.visual.assetId !== undefined) {
       ctx.addIssue({ code: "custom", path: ["scenes", sceneIndex, "visual", "assetId"], message: "Asset references are allowed only on image scenes" });
+    }
+    if (scene.visual.presenter) {
+      const presenterPath = ["scenes", sceneIndex, "visual", "presenter"];
+      if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
+        ctx.addIssue({ code: "custom", path: presenterPath, message: "Presenters are supported only on title, statement, bullets, and outro scenes" });
+      }
+      const presenterAsset = assetsById.get(scene.visual.presenter.assetId);
+      if (!presenterAsset) {
+        ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenters require an approved asset id" });
+      } else if (!presenterAsset.provenance) {
+        ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenter assets require provenance with a credit" });
+      }
     }
     const localChunks = new Map<string, string>();
     for (const [chunkIndex, chunk] of scene.narration.entries()) {
@@ -216,7 +274,7 @@ export const productionManifestSchema = productionManifestStructureSchema.superR
 
 export const productionManifestJsonSchema = {
   ...z.toJSONSchema(productionManifestStructureSchema),
-  $comment: "Cross-field checks for duplicate identifiers, scene-kind requirements, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime.",
+  $comment: "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/presenter references, presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. Asset provenance records declarations, not verified authenticity.",
 };
 
 export function normalizeTokens(text: string): string[] {

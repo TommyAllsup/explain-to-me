@@ -90,6 +90,8 @@ Choose a **new output directory** each time. Existing targets are refused. Docto
 
 ## Three ways to explain a thing
 
+**Experimental on this branch:** add Claudia beside selected scenes with a local presenter pack. The [two-command demo](docs/claudia.md) needs no generation service and preserves credits and provenance. See the [feature plan](docs/plans/2026-10-22-claudia-presenter.md).
+
 ### “Use this document. Keep setup simple.”
 
 Template mode selects source material deterministically; it is extractive, rather than semantic summarization. Replace the fixture with your `.md` or `.txt` file:

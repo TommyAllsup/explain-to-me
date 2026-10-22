@@ -12,6 +12,7 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import type { RenderAsset, RenderRequest, RenderResult } from "../../../packages/renderer-core/src/renderer.js";
 import { writeWindowsBrowserLauncher } from "./windows-browser-launcher.js";
 import { ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+import { assetProvenanceSchema } from "../../../packages/contracts/src/production-manifest.js";
 export { getLauncherReadiness } from "./windows-browser-launcher.js";
 
 const REMOTION_PIN = "4.0.535";
@@ -357,12 +358,24 @@ function renderAssetIds(request: RenderRequest): string[] {
   const declared = new Map((request.manifest.assets ?? []).map((asset) => [asset.id, asset]));
   if (declared.size !== (request.manifest.assets ?? []).length) throw new Error("Render manifest contains duplicate asset ids.");
 
-  const imageIds = new Set<string>();
+  const requiredAssetIds = new Set<string>();
   for (const scene of request.manifest.scenes) {
-    if (scene.kind !== "image") continue;
-    const assetId = scene.visual.assetId;
-    if (!assetId) throw new Error(`Image scene ${scene.id} is missing its approved asset id.`);
-    imageIds.add(assetId);
+    if (scene.kind === "image") {
+      const assetId = scene.visual.assetId;
+      if (!assetId) throw new Error(`Image scene ${scene.id} is missing its approved asset id.`);
+      requiredAssetIds.add(assetId);
+    }
+    if (scene.visual.presenter) {
+      if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
+        throw new Error(`Scene ${scene.id}: a presenter is supported only on title, statement, bullets, and outro scenes.`);
+      }
+      const assetId = scene.visual.presenter.assetId;
+      const asset = declared.get(assetId);
+      if (!asset || !assetProvenanceSchema.safeParse(asset.provenance).success) {
+        throw new Error(`Scene ${scene.id}: presenter ${assetId} requires an approved asset with valid provenance.`);
+      }
+      requiredAssetIds.add(assetId);
+    }
   }
 
   const provided = request.assets ?? {};
@@ -382,12 +395,12 @@ function renderAssetIds(request: RenderRequest): string[] {
     }
     if (asset.mimeType !== intent.mimeType) throw new Error(`Render asset ${assetId} MIME type does not match the manifest.`);
   }
-  for (const assetId of imageIds) {
+  for (const assetId of requiredAssetIds) {
     if (!Object.prototype.hasOwnProperty.call(provided, assetId)) {
-      throw new Error(`Image scene asset ${assetId} was not resolved to an approved local file.`);
+      throw new Error(`Scene asset ${assetId} was not resolved to an approved local file.`);
     }
   }
-  return [...imageIds].sort();
+  return [...requiredAssetIds].sort();
 }
 
 function matchesImageSignature(contents: Buffer, mimeType: RenderAsset["mimeType"]): boolean {
@@ -404,7 +417,8 @@ function extensionForImage(mimeType: RenderAsset["mimeType"]): string {
   return "webp";
 }
 
-async function copyAssetsIntoPublicDirectory(request: RenderRequest, directory: string): Promise<Record<string, string>> {
+/** Stage only referenced, hash-verified image and presenter assets for the local browser. */
+export async function copyAssetsIntoPublicDirectory(request: RenderRequest, directory: string): Promise<Record<string, string>> {
   const publicDirectory = join(directory, "public-assets");
   await mkdir(publicDirectory, { mode: 0o700 });
   const assetFilesById: Record<string, string> = {};

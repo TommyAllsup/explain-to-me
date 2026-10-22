@@ -39,6 +39,7 @@ test("--help lists version and existing commands", () => {
   assert.match(result.stdout, /explain-to-me — local document-to-video explainer/u);
   assert.match(result.stdout, /--version/u);
   assert.match(result.stdout, /doctor/u);
+  assert.match(result.stdout, /presenter --manifest/u);
 });
 
 test("doctor gives platform-specific recovery guidance with an empty PATH", () => {

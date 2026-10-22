@@ -2,6 +2,10 @@
 
 The [MIT license](LICENSE) covers Explain-to-Me project code. It does not relicense dependencies, model weights, voice packs, fonts, browsers or imported assets. No blanket commercial-use clearance or complete dependency-license audit is claimed.
 
+## Experimental Claudia fixture
+
+`fixtures/presenters/claudia/claudia.webp` is an AI-generated gallery image credited to **Claudia by anabology**. It is supplied under the creator's [use terms](https://claudia.gallery/use/), separately from the MIT project code. Source, retrieval date, prompt metadata, and terms notes are in the [fixture README](fixtures/presenters/claudia/README.md) and `pack.json`.
+
 ## Renderer
 
 The pipeline currently uses Remotion through a renderer adapter. Remotion has its own licensing and usage terms; making this wrapper MIT-licensed does not make Remotion MIT-licensed or waive those terms. Review the terms for the actual pinned version and your intended use:

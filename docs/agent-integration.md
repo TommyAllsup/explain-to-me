@@ -1,5 +1,7 @@
 # Agent integration
 
+For the experimental Claudia feature, use the [presenter workflow and agent prompt](claudia.md). It prepares a portable manifest before the usual build; no harness reconfiguration or generation subscription is needed for the bundled example.
+
 ## Windows v0.2.1
 
 Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-021-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.

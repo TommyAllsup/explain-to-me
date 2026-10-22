@@ -44,6 +44,8 @@ import { prepareNarration } from "../../../packages/audio/src/prepare-narration.
 import { ContentAddressedCache } from "../../../packages/assets/src/cache.js";
 import { configureMediaTools, findExecutable } from "../../../packages/runtime/src/tools.js";
 import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+import { runPresenter } from "./presenter.js";
+import { describeBuildAssets } from "./asset-report.js";
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DEFAULT_VOICE = "auto";
@@ -92,6 +94,10 @@ async function main(argv: string[]): Promise<void> {
   }
   if (command === "doctor") {
     await doctor(rest);
+    return;
+  }
+  if (command === "presenter") {
+    await runPresenter(rest);
     return;
   }
   if (command !== "build") {
@@ -265,7 +271,7 @@ async function build(options: CliOptions): Promise<void> {
   try {
     executionAssets = await timed("assetCopy", () => materializeAssets(resolvedAssets, stagingPath));
     if (manifest.assets?.length) {
-      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/${asset.id}.${assetExtension(asset.mimeType)}` })) };
+      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/asset-${asset.id}.${assetExtension(asset.mimeType)}` })) };
     }
     const synthesis = await timed("narrationSynthesis", () => synthesizeNarration({
       manifest,
@@ -372,7 +378,7 @@ async function build(options: CliOptions): Promise<void> {
       },
       direction: { ...direction, audience: options.audience, style: options.style, cloudCalls: [] },
       narrationPreparation: { stats: prepared.stats, warnings: prepared.warnings, pronunciations: pronunciationConfig.provenance },
-      assets: resolvedAssets.map((asset) => ({ id: asset.id, source: asset.source, canonicalPath: asset.path, sha256: asset.sha256, mimeType: asset.mimeType, sizeBytes: asset.sizeBytes })),
+      assets: describeBuildAssets(manifest, resolvedAssets),
       createdAt: new Date().toISOString(),
       status: "automated-checks-passed-egress-unverified",
       profile: manifest.profile,
@@ -621,7 +627,7 @@ async function materializeAssets(assets: ResolvedAsset[], stagingPath: string): 
     if (bytes.length > 8 * 1024 * 1024 || createHash("sha256").update(bytes).digest("hex") !== asset.sha256) {
       throw new Error(`Asset changed after approved resolution: ${asset.id}`);
     }
-    const path = join(directory, `${asset.id}.${assetExtension(asset.mimeType)}`);
+    const path = join(directory, `asset-${asset.id}.${assetExtension(asset.mimeType)}`);
     await writeFile(path, bytes, { mode: 0o600 });
     result[asset.id] = { path, sha256: asset.sha256, mimeType: asset.mimeType };
   }
@@ -679,6 +685,7 @@ function printHelp(): void {
     "  explain-to-me doctor",
     "  explain-to-me build <input.md|input.txt> [--director auto|local|template] [--duration 60s] [--audience <text>] [--style <hint>]",
     "  explain-to-me build --manifest <file.json> [--duration 60s]",
+    "  explain-to-me presenter --manifest <file.json> --pack <pack.json> --output <new-dir> [--scenes <id,id>]",
     "  Options: --output <new-dir> --tts auto|apple|kokoro --voice <id> --cache-dir <dir> --pronunciations <map.json>",
     "",
     "Models are installed during setup only; runtime direction stays local. Template mode is extractive, not AI summarization.",
