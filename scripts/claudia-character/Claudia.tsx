@@ -1,6 +1,7 @@
 import React from 'react';
 import { Body } from './Body.js';
 import { Mouth } from './Mouth.js';
+import { Eye } from './Eye.js';
 import type { MouthPose } from './lipsync.js';
 import type { ActingPose } from './acting.js';
 import { upperBodyTransform } from './posture.js';
@@ -12,26 +13,8 @@ const C = {
   seam: '#bab9b4', top: '#383a41', topShade: '#292c32', clay: '#c7774e',
   eye: '#647268', lip: '#9d5e58', mouth: '#603f43', tongue: '#c98781',
 };
-function Eye({ x, y, blink, direction, raised = 0 }: {
-  x: number; y: number; blink: number; direction: number; raised?: number;
-}) {
-  const opening = Math.max(0.04, 1 - blink);
-  return <g transform={`translate(${x} ${y})`}>
-    <path d={`M-21 ${-17 - raised} Q-5 ${-26 - raised} 16 ${-19 - raised}`} stroke={C.hair} strokeWidth="4" fill="none" strokeLinecap="round"/>
-    <g transform={`scale(1 ${opening})`}>
-      <path d="M-21 0Q-6-13 13-5L22 0Q4 11-13 6Z" fill={C.white}/>
-      <ellipse cx={direction} cy="0" rx="7.3" ry="9" fill={C.eye}/>
-      <ellipse cx={direction} cy="0" rx="3.5" ry="6.5" fill={C.hair}/>
-      <circle cx={direction - 2.1} cy="-3.2" r="1.9" fill={C.white}/>
-    </g>
-    <path d={`M-22 ${blink * 2} Q-6 ${-10 * opening} 12 ${-5 * opening} L23 0`} stroke={C.hair} strokeWidth="2.7" fill="none" strokeLinecap="round"/>
-    <path d={`M-14 ${5 * opening} Q3 ${10 * opening} 17 ${3 * opening}`} stroke={C.skinDeep} strokeWidth="1.1" fill="none"/>
-    <path d="m-21 0-5-3" stroke={C.hair} strokeWidth="1.7" strokeLinecap="round"/>
-  </g>;
-}
-
 export function Claudia({ mouth, acting }: {mouth: MouthPose; acting: ActingPose}) {
-  const blink = acting.blink;
+  const face = acting.face;
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760" width="100%" height="100%" role="img" aria-label="Claudia explaining with a relaxed posture" style={{overflow: 'visible'}}>
     <g strokeLinejoin="round" strokeLinecap="round">
       <Body pose={acting.body}/>
@@ -52,17 +35,17 @@ export function Claudia({ mouth, acting }: {mouth: MouthPose; acting: ActingPose
         <path d="M254 200Q276 181 294 195L294 232 278 246 250 230Z" fill={C.skinLight} opacity=".55"/>
         <path d="M321 192 351 198 356 228 330 240 317 229Z" fill={C.skinLight} opacity=".45"/>
         <path d="M280 291Q302 304 325 296" fill="none" stroke={C.skinLight} strokeWidth="4"/>
-        <ellipse cx="253" cy="251" rx="13" ry="5.5" fill={C.blush} opacity=".42"/>
-        <ellipse cx="346" cy="248" rx="14" ry="5.5" fill={C.blush} opacity=".4"/>
+        <ellipse cx="253" cy={251 - face.cheek * 1.5} rx="13" ry={5.5 + face.cheek * .3} fill={C.blush} opacity=".42"/>
+        <ellipse cx="346" cy={248 - face.cheek * 1.5} rx="14" ry={5.5 + face.cheek * .3} fill={C.blush} opacity=".4"/>
         {/* Almond eyes, adult proportions, and deliberately small highlights. */}
-        <Eye x={264} y={220} blink={blink} direction={acting.gaze + .5} raised={acting.brow}/>
-        <Eye x={337} y={217} blink={blink} direction={acting.gaze + .5} raised={-acting.brow * .35}/>
+        <Eye id="claudia-left" x={264} y={220} {...face} browLift={face.browLeft} browTilt={face.browTiltLeft}/>
+        <Eye id="claudia-right" x={337} y={217} {...face} browLift={face.browRight} browTilt={face.browTiltRight}/>
         <path d="M308 220 301 246Q299 252 305 254L311 253" fill="none" stroke={C.skinDeep} strokeWidth="1.65"/>
         <path d="M296 255 299 256M313 254 316 252" fill="none" stroke={C.skinDeep} strokeWidth="1.3"/>
         <path d="M308 233 307 244" fill="none" stroke={C.skinLight} strokeWidth="2.6"/>
-        <Mouth pose={mouth} smile={acting.smile}/>
+        <Mouth pose={mouth} smile={face.smile}/>
         {/* Freckles read as freckles, not cheek decoration. */}
-        <g fill={C.skinDeep} opacity=".6">
+        <g fill={C.skinDeep} opacity=".6" transform={`translate(0 ${-face.cheek * .8})`}>
           <circle cx="250" cy="242" r="1.05"/><circle cx="257" cy="247" r="1"/><circle cx="263" cy="241" r=".9"/><circle cx="272" cy="246" r="1.1"/>
           <circle cx="285" cy="244" r=".85"/><circle cx="319" cy="241" r=".85"/><circle cx="329" cy="243" r="1"/><circle cx="339" cy="239" r="1"/><circle cx="349" cy="242" r="1.1"/>
         </g>

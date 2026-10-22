@@ -1,9 +1,10 @@
 import type { CharacterBeat } from "./motion.js";
 import type { BodyPose } from "./posture.js";
+import { facialAt, type FacialPose } from "./expressions.js";
 
 export type ActingPose = {
   reveal: number; invite: number; body: BodyPose; headTilt: number; nod: number;
-  gaze: number; brow: number; smile: number; blink: number;
+  face: FacialPose;
 };
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 // Minimum-jerk travel: zero speed and acceleration at a held pose.
@@ -37,9 +38,6 @@ export function actingAt(time: number, beats: CharacterBeat[]): ActingPose {
   const thought = thinking(time);
   const caution = warning(time);
   const welcome = phrase(time, .18, .5, .65, 1.2);
-  const gaze = phrase(time, at(2) - .22, at(2) + .05, at(2) + .55, at(2) + .85) * 2.2;
-  const blinkTimes = [at(2) - .27, at(3) + .62, at(4) + .55, at(5) - .18];
-  const blink = Math.max(...blinkTimes.map((b) => phrase(time, b - .055, b + .025, b + .055, b + .16)));
   const body: BodyPose = {
     chestX: support(time) * 4.5 + closingSupport(time) * 2.5 - thought * 2.4 + caution * 1.2 - releaseTension(time) * .8,
     chestY: support(time) * -1.7 + closingSupport(time) * -.9 + thought * .65 + releaseTension(time) * .5,
@@ -53,7 +51,6 @@ export function actingAt(time: number, beats: CharacterBeat[]): ActingPose {
     // root inherits the spine transform immediately and stays attached.
     headTilt: thought * -2.2 + caution * .65 + invite * -.7 - chestRoll(time - .1) * .55,
     nod: welcome * 1.6 + caution * .7,
-    gaze, brow: thought * 1.8 + caution * .5 + invite * .5,
-    smile: .22 + welcome * .23 + invite * .32, blink,
+    face: facialAt(time, beats),
   };
 }

@@ -2,11 +2,13 @@
 
 This branch experiment pairs the selected **A — Bella (`af_bella`)** voice with an authored SVG character, expressive poses, and a small cache explanation. It generates a fresh Bella performance using the audition's script and natural speed, with matched loudness and no pitch or duration changes. Bella is our chosen local speaking voice, not the creator's Suno singing-voice preset.
 
-The third iteration connects the gestures through the whole upper body. The pelvis stays planted while the chest shifts and turns through a continuous spine deformation. The shoulder prepares each reach, then relaxes as the upper arm, forearm, and fingers arrive in sequence. Both arms keep their segment lengths and attach to the moving shoulders. The jacket, collar, lapels, and neck share the same deformation; the head follows the neck with a small delayed counter-tilt. A reflective weight shift and a smaller closing invitation give the performance contrast without continuous swaying.
+The fourth iteration adds facial acting: a brief glance toward the diagram before the explaining gesture, an upward reflective glance during the question, and direct eye contact during the caution and closing invitation. Gaze moves quickly between held targets. The eyelids close over fixed-size irises and pupils, with full contact and a slower reopening. Asymmetric brows, lower-lid tension, cheek lift, and mouth corners distinguish warmth, curiosity, and thoughtful caution. These cues are authored for the six sentences in this study; they do not infer emotion from arbitrary narration.
+
+The accepted third-iteration body motion stays intact. The pelvis stays planted while the chest shifts and turns through a continuous spine deformation. The shoulder prepares each reach, then relaxes as the upper arm, forearm, and fingers arrive in sequence. Both arms keep their segment lengths and attach to the moving shoulders. The jacket, collar, lapels, and neck share the same deformation; the head follows the neck with a small delayed counter-tilt. A reflective weight shift and a smaller closing invitation give the performance contrast without continuous swaying.
 
 Continuous sleeve contours and a single hand shape preserve the second iteration's improvements. The hand turns from a partly edge-on relaxed position into an open gesture without swapping drawings. Movement is independent of speech loudness and does not reset at each sentence. The source is a separate Remotion composition, leaving the presenter's still-image manifest workflow unchanged.
 
-The mouth uses Bella's saved IPA phoneme intervals to blend closure, width, rounding, teeth, and tongue controls. It explicitly seals m/b/p and distinguishes rounded vowels, broad vowels, and f/v. Audio energy only moderates opening. These are authored visemes, not measured facial performance; consonant timing and visible shape still need human review.
+The mouth uses Bella's saved IPA phoneme intervals to blend closure, width, rounding, teeth, and tongue controls. It explicitly seals m/b/p and distinguishes rounded vowels, broad vowels, and f/v. Audio energy only moderates opening. The facial expression changes the corners without changing the speech opening; rounded vowels suppress the smile, and full lip contact hides the mouth interior. These are authored visemes, not measured facial performance; consonant timing and visible shape still need human review.
 
 ## Build the experiment
 
@@ -36,7 +38,7 @@ The output directory contains:
 - Sample PNGs for checking expressions, gestures, content, and captions.
 - `silent.mp4`: the intermediate rendered picture before audio muxing.
 
-Watch the MP4 with sound to judge Bella's delivery and Claudia's personality together. Inspect transitions as well as held poses: sleeve continuity, hand orientation, neck attachment, and closure/rounding during speech. Media integrity checks cannot establish that acting looks human. All pose and mouth decisions derive from saved inputs and the video frame, so repeated playback follows the same animation.
+Watch the MP4 with sound to judge Bella's delivery and Claudia's personality together. Inspect transitions as well as held poses: gaze holds and reconnection, clean eyelid contact, expression changes during speech, sleeve continuity, hand orientation, and neck attachment. Media integrity checks cannot establish that acting looks human. All pose and mouth decisions derive from saved inputs and the video frame, so repeated playback follows the same animation.
 
 Character attribution: **Claudia by anabology**. This code-authored interpretation is part of the local feature experiment; see [the presenter documentation](../../docs/claudia.md) for reference and provenance context.
 
@@ -53,7 +55,17 @@ Official resources reviewed on 2026-10-22:
 
 The source remains an original SVG interpretation. The resources above were consulted as references; no generated film footage or remote assets are loaded by the renderer.
 
-## Third-iteration validation — 2026-10-22
+## Fourth-iteration validation — 2026-10-22
+
+The full output is `out/claudia-character-v4/video.mp4`; `face-closeup.mp4` is a narrated 560 × 620 crop for expression review. Bella's audio, phoneme controls, timing, and captions are byte-identical to v3. The full composition remains 354 frames, 1280 × 720 at 24 fps, with a 27 ms audio/video endpoint difference. All 11 media gates pass; browser errors and external browser requests are empty.
+
+TypeScript checking and all 34 character tests pass. The 11 additional face tests cover full blink contact across frame alignments, slower reopening, stable gaze targets and reconnection, restrained expression differences, fixed iris/pupil geometry, clean eyelid closure, and smile controls that preserve lip contact and vowel rounding. Run `node --import tsx --test scripts/claudia-character/acting.test.ts scripts/claudia-character/posture.test.ts scripts/claudia-character/lipsync.test.ts scripts/claudia-character/motion.test.ts scripts/claudia-character/expressions.test.ts scripts/claudia-character/Eye.test.ts scripts/claudia-character/Mouth.test.ts`.
+
+The pilot's `expressions-review.png` samples greeting, reassurance, diagram glance, reflection, caution, and invitation. `blink-review.png` covers frames 23–30; `gaze-review.png` covers the diagram glance and return. A full composition frame checks expression readability at normal scale. No iris leakage or collapsed pupils were visible in the sampled blink. The curious brow partly disappears beneath the fringe, so its gaze and head tilt carry some of that expression. This is a restrained authored performance, not captured facial acting or an animation-quality guarantee.
+
+The pilot and final render produce identical MP4 SHA-256 `5a6792303212d932f0715f94ce1bd086c3e602812c54a4815ece84d9e6183234`. Review sheets remain under `out/claudia-character-v4-pilot/`.
+
+## Third-iteration validation — superseded facial acting
 
 The output is `out/claudia-character-v3/video.mp4`. It reuses the exact Bella recording and phoneme timing from v2: 354 frames, 1280 × 720 at 24 fps, with a 27 ms audio/video endpoint difference. All 11 media gates pass; browser errors and external browser requests are empty.
 

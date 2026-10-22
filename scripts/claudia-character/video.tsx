@@ -23,7 +23,7 @@ export function CharacterTest({fps, mouth, beats, voiceLabel}: CharacterTestProp
 
   return <AbsoluteFill style={{background: paper, color: ink, fontFamily: "Arial, sans-serif"}}>
     <div style={{position:"absolute", left:48, right:48, top:34, display:"flex", justifyContent:"space-between", fontSize:15, letterSpacing:2.1, fontWeight:700}}>
-      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / 03</span></span>
+      <span>CLAUDIA <span style={{color:"#849080", paddingLeft:14, fontWeight:400}}>CHARACTER STUDY / 04</span></span>
       <span style={{color:olive, letterSpacing:1}}>{voiceLabel}</span>
     </div>
     <div style={{position:"absolute", left:42, top:100, width:476, height:490, borderRadius:"50% 50% 18px 18px", background:"#e5e8dc"}}/>
