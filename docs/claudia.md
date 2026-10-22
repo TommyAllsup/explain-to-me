@@ -24,17 +24,23 @@ Keep `manifest.json` and its adjacent `assets/` together when moving an output. 
 
 ## Voice casting experiment
 
-Three local speaking-voice auditions are configured in [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json): A (`af_bella`), B (`af_heart`), and C (`af_nicole`). Each uses the same text at speed 1.0, with natural duration and matched loudness. The user selected **A — Bella** on 2026-10-22; [selected-voice.json](../fixtures/presenters/claudia/selected-voice.json) records that choice and the reviewed audition hash.
+Claudia's default for the [animated character workflow](../scripts/claudia-character/README.md) is **original English Chatterbox with Bella as its voice reference**, selected by the user after comparing the complete animated performances on 2026-10-22. [selected-voice.json](../fixtures/presenters/claudia/selected-voice.json) records the model profile, generation settings, reference, and approved performance hashes. The bundled [approved Chatterbox inputs](../fixtures/presenters/claudia/approved-chatterbox/) preserve the exact recording, phoneme and word timing, and alignment report from the accepted test.
 
-The [animated character test](../scripts/claudia-character/README.md) pairs a timed Bella performance with a layered SVG Claudia. Its fourth iteration adds purposeful gaze, eyelid blinks, and coordinated brow, cheek, and smile changes while retaining the accepted connected body movement. Speech keeps control of lip closure and vowel rounding. The standalone 14.75-second Remotion composition uses the existing local renderer and media checks. It is a separate experiment, not a new animation field in the production manifest. Facial cues are authored for this narration, and mouth shapes approximate model timing; visual acting quality still needs human review.
+To render that default with the existing local renderer and Node 24, choose a fresh output directory:
 
-The [local prosody comparison](../scripts/claudia-prosody/README.md) auditions that accepted Bella recording against IndexTTS-2.5 and original English Chatterbox. Both new engines receive the same script and Bella audio reference. The listening files have matched loudness and preserve each model's timing, with raw audio, pinned model provenance, and local wording checks retained. This experiment does not change the selected voice or the character animation.
+```sh
+node --import tsx scripts/claudia-character/main.ts --output out/claudia-character-default
+```
 
-The [Chatterbox character trial](../scripts/claudia-character/README.md#chatterbox-performance-trial) then pairs audition C with its own acoustic phoneme alignment, word-timed facial cues, and smoothly retimed body gestures. It reuses that exact recording so the whole performance can be compared with Bella v4.
+The 14.875-second Remotion movie retains the approved lip sync, word-timed facial expressions, gaze, blinks, and smoothly retimed body gestures. Speech keeps control of lip closure and vowel rounding. Rendering reuses the saved take without speech synthesis or realignment. Facial cues are authored for this narration and phoneme timing is automatically estimated. The standalone character workflow does not add Chatterbox to the general explainer CLI or change its production manifest; the still-presenter commands above continue to use their explicitly selected speech backend.
+
+The initial [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json) cast A (`af_bella`), B (`af_heart`), and C (`af_nicole`) with the same text at speed 1.0 and matched loudness. Bella was the first selection and supplied the accepted fourth-iteration animation and voice reference. [bella-baseline.json](../fixtures/presenters/claudia/bella-baseline.json) preserves that historical profile for explicit comparisons.
+
+The later [local prosody comparison](../scripts/claudia-prosody/README.md) auditioned the accepted Bella recording against IndexTTS-2.5 and original English Chatterbox. Both new engines received the same script and Bella audio reference, with matched loudness and each model's natural timing. The [Chatterbox character trial](../scripts/claudia-character/README.md#chatterbox-performance-trial) then paired its audition C with acoustic phoneme alignment, word-timed facial cues, and connected gestures. That complete performance is now the default; the earlier Bella and comparison artifacts remain available.
 
 The creator describes a shared singer across the first three films; the agent-made CLODYSSEY/BLISS takes reused a Suno Voice derived from ESCAPE VELOCITY. That voice lives in its creator's account. Later films deliberately vary the voice. These local Kokoro auditions are casting alternatives, not that original Voice or measured matches to it. [Creator's voice notes](https://claudia.gallery/wiki/song/), checked 2026-10-22.
 
-To regenerate with the setup-created Python and an existing FFmpeg executable, select a fresh output directory whose parent already exists:
+To regenerate the initial three Kokoro casting auditions with the setup-created Python and an existing FFmpeg executable, select a fresh output directory whose parent already exists:
 
 ```powershell
 .venv-kokoro/Scripts/python.exe scripts/claudia-voice-auditions.py --output out/claudia-voice-auditions --ffmpeg node_modules/.pnpm/@remotion+compositor-win32-x64-msvc@4.0.535/node_modules/@remotion/compositor-win32-x64-msvc/ffmpeg.exe

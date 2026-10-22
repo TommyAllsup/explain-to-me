@@ -2,8 +2,15 @@
 
 Compare the accepted Kokoro Bella performance with IndexTTS-2.5 and original
 English Chatterbox, using the same script and that Bella recording as the audio
-reference. This is an audition experiment on `codex/claudia-presenter`; it does
-not select a replacement narrator or change the animated character test.
+reference. After the listening and animated comparisons, the user selected
+**Chatterbox as Claudia's default** and retained the approved lip sync and facial
+expressions. See the [character workflow](../claudia-character/README.md) to
+render that saved performance without loading speech models.
+
+These audition tools on `codex/claudia-presenter` remain available for explicit
+comparisons. Running them does not change the selected profile. Chatterbox is
+the default for the standalone Claudia character experiment; it is not yet a
+speech backend in the general explainer CLI.
 
 The frozen input is `out/claudia-bella-performance/audio.wav`, SHA-256
 `3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1733`.
@@ -11,6 +18,10 @@ It is the accepted performance, not the earlier casting audition file. All
 runners read the exact text in `fixtures/presenters/claudia/voice-audition.json`.
 Keep a copy of this input with the audition bundle: regeneration with a similar
 voice is not an interchangeable reference.
+
+The selected Chatterbox runner now reads the byte-identical tracked copy at
+`fixtures/presenters/claudia/approved-chatterbox/reference-bella.wav`. This keeps
+the accepted reference available independently of the historical `out/` bundle.
 
 ## Listening comparison
 

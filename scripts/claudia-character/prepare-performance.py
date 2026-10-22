@@ -1,4 +1,7 @@
-"""Synthesize a new Bella take and capture phoneme timing in the same model call."""
+"""Synthesize a historical Bella comparison take, without changing Claudia's default.
+
+For the approved Chatterbox default, run main.ts --output <new-directory>.
+"""
 from __future__ import annotations
 
 import argparse
@@ -26,9 +29,9 @@ def main() -> None:
     output = args.output.resolve()
     ffmpeg = str(args.ffmpeg.resolve(strict=True))
     config = json.loads((ROOT / "fixtures/presenters/claudia/voice-audition.json").read_text(encoding="utf-8"))
-    selected = json.loads((ROOT / "fixtures/presenters/claudia/selected-voice.json").read_text(encoding="utf-8"))
+    selected = json.loads((ROOT / "fixtures/presenters/claudia/bella-baseline.json").read_text(encoding="utf-8"))
     if selected["voice"] != "af_bella" or selected["speed"] != 1:
-        raise ValueError("This character test requires the selected Bella profile at natural speed")
+        raise ValueError("The historical comparison requires Bella at natural speed")
     # Reuse the audition's checked local process runner and loudness parser.
     spec = importlib.util.spec_from_file_location("auditions", ROOT / "scripts/claudia-voice-auditions.py")
     assert spec and spec.loader
@@ -89,7 +92,7 @@ def main() -> None:
     timing = {"version": 1, "voice": selected["voice"], "sampleRate": rate, "samples": len(audio),
               "audioSha256": digest(target), "method": "phoneme durations captured in the same synthesis call; sentence cues extend to next onset",
               "text": config["text"], "cues": cues, "phonemes": [asdict(t) for t in spoken]}
-    report = {"selectedVoice": selected, "performance": "new timed take, same voice and script as audition A",
+    report = {"performanceVoice": selected, "performance": "new historical Bella comparison take, same voice and script as audition A",
               "model": model_metadata["model"], "runtimeVersions": model_metadata["runtimeVersions"],
               "modelSha256": digest(model), "voicesSha256": digest(voices), "generatorSha256": digest(Path(__file__)),
               "rawSha256": digest(raw), "audioSha256": digest(target), "speed": 1, "samples": len(audio),

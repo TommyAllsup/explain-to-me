@@ -60,12 +60,12 @@
       <p class="intro">Bella on the left, Chatterbox on the right. Choose an audio track, then press play to compare the voice, lip sync, and expressions.</p>
       <div class="controls">
         <div class="choices" role="group" aria-label="Audio track">
-          <button type="button" data-voice="bella" aria-pressed="true" aria-controls="performance">Hear Bella</button>
-          <button type="button" data-voice="chatterbox" aria-pressed="false" aria-controls="performance">Hear Chatterbox</button>
+          <button type="button" data-voice="bella" aria-pressed="false" aria-controls="performance">Hear Bella</button>
+          <button type="button" data-voice="chatterbox" aria-pressed="true" aria-controls="performance">Hear Chatterbox</button>
         </div>
-        <p class="status" id="status" role="status" aria-live="polite">Bella audio selected. Press play to begin.</p>
+        <p class="status" id="status" role="status" aria-live="polite">Chatterbox audio selected. Press play to begin.</p>
       </div>
-      <video id="performance" controls playsinline preload="auto" poster="bella-poster.png" src="bella.mp4" aria-label="Bella and Chatterbox animated performances side by side" aria-describedby="comparison-note">
+      <video id="performance" controls playsinline preload="auto" poster="chatterbox-poster.png" src="chatterbox.mp4" aria-label="Bella and Chatterbox animated performances side by side" aria-describedby="comparison-note">
         Your browser cannot play this video. <a href="comparison.mp4">Open the comparison video</a>.
       </video>
       <p class="error" id="error" role="alert" hidden></p>
@@ -76,7 +76,7 @@
           <a href="../claudia-character-v4/video.mp4">Original Bella test</a>
           <a href="../claudia-character-chatterbox/video.mp4">Original Chatterbox test</a>
         </nav>
-        <p class="default-note">This audition does not change Claudia’s default voice.</p>
+        <p class="default-note">Selected default: Chatterbox. Both takes remain available for comparison.</p>
       </div>
       <noscript><p class="details">Audio switching needs JavaScript. Use the comparison video above to hear Bella followed by Chatterbox.</p></noscript>
     </main>
@@ -87,7 +87,7 @@
         const error = document.getElementById('error');
         const buttons = [...document.querySelectorAll('[data-voice]')];
         const voices = { bella: { name: 'Bella', file: 'bella.mp4', poster: 'bella-poster.png' }, chatterbox: { name: 'Chatterbox', file: 'chatterbox.mp4', poster: 'chatterbox-poster.png' } };
-        let selected = 'bella';
+        let selected = 'chatterbox';
         let pending = null;
         let revision = 0;
         let failed = false;

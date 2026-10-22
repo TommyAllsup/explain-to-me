@@ -1,11 +1,37 @@
 {
-  "version": "1",
+  "version": "2",
   "selectedOn": "2026-10-22",
-  "selection": "User selected audition A, Bella",
-  "engine": "kokoro",
-  "voice": "af_bella",
-  "speed": 1.0,
-  "auditionSha256": "a1d26d7b36f196c90d8ce8c2cb83a1f17122b70241cf40f3c6817ce704bc0c06",
-  "purpose": "Claudia speaking voice for this experiment",
-  "reference": "https://claudia.gallery/wiki/song/#her-voice"
+  "selection": "User selected Chatterbox after the Bella/Chatterbox animated comparison; retain the approved lip sync and facial expressions",
+  "engine": "chatterbox",
+  "variant": "Original English 500M",
+  "voice": "chatterbox-bella",
+  "speed": 1,
+  "referenceVoice": "af_bella",
+  "referenceAudio": "fixtures/presenters/claudia/approved-chatterbox/reference-bella.wav",
+  "referenceSha256": "3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1733",
+  "synthesis": {
+    "model": "ResembleAI/chatterbox",
+    "modelRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+    "package": "chatterbox-tts==0.1.7",
+    "seed": 20261022,
+    "settings": {
+      "exaggeration": 0.65,
+      "cfg_weight": 0.35,
+      "temperature": 0.8,
+      "repetition_penalty": 1.2,
+      "min_p": 0.05,
+      "top_p": 1.0
+    }
+  },
+  "approvedPerformance": {
+    "directory": "fixtures/presenters/claudia/approved-chatterbox",
+    "audioSha256": "20cd6bb34b566fadee4a2e37d1897a86e472d8cc060409bc2f2477fbfe2b6767",
+    "timingSha256": "223e4e7677f91ebf9b77ed611e1a2f0b95c2fbd9a9db7d439e7a45038bb980c0",
+    "reportSha256": "237ba07a9bed4c7f578de2b179e811b7319fd48d95a6190dfd4e0ee5a0690ed6",
+    "renderPropsSha256": "2e87c1270767ef352933da0be4bbb8ddd9ccb56ce7c7736f2df72ecaef33c396",
+    "videoSha256": "33b1bdceeee3a8656f3abb05cbcd4e4d5ec20e02dfd5da29dea78486970f72f6"
+  },
+  "purpose": "Default voice and approved performance for the standalone Claudia animated character workflow",
+  "previousSelection": "fixtures/presenters/claudia/bella-baseline.json",
+  "characterVoiceReference": "https://claudia.gallery/wiki/song/#her-voice"
 }

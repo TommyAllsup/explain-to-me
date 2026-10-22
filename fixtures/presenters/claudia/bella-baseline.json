@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "selectedOn": "2026-10-22",
+  "selection": "User selected audition A, Bella",
+  "engine": "kokoro",
+  "voice": "af_bella",
+  "speed": 1.0,
+  "auditionSha256": "a1d26d7b36f196c90d8ce8c2cb83a1f17122b70241cf40f3c6817ce704bc0c06",
+  "purpose": "Claudia speaking voice for this experiment",
+  "reference": "https://claudia.gallery/wiki/song/#her-voice"
+}

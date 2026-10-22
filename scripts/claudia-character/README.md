@@ -1,6 +1,33 @@
 # Claudia's speaking character test
 
-This branch experiment pairs the selected **A — Bella (`af_bella`)** voice with an authored SVG character, expressive poses, and a small cache explanation. It generates a fresh Bella performance using the audition's script and natural speed, with matched loudness and no pitch or duration changes. Bella is our chosen local speaking voice, not the creator's Suno singing-voice preset.
+Claudia's selected default is **Chatterbox with Bella as the voice reference**. The user chose this performance after comparing the animated Bella and Chatterbox tests. The default retains the approved Chatterbox recording, phoneme alignment, word-timed facial expressions, gaze, blinks, and connected body gestures from study 05.
+
+The selection applies to this standalone SVG character experiment. The general explainer CLI still uses its existing Kokoro and Apple speech backends. Claudia's local speaking voice is separate from the creator's Suno singing-voice preset.
+
+## Build Claudia's default performance
+
+With the repository's renderer setup complete, run from the repository root using Node 24 and a fresh output directory:
+
+```powershell
+node --import tsx scripts/claudia-character/main.ts --output out/claudia-character-default
+```
+
+When `--performance` is omitted, the runner reads [selected-voice.json](../../fixtures/presenters/claudia/selected-voice.json) and uses the approved inputs in [approved-chatterbox](../../fixtures/presenters/claudia/approved-chatterbox/). That bundle contains the exact `audio.wav`, `timings.json`, and alignment `report.json` used in the accepted trial. Rendering needs no speech synthesis, realignment, or model download. The selected profile records the original English 500M Chatterbox model, package version, generation settings, Bella reference, and accepted artifact hashes.
+
+The bundle also retains `reference-bella.wav` for future Chatterbox synthesis.
+Its hash identifies the accepted voice reference even if ignored audition
+outputs are removed. Default builds verify the approved audio, timing, and
+provenance hashes, then check the complete derived mouth and acting controls
+against the reviewed performance. The bundle preserves exact JSON bytes across
+Git checkouts so Windows line-ending conversion cannot invalidate those hashes.
+
+Pass `--performance <directory>` explicitly to render another saved take, including the historical Bella baseline. This does not change the selected default. Recreating a voice recording can change its pacing and waveform; preserving the saved recording and timing is what keeps this approved performance intact.
+
+Default promotion validation: TypeScript checking and all 46 character tests
+pass. Building with only `--output out/claudia-character-default` passes all 11
+media checks and produces byte-identical `render-props.json` and `video.mp4`
+compared with the approved Chatterbox trial. The movie remains SHA-256
+`33b1bdceeee3a8656f3abb05cbcd4e4d5ec20e02dfd5da29dea78486970f72f6`.
 
 ## Compare Bella and Chatterbox
 
@@ -31,11 +58,11 @@ stays under ignored `out/`; the script and player template live on this branch.
 
 ## Chatterbox performance trial
 
-The fifth study uses the exact **C — Chatterbox** recording from the
+The fifth study, now the selected default, uses the exact **C — Chatterbox** recording from the
 [local prosody auditions](../claudia-prosody/README.md). It keeps the recording's
 14.84-second delivery and gives it its own phoneme alignment, captions, facial
-cues, and body timing. It is a performance comparison; the accepted Bella v4
-movie remains available in `out/claudia-character-v4/`.
+cues, and body timing. The accepted Bella v4 movie remains available in
+`out/claudia-character-v4/` for comparison.
 
 `prepare-chatterbox-performance.py` copies the audition WAV byte-for-byte and
 aligns its actual audio to the reviewed script with a pinned
@@ -55,11 +82,13 @@ script; the system does not infer emotion from voice pitch or volume.
 
 The accepted shoulder, chest, arm, finger, and head movement is smoothly retimed
 to the new sentence boundaries. Its overlapping movement stays connected across
-boundaries. Lip closures and rounded vowels keep priority over smiles. Bella's
-original facial and body behavior remains the default when no new acting track
-is supplied.
+boundaries. Lip closures and rounded vowels keep priority over smiles. Explicit
+Bella renders retain their original facial and body behavior; the Chatterbox
+default supplies its own facial acting track and body retiming.
 
-The trial uses the existing `C:/Python311/python.exe` CPU environment with Torch,
+The following historical preparation commands reproduce the alignment stage;
+they are unnecessary for rendering the bundled default. The trial used the
+existing `C:/Python311/python.exe` CPU environment with Torch,
 Transformers, NumPy, and SciPy, plus the existing Kokoro environment solely for
 its eSpeak phonemizer. Model weights live on D:. Run from the repository root,
 using fresh performance and render output directories:
@@ -117,20 +146,20 @@ Continuous sleeve contours and a single hand shape preserve the second iteration
 
 The mouth uses Bella's saved IPA phoneme intervals to blend closure, width, rounding, teeth, and tongue controls. It explicitly seals m/b/p and distinguishes rounded vowels, broad vowels, and f/v. Audio energy only moderates opening. The facial expression changes the corners without changing the speech opening; rounded vowels suppress the smile, and full lip contact hides the mouth interior. These are authored visemes, not measured facial performance; consonant timing and visible shape still need human review.
 
-## Build the experiment
+## Recreate the historical Bella baseline
 
-Complete the repository's normal renderer and local Kokoro setup. Run these commands from the repository root with Node 24 and the existing Kokoro environment, replacing the FFmpeg path with an existing local executable:
+For a new Bella comparison take, complete the repository's normal renderer and local Kokoro setup. The helper uses the fixed [bella-baseline.json](../../fixtures/presenters/claudia/bella-baseline.json) profile, independently of Claudia's selected default. Run these commands from the repository root with Node 24 and the existing Kokoro environment, replacing the FFmpeg path with an existing local executable:
 
 ```powershell
-.venv-kokoro/Scripts/python.exe scripts/claudia-character/prepare-performance.py --output out/claudia-bella-performance --ffmpeg /absolute/path/to/ffmpeg
-node --import tsx scripts/claudia-character/main.ts --performance out/claudia-bella-performance --output out/claudia-character-test
+.venv-kokoro/Scripts/python.exe scripts/claudia-character/prepare-performance.py --output out/claudia-bella-new-performance --ffmpeg /absolute/path/to/ffmpeg
+node --import tsx scripts/claudia-character/main.ts --performance out/claudia-bella-new-performance --output out/claudia-character-bella-new
 ```
 
 On macOS or Linux, use `.venv-kokoro/bin/python` for the first command. Performance preparation obtains the audio and phoneme timestamps in the same local synthesis call. It then normalizes loudness to -19 LUFS without changing the sample count. The performance directory contains `audio.wav`, `timings.json`, `raw.wav`, and `report.json`.
 
-Kokoro does not reproduce the audition's waveform exactly across calls, so the test uses the fresh take's own timing. The voice, script, and speed match the selected audition; the recording is new.
+Kokoro does not reproduce the audition's waveform exactly across calls, so the test uses the fresh take's own timing. The voice, script, and speed match the historical Bella profile; the recording is new.
 
-For animation revisions, reuse the existing `out/claudia-bella-performance` directory and run only the second command. This keeps the recording and its timings identical while comparing the movement.
+For comparisons with the original Bella performance, pass the existing `out/claudia-bella-performance` directory to the renderer. This keeps that recording and its timings identical while comparing the movement.
 
 Use a fresh output directory for every build. No browser, model, font, or character asset is downloaded during the experiment. Set `CHROME_PATH` to an already installed compatible browser when normal renderer setup has not installed one. The runner reuses the application's version checks, local bundle server, restricting network proxy, and browser launcher. External browser requests fail the render and are recorded in its error details.
 
@@ -138,14 +167,14 @@ Use a fresh output directory for every build. No browser, model, font, or charac
 
 The output directory contains:
 
-- `video.mp4`: the finished 1280 × 720, 24 fps character test with Bella's audio.
-- `audio.wav`: the fresh timed Bella recording used for the test.
+- `video.mp4`: the finished 1280 × 720, 24 fps character test with the selected performance's audio.
+- `audio.wav`: the unchanged recording used for that render; the default uses the approved Chatterbox take.
 - `captions.vtt` and `captions.srt`: captions aligned to the accepted timing.
 - `manifest.json` and `report.json`: prepared experiment inputs and build/QC evidence, including browser network attempts. This experiment manifest is not a CLI `ProductionManifest`.
 - Sample PNGs for checking expressions, gestures, content, and captions.
 - `silent.mp4`: the intermediate rendered picture before audio muxing.
 
-Watch the MP4 with sound to judge Bella's delivery and Claudia's personality together. Inspect transitions as well as held poses: gaze holds and reconnection, clean eyelid contact, expression changes during speech, sleeve continuity, hand orientation, and neck attachment. Media integrity checks cannot establish that acting looks human. All pose and mouth decisions derive from saved inputs and the video frame, so repeated playback follows the same animation.
+Watch the MP4 with sound to judge the delivery and Claudia's personality together. Inspect transitions as well as held poses: gaze holds and reconnection, clean eyelid contact, expression changes during speech, sleeve continuity, hand orientation, and neck attachment. Media integrity checks cannot establish that acting looks human. All pose and mouth decisions derive from saved inputs and the video frame, so repeated playback follows the same animation.
 
 Character attribution: **Claudia by anabology**. This code-authored interpretation is part of the local feature experiment; see [the presenter documentation](../../docs/claudia.md) for reference and provenance context.
 

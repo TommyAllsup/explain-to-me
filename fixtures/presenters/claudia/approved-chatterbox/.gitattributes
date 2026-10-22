@@ -1,0 +1,3 @@
+# Reviewed bytes are hash-bound, including JSON line endings on Windows.
+*.json -text
+*.wav binary

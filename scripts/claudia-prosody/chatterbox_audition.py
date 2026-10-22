@@ -75,7 +75,7 @@ def prepare(args: argparse.Namespace) -> None:
 def run(args: argparse.Namespace) -> None:
     if args.output.exists() or args.output.with_suffix(".json").exists():
         raise FileExistsError(f"Refusing to overwrite an audition: {args.output}")
-    reference = ROOT / "out/claudia-bella-performance/audio.wav"
+    reference = ROOT / "fixtures/presenters/claudia/approved-chatterbox/reference-bella.wav"
     if sha256(reference) != REFERENCE_SHA256:
         raise RuntimeError("Bella differs from the accepted frozen reference")
     setup = json.loads(args.setup.read_text(encoding="utf-8"))
