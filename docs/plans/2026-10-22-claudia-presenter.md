@@ -49,7 +49,7 @@ Preparation accepts at most eight assets, 8 MiB per image, 32 MiB of images tota
 
 ## Deferred work
 
-The follow-on [character study](../../scripts/claudia-character/README.md), requested after voice casting, tests a manually authored SVG rig with selected Bella speech and model-timed captions. Its second iteration replaces the disconnected arm pieces with continuous sleeves and restrained, phrase-specific acting; the mouth now blends phoneme-guided visemes. It stays in a standalone composition while the user evaluates the character. Production-manifest animation, captured facial performance, automatic gallery selection, built-in image generation, paid providers, and character-aware direction remain deferred.
+The follow-on [character study](../../scripts/claudia-character/README.md), requested after voice casting, tests a manually authored SVG rig with selected Bella speech and model-timed captions. Its third iteration connects the torso, shoulders, fixed-length arms, clothing, and head through shared deformation and overlapping gesture timing. It retains continuous sleeves and phoneme-guided visemes from the second iteration. It stays in a standalone composition while the user evaluates the character. Production-manifest animation, captured facial performance, automatic gallery selection, built-in image generation, paid providers, and character-aware direction remain deferred.
 
 ## Research grounding
 

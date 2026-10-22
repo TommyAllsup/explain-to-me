@@ -45,13 +45,13 @@ async function main(): Promise<void> {
   await ensurePrivateDirectory(outputDirectory);
   const write = (name: string, data: string | Buffer) => writeFile(join(outputDirectory, name), data, {flag:"wx"});
   const json = (value: unknown) => JSON.stringify(value, null, 2) + "\n";
-  const sourcePaths = ["Claudia.tsx", "Body.tsx", "Mouth.tsx", "acting.ts", "lipsync.ts", "video.tsx", "motion.ts", "entry.tsx", "render.ts", "main.ts", "prepare-performance.py"];
+  const sourcePaths = ["Claudia.tsx", "Body.tsx", "Mouth.tsx", "acting.ts", "posture.ts", "lipsync.ts", "video.tsx", "motion.ts", "entry.tsx", "render.ts", "main.ts", "prepare-performance.py"];
   const sourceHashes = Object.fromEntries(await Promise.all(sourcePaths.map(async (name) => [name, sha256(await readFile(join(root, "scripts/claudia-character", name)))])));
   const manifest = {
-    schema: "claudia-character-test/v2", purpose:"Standalone animation experiment; not a ProductionManifest",
+    schema: "claudia-character-test/v3", purpose:"Standalone animation experiment; not a ProductionManifest",
     title:"Claudia — remember the work", selectedVoice: selected,
     character:{name:"Claudia", origin:"manual-svg-rig", credit:"Claudia by anabology", canonUrl:"https://claudia.gallery/claudia/", canonReviewedAt:"2026-10-22", aiAssisted:true},
-    motion:{mouth:"blended IPA visemes from saved model timing; audio energy is secondary", body:"continuous sleeves, constrained arm lengths, authored wrist paths and held poses", acting:"welcome nod, one explanation, thoughtful glance, small closing invitation", determinism:"frame-derived; no random values, timers or live services"},
+    motion:{mouth:"blended IPA visemes from saved model timing; audio energy is secondary", body:"planted pelvis, shared spine and shoulder deformation, fixed-length arms, delayed fingers and head counterbalance", acting:"chest-led explanation and closing invitation; shoulder preparation releases into each reach; reflective weight shift", determinism:"frame-derived; no random values, timers or live services"},
     fps:timeline.fps, width:1280, height:720, durationInFrames:timeline.durationInFrames, samples:timing.samples,
     audioSha256:sha256(wav), timingSha256:sha256(timingBytes), text:timing.text, beats, sourceHashes,
   };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { bodyRig, warpTorsoPath, warpTorsoPoint, type BodyPose } from './posture.js';
 
 const C = {
   line: '#343139', skin: '#ecc3aa', skinLight: '#f6d8c2',
@@ -95,38 +96,35 @@ function Sleeve({ shoulder, elbow, wrist, handAngle, open = 0, far = false }: {
   </g>;
 }
 
-/**
- * The shoulder and elbow stay anchored. Only the near forearm opens, once per
- * authored phrase; there is no autonomous motion, wrist wave, or idle arm loop.
- */
-export function Body({ reveal = 0, invite = 0 }: { reveal?: number; invite?: number }) {
-  const open = clamp(reveal + invite * .62);
-  const nearElbow = { x: 400, y: 485 };
-  const armAngle = mix(4.4, 55, open) * Math.PI / 180;
-  const nearWrist = { x: nearElbow.x + Math.sin(armAngle) * 105, y: nearElbow.y + Math.cos(armAngle) * 105 };
+/** The spine, shoulder girdle, clothing and arm roots share one body pose. */
+export function Body({ pose }: { pose: BodyPose }) {
+  const rig = bodyRig(pose);
+  const torso = (path: string) => warpTorsoPath(path, pose);
+  const upperButton = warpTorsoPoint({ x: 306, y: 574 }, pose);
+  const lowerButton = warpTorsoPoint({ x: 305, y: 644 }, pose);
   return <g strokeLinejoin="round" strokeLinecap="round">
     <path d="M243 684Q294 665 353 685L382 775H219Z" fill={C.topShade} stroke={C.line} strokeWidth="2"/>
     <path d="M305 707 302 775" fill="none" stroke="#55565c" strokeWidth="2"/>
-    <Sleeve shoulder={{ x: 207, y: 380 }} elbow={{ x: 188, y: 485 }} wrist={{ x: 210, y: 588 }} handAngle={9} far/>
-    <Sleeve shoulder={{ x: 398, y: 380 }} elbow={nearElbow} wrist={nearWrist} handAngle={mix(-15, -55, open)} open={open}/>
+    <Sleeve {...rig.far} far/>
+    <Sleeve {...rig.near}/>
     {/* The torso overlaps the sleeves at the shoulder and underarm. */}
-    <path d="M261 340Q227 345 204 364L189 390Q204 408 215 419L220 492Q229 550 221 615L210 724Q254 745 296 723L310 696 326 725Q366 741 391 720L377 610Q366 550 379 490L391 419Q407 407 416 390L403 366Q382 350 348 344Z" fill={C.cream}/>
-    <path d="M261 340Q227 345 204 364M348 344Q382 350 403 366M215 419L220 492Q229 550 221 615L210 724Q254 745 296 723L310 696 326 725Q366 741 391 720L377 610Q366 550 379 490L391 419" fill="none" stroke={C.line} strokeWidth="2.2"/>
-    <path d="M216 418 229 491Q242 552 236 613L224 724 210 724 221 615Q230 551 220 492Z" fill={C.fold}/>
-    <path d="M379 419 368 493Q355 553 364 612L377 725 391 720 377 610Q366 550 379 490L391 419Z" fill={C.fold}/>
-    <path d="M269 346Q300 365 340 347L349 472 331 615 301 699 266 613 248 461Z" fill={C.top}/>
-    <path d="M269 346Q303 382 340 347L339 373Q303 405 266 371Z" fill={C.topShade}/>
-    <path d="M278 402 282 564M325 403 317 575" fill="none" stroke="#505159" strokeWidth="1.5"/>
+    <path d={torso("M261 340Q227 345 204 364L189 390Q204 408 215 419L220 492Q229 550 221 615L210 724Q254 745 296 723L310 696 326 725Q366 741 391 720L377 610Q366 550 379 490L391 419Q407 407 416 390L403 366Q382 350 348 344Z")} fill={C.cream}/>
+    <path d={torso("M261 340Q227 345 204 364M348 344Q382 350 403 366M215 419L220 492Q229 550 221 615L210 724Q254 745 296 723L310 696 326 725Q366 741 391 720L377 610Q366 550 379 490L391 419")} fill="none" stroke={C.line} strokeWidth="2.2"/>
+    <path d={torso("M216 418 229 491Q242 552 236 613L224 724 210 724 221 615Q230 551 220 492Z")} fill={C.fold}/>
+    <path d={torso("M379 419 368 493Q355 553 364 612L377 725 391 720 377 610Q366 550 379 490L391 419Z")} fill={C.fold}/>
+    <path d={torso("M269 346Q300 365 340 347L349 472 331 615 301 699 266 613 248 461Z")} fill={C.top}/>
+    <path d={torso("M269 346Q303 382 340 347L339 373Q303 405 266 371Z")} fill={C.topShade}/>
+    <path d={torso("M278 402 282 564M325 403 317 575")} fill="none" stroke="#505159" strokeWidth="1.5"/>
     {/* The neck joins the existing head at the jaw, inside the jacket collar. */}
-    <path d="M276 297 273 345Q270 359 284 374Q300 387 319 373L343 350Q330 327 338 293Z" fill={C.skin} stroke={C.line} strokeWidth="1.8"/>
-    <path d="M277 305 275 337Q290 354 319 348L335 323 337 296Z" fill={C.skinShade}/>
-    <path d="M284 351Q297 367 317 351" stroke={C.skinLight} strokeWidth="2.5" fill="none"/>
-    <path d="M265 339 248 353 238 397 267 410 256 432 301 535 283 409 280 376Z" fill={C.white} stroke={C.line} strokeWidth="1.7"/>
-    <path d="M342 337 360 353 371 397 342 410 353 430 303 534 321 409 330 375Z" fill={C.white} stroke={C.line} strokeWidth="1.7"/>
-    <path d="M248 353 267 410M360 353 342 410M301 536 297 703" fill="none" stroke={C.seam} strokeWidth="1.2"/>
-    <path d="M235 604 273 610 270 624 234 617ZM333 608 369 601 370 615 336 623Z" fill={C.cream} stroke={C.seam} strokeWidth="1.3"/>
-    <circle cx="306" cy="574" r="4.1" fill={C.line}/>
-    <circle cx="305" cy="644" r="4.1" fill={C.line}/>
-    <path d="M226 708Q258 727 287 707M332 708Q357 724 380 711" stroke={C.seam} strokeWidth="1.2" fill="none"/>
+    <path d={torso("M276 297 273 345Q270 359 284 374Q300 387 319 373L343 350Q330 327 338 293Z")} fill={C.skin} stroke={C.line} strokeWidth="1.8"/>
+    <path d={torso("M277 305 275 337Q290 354 319 348L335 323 337 296Z")} fill={C.skinShade}/>
+    <path d={torso("M284 351Q297 367 317 351")} stroke={C.skinLight} strokeWidth="2.5" fill="none"/>
+    <path d={torso("M265 339 248 353 238 397 267 410 256 432 301 535 283 409 280 376Z")} fill={C.white} stroke={C.line} strokeWidth="1.7"/>
+    <path d={torso("M342 337 360 353 371 397 342 410 353 430 303 534 321 409 330 375Z")} fill={C.white} stroke={C.line} strokeWidth="1.7"/>
+    <path d={torso("M248 353 267 410M360 353 342 410M301 536 297 703")} fill="none" stroke={C.seam} strokeWidth="1.2"/>
+    <path d={torso("M235 604 273 610 270 624 234 617ZM333 608 369 601 370 615 336 623Z")} fill={C.cream} stroke={C.seam} strokeWidth="1.3"/>
+    <circle cx={upperButton.x} cy={upperButton.y} r="4.1" fill={C.line}/>
+    <circle cx={lowerButton.x} cy={lowerButton.y} r="4.1" fill={C.line}/>
+    <path d={torso("M226 708Q258 727 287 707M332 708Q357 724 380 711")} stroke={C.seam} strokeWidth="1.2" fill="none"/>
   </g>;
 }

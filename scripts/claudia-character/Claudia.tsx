@@ -3,6 +3,7 @@ import { Body } from './Body.js';
 import { Mouth } from './Mouth.js';
 import type { MouthPose } from './lipsync.js';
 import type { ActingPose } from './acting.js';
+import { upperBodyTransform } from './posture.js';
 
 const C = {
   line: '#343139', hair: '#25252c', hairLight: '#3a3942', hairShine: '#53505a',
@@ -32,8 +33,9 @@ function Eye({ x, y, blink, direction, raised = 0 }: {
 export function Claudia({ mouth, acting }: {mouth: MouthPose; acting: ActingPose}) {
   const blink = acting.blink;
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760" width="100%" height="100%" role="img" aria-label="Claudia explaining with a relaxed posture" style={{overflow: 'visible'}}>
-    <g transform={`rotate(${acting.lean} 305 670)`} strokeLinejoin="round" strokeLinecap="round">
-      <Body reveal={acting.reveal} invite={acting.invite}/>
+    <g strokeLinejoin="round" strokeLinecap="round">
+      <Body pose={acting.body}/>
+      <g transform={upperBodyTransform(acting.body)}>
       <g transform={`translate(305 347) rotate(${acting.headTilt}) scale(.94) translate(-305 -347) translate(0 ${acting.nod})`}>
         {/* Back of bob: restrained facets rather than a circular mascot head. */}
         <path d="M203 171Q194 122 233 92 264 68 311 77 364 73 392 114Q416 146 406 191L417 268Q421 315 396 340L356 329 332 345 271 335 248 345Q208 339 185 315 197 289 191 255 187 222 203 171Z" fill={C.hair} stroke={C.line} strokeWidth="2.5"/>
@@ -82,6 +84,7 @@ export function Claudia({ mouth, acting }: {mouth: MouthPose; acting: ActingPose
         <path d="M382 217Q388 233 382 247Q373 263 341 273" fill="none" stroke={C.line} strokeWidth="2.5"/>
         <path d="M382 219Q389 234 383 241" fill="none" stroke="#77747c" strokeWidth="1"/>
         <rect x="331" y="268" width="13" height="7" rx="3.5" transform="rotate(-11 337 271)" fill={C.line}/>
+      </g>
       </g>
     </g>
   </svg>;
