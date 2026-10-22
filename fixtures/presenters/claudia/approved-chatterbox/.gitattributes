@@ -1,3 +1,4 @@
 # Reviewed bytes are hash-bound, including JSON line endings on Windows.
-*.json -text
+# The original Windows JSON has CRLF; treat CR as part of its preserved newline.
+*.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
 *.wav binary
