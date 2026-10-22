@@ -1,73 +1,14 @@
 import React, { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { Claudia } from "../claudia-character/Claudia.js";
-import type { ActingPose } from "../claudia-character/acting.js";
-import { facialAt, type FacialActingTrack, type FacialExpressionCue } from "../claudia-character/expressions.js";
 import type { MouthPose } from "../claudia-character/lipsync.js";
 import type { ExplainerProps, ExplainerScene } from "./types.js";
+import { buildExplainerPerformance, explainerPoseAt, visualCueAt } from "./performance.js";
 
 const C = { ink: "#10191c", panel: "#19272b", line: "#3e555a", dim: "#93b0b1", teal: "#77b8b6", acid: "#e9eb95", paper: "#f5f1e7", pink: "#df9aa7", black: "#080f12" };
 const REST: MouthPose = { open: 0, width: .5, round: 0, closure: 0, teeth: 0, tongue: 0 };
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
 const smooth = (x: number) => { const t = clamp(x); return t * t * t * (10 + t * (-15 + 6 * t)); };
-const hold = (time: number, start: number, arrive: number, leave: number, end: number) => smooth((time - start) / Math.max(.01, arrive - start)) * (1 - smooth((time - leave) / Math.max(.01, end - leave)));
-const wordKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gu, "");
-
-/** Semantically authored expressions on measured words, with the approved face rig. */
-export function explainerFaceTrack(scene: ExplainerScene, index: number, fps: number): FacialActingTrack {
-  const duration = scene.durationInFrames / fps;
-  const expressions: FacialExpressionCue[] = [{start: 0, arrive: .5, leave: Math.max(.6, duration - .8), end: duration,
-    intent: index === 0 ? "welcome" : index === 7 ? "invite" : "reassure", intensity: .72, anchor: scene.id}];
-  const accents = new Set(["ben", "electronic", "style", "fashion", "everyone", "person", "kind", "different", "internet", "vibe", "music"]);
-  const jokes = new Set(["tragically", "memory", "boss", "certification", "diagnosis", "headset", "password", "included", "update", "megacorporation", "unofficial"]);
-  const questions = new Set(["what", "why", "girl", "egirl", "question"]);
-  let previousAccent = -10;
-  for (const word of scene.words) {
-    const key = wordKey(word.text);
-    const intent = jokes.has(key) ? "invite" : questions.has(key) ? "questionAccent" : accents.has(key) ? "emphasis" : undefined;
-    if (!intent || word.start - previousAccent < 1.5) continue;
-    previousAccent = word.start;
-    expressions.push({start: Math.max(0, word.start - .15), arrive: word.start + .08, leave: Math.max(word.start + .09, word.end),
-      end: Math.min(duration, Math.max(word.start + .2, word.end + .38)), intent, intensity: intent === "invite" ? .75 : .6, anchor: word.text});
-  }
-  const blinks: number[] = [];
-  for (let i = 1; i < scene.words.length; i++) {
-    const previous = scene.words[i - 1]!, next = scene.words[i]!;
-    if ((/[.!?;:]$/u.test(previous.text) || next.start - previous.end > .18) && next.start > 1.1
-      && (!blinks.length || next.start - blinks.at(-1)! > 3)) blinks.push(Math.max(.4, next.start - .23));
-  }
-  // Long uninterrupted phrases still receive an occasional natural blink.
-  for (let t = 4.2 + (index % 3) * .3; t < duration - .8; t += 4.7) {
-    if (blinks.every((blink) => Math.abs(blink - t) > 2)) blinks.push(t);
-  }
-  const keyWord = scene.words.find((word) => ["look", "style", "fashion", "eyeliner", "mix", "electronic", "anime", "means"].includes(wordKey(word.text)));
-  const gaze = keyWord ? [{start: Math.max(.2, keyWord.start - .18), arrive: Math.max(.31, keyWord.start - .04),
-    leave: keyWord.end + .28, end: keyWord.end + .44, x: 4.6, y: .5, anchor: keyWord.text}] : [];
-  return {version: 1, source: "word-alignment", expressions, gaze, blinks: blinks.sort((a,b) => a-b)};
-}
-
-/** One connected gesture per idea, with preparation and recovery. Never a loop. */
-function presenterPose(time: number, globalTime: number, scene: ExplainerScene, index: number, fps: number, face: FacialActingTrack): ActingPose {
-  const duration = scene.durationInFrames / fps;
-  const salient = scene.words.find((word) => ["means", "style", "look", "mix", "not", "person", "answer", "fashion", "electronic"].includes(wordKey(word.text)));
-  const anchor = Math.max(1.2, Math.min(duration * .47, salient?.start ?? duration * .27));
-  const intensity = [.68, .84, .95, .72, .48, .7, .5, .78][index % 8]!;
-  const leave = Math.min(duration - 2.0, anchor + 2.6);
-  const support = (t: number) => intensity * hold(t, anchor - .7, anchor + .4, leave + .15, leave + 1.85);
-  const arm = (t: number) => intensity * hold(t, anchor - .3, anchor + .9, leave + .3, leave + 1.65);
-  const opening = (t: number) => intensity * hold(t, anchor - .1, anchor + 1, leave + .2, leave + 1.5);
-  const gesture = opening(time), chest = support(time), nod = hold(time, .35, .7, .8, 1.3);
-  // Breathing is continuous across edits; its sub-pixel displacement does not drive the arms.
-  const breath = Math.sin(globalTime * Math.PI * 2 / 5.4);
-  return {
-    reveal: gesture, invite: index === 7 ? gesture : 0,
-    body: { chestX: chest * 3.7, chestY: chest * -1.25 + breath * .35, chestRoll: chest * 1.2,
-      shoulder: intensity * hold(time, anchor - .6, anchor - .05, anchor + .15, anchor + 1),
-      upperArm: arm(time), forearm: gesture, handOpen: opening(time - .1), passiveLag: support(time - .12) },
-    headTilt: -.5 * support(time - .1) + (index % 2 ? -.35 : .35) * chest,
-    nod: nod * (index === 0 ? 1.3 : .55), face: facialAt(time, [], face),
-  };
-}
 
 function Label({children, color = C.acid}: {children: React.ReactNode; color?: string}) {
   return <div style={{fontSize: 14, fontFamily: "Consolas, monospace", fontWeight: 600, letterSpacing: 2.2, color}}>{children}</div>;
@@ -149,7 +90,7 @@ function DefinitionVisual({time, chargerAt}: {time:number;chargerAt:number}) {
   </>;
 }
 
-function StyleVisual({time, catAt}: {time:number;catAt:number}) {
+function StyleVisual({time, catAt, ramAt}: {time:number;catAt:number;ramAt:number}) {
   const labels=["Winged eyeliner","Blush + tiny hearts","Dyed hair","Layers + chains"];
   return <>
     <Label>THE VISUAL VOCABULARY</Label>
@@ -161,7 +102,7 @@ function StyleVisual({time, catAt}: {time:number;catAt:number}) {
     <div style={{fontSize:14,color:C.dim,fontFamily:"Consolas, monospace",marginTop:-5}}>EXAMPLES, NOT A UNIFORM.</div>
     <Reveal time={time} at={catAt} style={{position:"absolute",right:0,bottom:18,width:327,height:85,background:C.ink,borderTop:`1px solid ${C.line}`,display:"flex",alignItems:"center",gap:15,paddingTop:9}}>
       <svg viewBox="0 0 91 75" width="82" height="69" aria-label="Optional cat-ear headphones"><path d="M16 49V32Q18 7 46 7 74 7 76 32V49M20 20 14 0 35 11M58 10 77 0 72 20" fill="none" stroke={C.pink} strokeWidth="4" strokeLinejoin="round"/><rect x="10" y="37" width="16" height="26" rx="5" fill={C.pink}/><rect x="66" y="37" width="16" height="26" rx="5" fill={C.pink}/></svg>
-      <div><div style={{fontSize:16,color:C.pink}}>Cat ears: optional.</div><div style={{fontSize:25,fontFamily:"Consolas, monospace",color:C.acid,marginTop:5}}>EXTRA RAM: 0 MB</div></div>
+      <div><div style={{fontSize:16,color:C.pink}}>Cat ears: optional.</div><Reveal time={time} at={ramAt}><div style={{fontSize:25,fontFamily:"Consolas, monospace",color:C.acid,marginTop:5}}>EXTRA RAM: 0 MB</div></Reveal></div>
     </Reveal>
   </>;
 }
@@ -197,10 +138,10 @@ function PersonaVisual({time, bossAt}: {time:number;bossAt:number}) {
 function EtiquetteVisual({time}: {time:number}) {
   return <>
     <Label>LET PEOPLE NAME THEIR LOOK</Label>
-    <Reveal time={time} at={.1}><div style={{fontSize:55,fontWeight:700,letterSpacing:-2,lineHeight:1.06,marginTop:24}}>Eyeliner isn’t<br/>a <span style={{color:C.pink}}>personality test.</span></div></Reveal>
+    <Reveal time={time} at={.1}><div style={{fontSize:55,fontWeight:700,letterSpacing:-2,lineHeight:1.06,marginTop:24}}>Let people<br/><span style={{color:C.pink}}>name their look.</span></div></Reveal>
     <div style={{marginTop:35,display:"flex",gap:18,alignItems:"center"}}>
       <Reveal time={time} at={.7}><svg width="145" height="154" viewBox="0 0 145 154" aria-label="An eye over a question mark: appearances do not tell the whole story"><path d="M5 47Q72-14 139 47 72 108 5 47Z" fill={C.panel} stroke={C.teal} strokeWidth="2"/><circle cx="72" cy="47" r="23" fill={C.teal}/><circle cx="72" cy="47" r="9" fill={C.ink}/><text x="72" y="143" textAnchor="middle" fill={C.pink} fontSize="53" fontFamily="Georgia">?</text></svg></Reveal>
-      <Reveal time={time} at={1.4}><div style={{fontSize:25,lineHeight:1.45,color:C.paper,maxWidth:420}}>Not every woman who games.<br/>Not a personality diagnosis.<br/><span style={{color:C.acid}}>A label people can choose.</span></div></Reveal>
+      <Reveal time={time} at={1.4}><div style={{fontSize:25,lineHeight:1.45,color:C.paper,maxWidth:420}}>Not every woman who games.<br/>A self-chosen label.<br/><span style={{color:C.acid}}>Get to know the person.</span></div></Reveal>
     </div>
     <Reveal time={time} at={3}><Tag color={C.teal} style={{marginTop:28}}>CHECK THE CONTEXT. SKIP THE ASSUMPTIONS.</Tag></Reveal>
   </>;
@@ -235,16 +176,12 @@ function VerdictVisual({time, megacorpAt}: {time:number;megacorpAt:number}) {
 function Visual({scene,time}: {scene:ExplainerScene;time:number}) {
   // Punchlines appear with Claudia's delivery, including after a regenerated take.
   // Missing reviewed anchors fail rendering instead of silently spoiling the joke.
-  const at = (...anchors: string[]) => {
-    const word = scene.words.find((candidate) => anchors.includes(wordKey(candidate.text)));
-    if (!word) throw new Error(`Missing visual timing anchor in ${scene.id}: ${anchors.join(" / ")}`);
-    return word.start;
-  };
+  const at = (...anchors: string[]) => visualCueAt(scene,...anchors);
   switch (scene.visual) {
     case "question": return <QuestionVisual time={time}/>;
     case "definition": return <DefinitionVisual time={time} chargerAt={at("charging")}/>;
     case "ingredients": return <CultureVisual time={time}/>;
-    case "accessories": return <StyleVisual time={time} catAt={scene.words.find((word) => wordKey(word.text)==="cat")?.start ?? 7}/>;
+    case "accessories": return <StyleVisual time={time} catAt={at("cat")} ramAt={at("zero","memory")}/>;
     case "persona": return <PersonaVisual time={time} bossAt={at("boss", "certification")}/>;
     case "labels": return <EtiquetteVisual time={time}/>;
     case "test": return <TestVisual time={time} customerAt={at("customer")}/>;
@@ -272,7 +209,7 @@ export function ClaudiaExplainer({fps,durationInFrames,scenes}: ExplainerProps) 
   const index = Math.max(0, scenes.findIndex((scene) => frame >= scene.from && frame < scene.from + scene.durationInFrames));
   const scene = scenes[index]!;
   const localFrame = Math.max(0,frame-scene.from), time=localFrame/fps;
-  const face = useMemo(() => explainerFaceTrack(scene,index,fps),[scene,index,fps]);
+  const performance = useMemo(() => buildExplainerPerformance(scene,index,fps),[scene,index,fps]);
   const captions = useMemo(() => phraseCaptions(scene),[scene]);
   const caption = captions.find((cue) => time >= cue.start && time < cue.end)?.text ?? "";
   const progress = clamp(frame / Math.max(1,durationInFrames-1));
@@ -284,7 +221,7 @@ export function ClaudiaExplainer({fps,durationInFrames,scenes}: ExplainerProps) 
       <Label color={C.dim}>{String(index+1).padStart(2,"0")} / {String(scenes.length).padStart(2,"0")}</Label>
     </div>
     <div style={{position:"absolute",left:0,top:51,width:514,height:558,overflow:"hidden"}}>
-      <div style={{position:"absolute",left:-20,top:-6,width:554,height:702}}><Claudia mouth={scene.mouth[localFrame] ?? REST} acting={presenterPose(time,globalTime,scene,index,fps,face)}/></div>
+      <div style={{position:"absolute",left:-20,top:-6,width:554,height:702}}><Claudia mouth={scene.mouth[localFrame] ?? REST} acting={explainerPoseAt(time,globalTime,performance)}/></div>
     </div>
     <div style={{position:"absolute",left:42,top:562,fontFamily:"Consolas, monospace",fontSize:12,letterSpacing:1.4,color:C.teal,background:"#132328e6",padding:"7px 9px"}}>CLAUDIA / YOUR INTERNET TRANSLATOR</div>
     <div style={{position:"absolute",left:552,top:116,width:632,height:465,opacity:enter*exit,transform:`translateX(${(1-enter)*13}px)`}}><Visual scene={scene} time={time}/></div>

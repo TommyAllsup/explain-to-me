@@ -57,6 +57,51 @@ def load_script(path: Path) -> tuple[dict, list[dict]]:
     return script, scenes
 
 
+def delivery_plan(script: dict, scene: dict, default_settings: dict, seed: int, normalize) -> list[dict]:
+    """Resolve opt-in expressive chunks without changing the default voice.
+
+    Pauses are extra silence after each complete generated chunk, in addition to
+    the model's own sentence pauses. The joined scene is aligned only afterward.
+    """
+    global_delivery = script.get("delivery", {})
+    scene_delivery = scene.get("delivery", {})
+    settings = {**default_settings, **global_delivery.get("settings", {}),
+                **scene_delivery.get("settings", {})}
+    segments = scene_delivery.get("segments")
+    if segments is None:
+        segments = [{"id": "complete-scene", "text": scene["narration"], "pauseAfterSeconds": 0}]
+    if not isinstance(segments, list) or not segments:
+        raise ValueError("Delivery segments must be a nonempty list")
+    plan = []
+    for index, segment in enumerate(segments):
+        segment_settings = {**settings, **segment.get("settings", {})}
+        if set(segment_settings) != set(default_settings):
+            raise ValueError("Unknown Chatterbox delivery setting")
+        if any(not isinstance(v, (float, int)) or not math.isfinite(v) for v in segment_settings.values()):
+            raise ValueError("Delivery settings must be finite numbers")
+        bounds = {"exaggeration": (0, 2), "cfg_weight": (0, 1), "temperature": (.1, 1.5),
+                  "repetition_penalty": (1, 3), "min_p": (0, 1), "top_p": (.01, 1)}
+        for name, (minimum, maximum) in bounds.items():
+            if not minimum <= segment_settings[name] <= maximum:
+                raise ValueError("Delivery setting outside supported range: " + name)
+        identity = segment.get("id", f"segment-{index + 1:02}")
+        if not isinstance(identity, str) or not re.fullmatch(r"[a-z0-9_-]+", identity):
+            raise ValueError("Segment IDs must be filesystem-safe lowercase names")
+        source_text = segment.get("text")
+        if not isinstance(source_text, str) or not source_text.strip():
+            raise ValueError("Every delivery segment needs text")
+        pause = segment.get("pauseAfterSeconds", 0)
+        if not isinstance(pause, (float, int)) or not math.isfinite(pause) or not 0 <= pause <= 2:
+            raise ValueError("Delivery pauses must be between zero and two seconds")
+        plan.append({"id": identity, "text": normalize(source_text), "settings": segment_settings,
+                     "pauseAfterSeconds": pause, "seed": seed + index * 100000})
+    if len({segment["id"] for segment in plan}) != len(plan):
+        raise ValueError("Delivery segment IDs must be unique within a scene")
+    if " ".join(segment["text"] for segment in plan) != normalize(scene["narration"]):
+        raise ValueError("Joined delivery text must match the complete normalized narration")
+    return plan
+
+
 def phonemize_words(text: str, helper) -> dict:
     """Recover word boundaries when eSpeak fuses phrases such as 'do not'.
 
@@ -151,7 +196,7 @@ def synthesize(args: argparse.Namespace) -> None:
     from perth.perth_net.perth_net_implicit.perth_watermarker import PerthImplicitWatermarker
     from chatterbox.tts import ChatterboxTTS, punc_norm
 
-    _, scenes = load_script(args.script)
+    script, scenes = load_script(args.script)
     profile_path = ROOT / "fixtures/presenters/claudia/selected-voice.json"
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
     if profile["engine"] != "chatterbox" or profile["voice"] != "chatterbox-bella":
@@ -184,8 +229,16 @@ def synthesize(args: argparse.Namespace) -> None:
         record_file = output / "synthesis.json"
         text = punc_norm(scene["narration"])
         seed = profile["synthesis"]["seed"] + index + (args.seed_offset if not args.only_scene or scene["id"] in args.only_scene else 0)
-        identity = {"text": text, "seed": seed, "settings": profile["synthesis"]["settings"],
+        if args.only_scene and scene["id"] not in args.only_scene and record_file.exists():
+            # Targeted retakes can coexist with an earlier nonzero global seed
+            # offset. Preserve each unselected take's recorded seed exactly.
+            seed = json.loads(record_file.read_text(encoding="utf-8"))["identity"]["seed"]
+        plan = delivery_plan(script, scene, profile["synthesis"]["settings"], seed, punc_norm)
+        expressive = bool(script.get("delivery") or scene.get("delivery"))
+        identity = {"text": text, "seed": seed, "settings": plan[0]["settings"],
                     "referenceSha256": profile["referenceSha256"], "targetLufs": args.lufs}
+        if expressive:
+            identity["deliverySegments"] = plan
         if record_file.exists():
             prior = json.loads(record_file.read_text(encoding="utf-8"))
             if prior["identity"] != identity or digest(output / "audio.wav") != prior["audioSha256"]:
@@ -197,16 +250,33 @@ def synthesize(args: argparse.Namespace) -> None:
             raise ValueError("A scene outside --only-scene has no verified existing take: " + scene["id"])
         if (output / "raw.wav").exists() or (output / "audio.wav").exists():
             raise FileExistsError(f"Unrecorded output exists: {output}")
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
         print(f"Generating {scene['id']}: {len(text.split())} words", flush=True)
         scene_start = time.perf_counter()
-        waveform = model.generate(text, audio_prompt_path=str(reference), **identity["settings"])
-        samples = waveform.detach().cpu().numpy().reshape(-1)
-        if not samples.size or not np.isfinite(samples).all():
-            raise ValueError("Invalid raw waveform")
+        chunks, segment_records, cursor = [], [], 0
+        for segment in plan:
+            random.seed(segment["seed"])
+            np.random.seed(segment["seed"])
+            torch.manual_seed(segment["seed"])
+            torch.cuda.manual_seed_all(segment["seed"])
+            print(f"  Segment {segment['id']}: exaggeration={segment['settings']['exaggeration']}, cfg={segment['settings']['cfg_weight']}", flush=True)
+            waveform = model.generate(segment["text"], audio_prompt_path=str(reference), **segment["settings"])
+            chunk = waveform.detach().cpu().numpy().reshape(-1)
+            if not chunk.size or not np.isfinite(chunk).all():
+                raise ValueError("Invalid raw waveform")
+            pause_samples = round(segment["pauseAfterSeconds"] * model.sr)
+            chunk_record = {**segment, "startSample": cursor, "endSample": cursor + len(chunk),
+                            "startSeconds": cursor / model.sr,
+                            "endSeconds": (cursor + len(chunk)) / model.sr,
+                            "samples": len(chunk), "insertedSilenceSamples": pause_samples}
+            if expressive:
+                segment_path = output / "segments" / (segment["id"] + ".wav")
+                segment_path.parent.mkdir(exist_ok=True)
+                sf.write(segment_path, chunk, model.sr, subtype="FLOAT")
+                chunk_record.update({"rawAudio": str(segment_path.resolve()), "rawAudioSha256": digest(segment_path)})
+            chunks.extend([chunk, np.zeros(pause_samples, dtype=np.float32)])
+            cursor += len(chunk) + pause_samples
+            segment_records.append(chunk_record)
+        samples = np.concatenate(chunks)
         # The model can emit float peaks above unity on emphatic words. Retain
         # those values in the untouched float master, then normalize the delivery
         # WAV before PCM16 encoding so neither file clips on write.
@@ -237,7 +307,10 @@ def synthesize(args: argparse.Namespace) -> None:
                   "outputLufs": meter.integrated_loudness(normalized),
                   "peakDbfs": 20 * math.log10(float(np.max(np.abs(normalized)))),
                   "generationSeconds": time.perf_counter() - scene_start,
-                  "postProcessing": "Constant gain and PCM16 encoding only; no pitch/speed changes; native Perth watermark preserved"}
+                  "postProcessing": "Generated chunks joined with explicitly recorded silence when requested; constant gain and PCM16 encoding; no pitch/speed changes; native Perth watermark preserved"}
+        if expressive:
+            record["deliverySegments"] = segment_records
+            record["insertedSilenceSeconds"] = sum(segment["insertedSilenceSamples"] for segment in segment_records) / model.sr
         save(record_file, record)
         records.append(record)
         print(f"Saved {scene['id']}: {record['durationSeconds']:.2f}s", flush=True)
@@ -285,6 +358,8 @@ def align(args: argparse.Namespace) -> None:
                       "referenceSha256": synthesis["referenceSha256"],
                       "durationSeconds": synthesis["durationSeconds"], "samples": synthesis["samples"],
                       "sampleRate": synthesis["sampleRate"], "words": words, "phonemes": ipa}
+            if synthesis.get("deliverySegments"):
+                timing["deliverySegments"] = synthesis["deliverySegments"]
             save(timing_path, timing)
             save(directory / "alignment.json", {"model": provenance, "phonemization": phones, **report})
         records.append(timing)

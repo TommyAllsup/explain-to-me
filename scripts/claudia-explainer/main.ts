@@ -17,9 +17,16 @@ const REFERENCE = "3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1
 const json = (value: unknown) => JSON.stringify(value, null, 2) + "\n";
 const textKey = (text: string) => text.toLowerCase().replaceAll("’", "'").match(/[a-z0-9]+(?:'[a-z]+)?/gu)?.join(" ") ?? "";
 const timeShape = {start: z.number().finite().nonnegative(), end: z.number().finite().nonnegative()};
+const performanceSchema = z.object({beats: z.array(z.object({
+  anchor: z.string().min(1),
+  intent: z.enum(["welcome", "explain", "setup", "payoff", "aside", "reassure"]),
+  gesture: z.enum(["present", "offer", "small", "none"]).optional(),
+  occurrence: z.number().int().positive().optional(),
+})).min(1).max(8)});
 const scriptSchema = z.object({
   version: z.literal(1), title: z.string(), targetDurationSeconds: z.number().positive(), music: z.string(),
-  scenes: z.array(z.object({id: z.string(), title: z.string(), visual: z.string(), displayText: z.union([z.string(), z.array(z.string())]), narration: z.string()})).length(8),
+  scenes: z.array(z.object({id: z.string(), title: z.string(), visual: z.string(), displayText: z.union([z.string(), z.array(z.string())]),
+    narration: z.string(), performance: performanceSchema.optional()})).length(8),
   sources: z.array(z.object({title: z.string(), url: z.url(), supports: z.string()})),
 });
 const narrationSchema = z.object({
@@ -68,8 +75,7 @@ function timestamp(seconds: number, separator: string): string {
   return `${String(Math.floor(ms / 3_600_000)).padStart(2,"0")}:${String(Math.floor(ms / 60_000) % 60).padStart(2,"0")}:${String(Math.floor(ms / 1000) % 60).padStart(2,"0")}${separator}${String(ms % 1000).padStart(3,"0")}`;
 }
 
-async function prepare(output: string, narrationDirectory: string) {
-  const scriptPath = join(ROOT, "scripts/claudia-explainer/ben-egirls.json");
+async function prepare(output: string, narrationDirectory: string, scriptPath: string) {
   const scriptBytes = await readFile(scriptPath);
   const script = scriptSchema.parse(JSON.parse(scriptBytes.toString("utf8")));
   const timingBytes = await readFile(join(narrationDirectory, "narration.json"));
@@ -100,7 +106,10 @@ async function prepare(output: string, narrationDirectory: string) {
     const phonemes = timing.phonemes.map(phone => ({...phone, start: phone.start + lead, end: phone.end + lead}));
     const mouth = buildMouthTrack(phonemes, mouthEnvelope(padded, FPS), FPS);
     if (mouth.length !== durationInFrames) throw new Error("Mouth and frame count differ");
-    scenes.push({...scene, from, durationInFrames, words, mouth, captions: makeCaptions(words)});
+    const {performance, ...sceneDetails} = scene;
+    const acting = performance ? {beats: performance.beats.map(({gesture, occurrence, ...beat}) => ({...beat,
+      ...(gesture ? {gesture} : {}), ...(occurrence ? {occurrence} : {})}))} : undefined;
+    scenes.push({...sceneDetails, ...(acting ? {performance: acting} : {}), from, durationInFrames, words, mouth, captions: makeCaptions(words)});
     audio.push(padded);
     provenance.push({id: scene.id, from, durationInFrames, leadFrames, tailFrames, samples: timing.samples,
       audio: timing.audio, audioSha256: timing.audioSha256, referenceSha256: timing.referenceSha256});
@@ -128,7 +137,7 @@ async function prepare(output: string, narrationDirectory: string) {
       targetDurationSeconds:script.targetDurationSeconds, sampleRate:RATE, samples:pcm.length / 2,
       scriptSha256:sha256(scriptBytes), timingSha256:sha256(timingBytes), narrationPcmSha256:sha256(pcm),
       referenceSha256:REFERENCE, music:script.music, scenes:provenance,
-      performance:"Natural-speed Chatterbox voice; approved Claudia rig with new audio-aligned mouth and word-anchored expressions",
+      performance:"Natural-speed Chatterbox voice; approved Claudia rig with audio-aligned mouth, authored speech beats, and connected gestures",
       sources:script.sources})),
   ]);
   configureMediaTools();
@@ -138,12 +147,13 @@ async function prepare(output: string, narrationDirectory: string) {
 }
 
 async function main() {
-  const {values} = parseArgs({options:{output:{type:"string"}, narration:{type:"string"}, "prepare-only":{type:"boolean"}, "render-only":{type:"boolean"}}, strict:true});
+  const {values} = parseArgs({options:{output:{type:"string"}, narration:{type:"string"}, script:{type:"string"}, "prepare-only":{type:"boolean"}, "render-only":{type:"boolean"}}, strict:true});
   if (values["prepare-only"] && values["render-only"]) throw new Error("Choose prepare-only or render-only");
   const output = resolve(values.output ?? join(ROOT,"out/ben-egirls"));
   const props: ExplainerProps = values["render-only"]
     ? JSON.parse(await readFile(join(output,"render-props.json"),"utf8"))
-    : await prepare(output, resolve(values.narration ?? join(ROOT,"out/ben-egirls-narration")));
+    : await prepare(output, resolve(values.narration ?? join(ROOT,"out/ben-egirls-narration")),
+      resolve(values.script ?? join(ROOT,"scripts/claudia-explainer/ben-egirls.json")));
   if (values["prepare-only"]) return;
   configureMediaTools();
   const report = await renderCharacterTest({outputDirectory:output, inputProps:{...props}, durationInFrames:props.durationInFrames,

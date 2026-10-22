@@ -8,6 +8,44 @@ The eight-scene script and factual sources are in `ben-egirls.json`. Jokes targe
 internet vocabulary, accessories, and the dramatic soundtrack. The explanation
 treats e-girl as a contextual style/persona label people can choose for themselves.
 
+## Playful performance revision
+
+`ben-egirls-playful.json` is the second cut: 268 words, shorter conversational
+phrases, and 16 locally generated speech segments. Explanations use restrained
+Chatterbox expression; greetings and comic setups are brighter. Complete takes
+are joined with 4.77 seconds of authored pauses before alignment. No playback
+speed or pitch change is used, and the selected Bella reference stays fixed.
+
+The script also defines 29 acting anchors. Gesture preparation, held looks,
+comic reactions, and recovery follow the newly aligned words. Cat-ear headphones
+appear during the setup; the zero-RAM result waits for the spoken payoff.
+The sincere labels scene lets the comic beats breathe.
+
+Use these arguments for this cut instead of the v1 paths below:
+
+```powershell
+$taskNode = 'C:/Users/tommy/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
+$voicePython = 'D:/CodexModels/ClaudiaAuditions20261022/chatterbox/venv/Scripts/python.exe'
+& $voicePython scripts/claudia-explainer/prepare-narration.py synthesize --script scripts/claudia-explainer/ben-egirls-playful.json --output out/ben-egirls-playful-narration --seed-offset 2000
+& C:/Python311/python.exe scripts/claudia-explainer/prepare-narration.py align --script scripts/claudia-explainer/ben-egirls-playful.json --output out/ben-egirls-playful-narration
+& C:/Python311/python.exe scripts/claudia-explainer/prepare-narration.py check --script scripts/claudia-explainer/ben-egirls-playful.json --output out/ben-egirls-playful-narration
+& $taskNode --import tsx scripts/claudia-explainer/main.ts --script scripts/claudia-explainer/ben-egirls-playful.json --narration out/ben-egirls-playful-narration --output out/ben-egirls-playful
+& C:/Python311/python.exe scripts/claudia-explainer/mix-final.py --outputdir out/ben-egirls-playful
+```
+
+The first cut remains at `out/ben-egirls-final/video.mp4`. Synthesis preserves
+each raw segment, its seed/settings, exact joins, and the inserted pause samples
+in the new narration's provenance reports.
+
+The accepted playful cut is **119.17 seconds**. Its label scene was retaken at
+seed offset 3000 after splitting the rushed first attempt into two thoughts;
+the other seven scenes retain offset 2000. The synthesis command above creates
+fresh candidates. To verify/reuse the accepted mixed-seed takes already here,
+replace its seed arguments with `--only-scene the-label --seed-offset 3000`, or
+skip synthesis and use the reviewed existing WAVs. See the copied voice review
+and `performance-audit.json` beside the final video for the accepted take hashes
+and the full-frame motion checks.
+
 ## Rebuild locally
 
 Use the installed Node 24 runtime, repository dependencies, full system FFmpeg,

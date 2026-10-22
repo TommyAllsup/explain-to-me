@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "title": "Ben's guide to e-girls — the playful cut",
+  "targetDurationSeconds": 120,
+  "music": "Slogans in the Rain.mp3",
+  "delivery": {"settings": {"exaggeration": 0.82, "cfg_weight": 0.30}},
+  "scenes": [
+    {
+      "id": "the-question", "title": "Ben has a question.", "visual": "question",
+      "displayText": ["What is an e-girl?", "An extremely unofficial field guide"],
+      "narration": "Ben! What is an e girl? Excellent question! I'm Claudia. Welcome to your extremely unofficial internet field guide. And yes, this music suggests a cyberpunk uprising. We're mostly discussing eyeliner.",
+      "delivery": {"segments": [
+        {"id": "welcome", "text": "Ben! What is an e girl? Excellent question! I'm Claudia. Welcome to your extremely unofficial internet field guide.", "pauseAfterSeconds": 0.32, "settings": {"exaggeration": 0.88}},
+        {"id": "aside", "text": "And yes, this music suggests a cyberpunk uprising. We're mostly discussing eyeliner.", "pauseAfterSeconds": 0.28, "settings": {"exaggeration": 0.72}}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "Ben", "intent": "welcome", "gesture": "small"},
+        {"anchor": "Welcome", "intent": "explain", "gesture": "offer"},
+        {"anchor": "this music", "intent": "setup", "gesture": "none"},
+        {"anchor": "eyeliner", "intent": "payoff", "gesture": "small"}
+      ]}
+    },
+    {
+      "id": "the-definition", "title": "Internet style. Human underneath.", "visual": "definition",
+      "displayText": ["e = electronic", "Style + online persona", "No charging cable required"],
+      "narration": "E girl means electronic girl. Usually, it's an alternative fashion style and online persona. Think makeup, outfits, and playful self expression. Very online! Still a person. No charging cable required.",
+      "delivery": {"segments": [
+        {"id": "explain", "text": "E girl means electronic girl. Usually, it's an alternative fashion style and online persona. Think makeup, outfits, and playful self expression.", "pauseAfterSeconds": 0.32, "settings": {"exaggeration": 0.72}},
+        {"id": "payoff", "text": "Very online! Still a person. No charging cable required.", "pauseAfterSeconds": 0.35}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "means", "intent": "explain", "gesture": "present"},
+        {"anchor": "Think makeup", "intent": "explain", "gesture": "small"},
+        {"anchor": "Very online", "intent": "setup", "gesture": "none"},
+        {"anchor": "charging", "intent": "payoff", "gesture": "small"}
+      ]}
+    },
+    {
+      "id": "the-mix", "title": "A remix, not a uniform.", "visual": "ingredients",
+      "displayText": ["Emo / goth", "Anime / gaming", "Internet creativity", "TikTok spotlight: 2019"],
+      "narration": "Mix emo and goth fashion with anime, gaming, and internet creativity. TikTok helped put the look in the spotlight around twenty nineteen. Basically, an alternative fashion mood board discovered a ring light. And here we are!",
+      "delivery": {"settings": {"exaggeration": 0.74}},
+      "performance": {"beats": [
+        {"anchor": "Mix", "intent": "explain", "gesture": "present"},
+        {"anchor": "TikTok", "intent": "explain", "gesture": "small"},
+        {"anchor": "ring light", "intent": "aside", "gesture": "none"}
+      ]}
+    },
+    {
+      "id": "the-look", "title": "The accessories department.", "visual": "accessories",
+      "displayText": ["Winged eyeliner", "Blush + tiny hearts", "Dyed hair / layered shirts / chains", "Cat ears: optional. Extra RAM: zero."],
+      "narration": "Look for winged eyeliner, blush, tiny hearts, dyed hair, layered shirts, and chains. Cat ear headphones? Sometimes! Now, do those adorable ears give your computer extra memory? Oh, Ben. Tragically, zero. Just cute little ears, doing their best.",
+      "delivery": {"segments": [
+        {"id": "look", "text": "Look for winged eyeliner, blush, tiny hearts, dyed hair, layered shirts, and chains. Cat ear headphones? Sometimes!", "pauseAfterSeconds": 0.22, "settings": {"exaggeration": 0.80}},
+        {"id": "setup", "text": "Now, do those adorable ears give your computer extra memory? Oh, Ben.", "pauseAfterSeconds": 0.48, "settings": {"exaggeration": 0.88}},
+        {"id": "payoff", "text": "Tragically, zero. Just cute little ears, doing their best.", "pauseAfterSeconds": 0.45, "settings": {"exaggeration": 0.68, "cfg_weight": 0.36}}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "Look for", "intent": "explain", "gesture": "present"},
+        {"anchor": "Cat ear headphones", "intent": "aside", "gesture": "small"},
+        {"anchor": "extra memory", "intent": "setup", "gesture": "none"},
+        {"anchor": "zero", "intent": "payoff", "gesture": "small"}
+      ]}
+    },
+    {
+      "id": "the-persona", "title": "More than the outfit.", "visual": "persona",
+      "displayText": ["Outfits", "Makeup", "Games", "Memes", "No entrance exam"],
+      "narration": "It's the persona, too! Outfit videos, makeup, games, memes. Or just wearing a look you enjoy. Streaming is completely optional. No final boss. No makeup exam. Honestly, a very reasonable admissions policy.",
+      "delivery": {"segments": [
+        {"id": "explain", "text": "It's the persona, too! Outfit videos, makeup, games, memes. Or just wearing a look you enjoy. Streaming is completely optional.", "pauseAfterSeconds": 0.25, "settings": {"exaggeration": 0.76}},
+        {"id": "aside", "text": "No final boss. No makeup exam. Honestly, a very reasonable admissions policy.", "pauseAfterSeconds": 0.20, "settings": {"exaggeration": 0.73}}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "persona", "intent": "explain", "gesture": "offer"},
+        {"anchor": "you enjoy", "intent": "reassure", "gesture": "small"},
+        {"anchor": "Honestly", "intent": "aside", "gesture": "none"}
+      ]}
+    },
+    {
+      "id": "the-label", "title": "Let people name their look.", "visual": "labels",
+      "displayText": ["A self-chosen label", "Not every woman who plays games", "Get to know the person"],
+      "narration": "Quick note, Ben! This does not mean every woman who plays games. Some people love the label; others hear it as an insult. Let people name their own look. The outfit tells you very little about the person.",
+      "delivery": {"settings": {"exaggeration": 0.68, "cfg_weight": 0.35}, "segments": [
+        {"id": "context", "text": "Quick note, Ben! This does not mean every woman who plays games. Some people love the label; others hear it as an insult.", "pauseAfterSeconds": 0.25},
+        {"id": "reassure", "text": "Let people name their own look. The outfit tells you very little about the person.", "pauseAfterSeconds": 0}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "Quick note", "intent": "reassure", "gesture": "small"},
+        {"anchor": "Some people", "intent": "explain", "gesture": "offer"},
+        {"anchor": "Let people", "intent": "reassure", "gesture": "small"}
+      ]}
+    },
+    {
+      "id": "the-test", "title": "The practical test.", "visual": "test",
+      "displayText": ["On a video call? Just a person.", "Curating an internet alt look? Maybe.", "Check the context. Skip the assumptions."],
+      "narration": "Person on a video call? Just a person. Someone choosing that internet alternative look? They might call themselves an e girl. A headset alone proves nothing. Customer support can stand down.",
+      "delivery": {"segments": [
+        {"id": "contrast", "text": "Person on a video call? Just a person. Someone choosing that internet alternative look? They might call themselves an e girl.", "pauseAfterSeconds": 0.38},
+        {"id": "payoff", "text": "A headset alone proves nothing. Customer support can stand down.", "pauseAfterSeconds": 0.40, "settings": {"exaggeration": 0.77}}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "video call", "intent": "explain", "gesture": "small"},
+        {"anchor": "Someone choosing", "intent": "explain", "gesture": "present"},
+        {"anchor": "headset", "intent": "setup", "gesture": "none"},
+        {"anchor": "Customer support", "intent": "payoff", "gesture": "small"}
+      ]}
+    },
+    {
+      "id": "ben-unlocked", "title": "Ben: internet lore +1.", "visual": "outro",
+      "displayText": ["Online style + persona", "Alternative fashion meets internet culture", "Question answered. Megacorporation unharmed."],
+      "narration": "So! An online style and persona, where alternative fashion meets internet culture. Ben, your internet vocabulary has been upgraded! And despite this soundtrack, we explained a fashion trend without overthrowing a single megacorporation.",
+      "delivery": {"segments": [
+        {"id": "wrap", "text": "So! An online style and persona, where alternative fashion meets internet culture. Ben, your internet vocabulary has been upgraded!", "pauseAfterSeconds": 0.42, "settings": {"exaggeration": 0.86}},
+        {"id": "payoff", "text": "And despite this soundtrack, we explained a fashion trend without overthrowing a single megacorporation.", "pauseAfterSeconds": 0.45, "settings": {"exaggeration": 0.78}}
+      ]},
+      "performance": {"beats": [
+        {"anchor": "So", "intent": "explain", "gesture": "offer"},
+        {"anchor": "upgraded", "intent": "welcome", "gesture": "small"},
+        {"anchor": "despite this soundtrack", "intent": "setup", "gesture": "none"},
+        {"anchor": "megacorporation", "intent": "payoff", "gesture": "small"}
+      ]}
+    }
+  ],
+  "sources": [
+    {"title": "Dictionary.com: egirl and eboy", "url": "https://www.dictionary.com/culture/pop-culture/egirl-and-eboy", "supports": "Term, style influences, TikTok visibility in 2019, variable use"},
+    {"title": "Teen Vogue: E-Girl Starter Pack", "url": "https://www.teenvogue.com/story/e-girl-starter-pack", "supports": "Common fashion and makeup examples"},
+    {"title": "Christine H. Tran: Never Battle Alone", "url": "https://journals.sagepub.com/doi/full/10.1177/15274764221080930", "supports": "Context, gendered assumptions, and derogatory/reclaimed uses"}
+  ]
+}
