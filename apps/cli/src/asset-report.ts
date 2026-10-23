@@ -16,7 +16,8 @@ export function describeBuildAssets(manifest: ProductionManifest, resolvedAssets
       sha256: asset.sha256,
       mimeType: asset.mimeType,
       sizeBytes: asset.sizeBytes,
-      sceneIds: manifest.scenes.filter((scene) => scene.visual.assetId === asset.id || scene.visual.presenter?.assetId === asset.id).map((scene) => scene.id),
+      sceneIds: manifest.scenes.filter((scene) => scene.visual.assetId === asset.id
+        || (scene.visual.presenter && "assetId" in scene.visual.presenter && scene.visual.presenter.assetId === asset.id)).map((scene) => scene.id),
       ...(intent.provenance ? { provenance: intent.provenance, provenanceVerification: "declared-not-independently-verified" as const } : {}),
     };
   });

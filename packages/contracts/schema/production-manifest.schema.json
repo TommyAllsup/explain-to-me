@@ -216,19 +216,43 @@
                 "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
               },
               "presenter": {
-                "type": "object",
-                "properties": {
-                  "assetId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64,
-                    "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "assetId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+                      }
+                    },
+                    "required": [
+                      "assetId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "character": {
+                        "type": "string",
+                        "const": "claudia"
+                      },
+                      "motion": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "reduced"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "character"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "assetId"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "additionalProperties": false
@@ -397,5 +421,5 @@
     "scenes"
   ],
   "additionalProperties": false,
-  "$comment": "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/presenter references, presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. Asset provenance records declarations, not verified authenticity."
+  "$comment": "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/still-presenter references, still-presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. The bundled animated Claudia presenter uses no image reference. Asset provenance records declarations, not verified authenticity."
 }

@@ -1,6 +1,6 @@
 # Agent integration
 
-For the experimental Claudia feature, use the [presenter workflow and agent prompt](claudia.md). It prepares a portable manifest before the usual build; no harness reconfiguration or generation subscription is needed for the bundled example.
+In the 0.2.5 development checkout, animated Claudia is part of the normal build. Complete the optional [local runtime setup](claudia-setup.md), then pass `--presenter claudia` to the CLI or agent wrapper. A manifest can also select `visual.presenter.character: "claudia"` per supported scene. Automatic voice/backend selection uses the accepted Chatterbox/Bella profile; requested duration is advisory for its natural delivery. See the [presenter workflow](claudia.md) for outputs, scene selection, and the still-image pack alternative. The tag-pinned installation instructions below describe the published 0.2.1 release.
 
 ## Windows v0.2.1
 
@@ -22,4 +22,4 @@ Job files live under `<workspace>/.explain-to-me/jobs/<unique-id>/`: `job.json`,
 
 `state: automated-ready` is not human approval. Read `humanReview` and `egress` separately. Failures/cancellations return nonzero and retain diagnostics; do not share logs without redaction. A source/input change during a job refuses readiness. Do not edit the software tree while a build is running.
 
-Per-project agent skills should point to this launcher and document explicit input/output bindings. Music, custom cartoons, and per-sentence rate settings remain separate production workflows; v0.2.1 adds no flags for them. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.
+Per-project agent skills should point to this launcher and document explicit input/output bindings. Music and per-sentence rate settings remain separate from the 0.2.5 Claudia integration. Keep private adapters and stories outside the reusable source tree. Run launcher/bridge tests with `node .cache/setup/node_modules/pnpm/bin/pnpm.cjs test:agent` after Windows setup, or the pinned pnpm launcher from the macOS instructions.

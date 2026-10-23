@@ -1,8 +1,38 @@
-# Add Claudia as a local presenter
+# Claudia in ordinary builds — 0.2.5
 
-This experimental workflow adds a credited still beside selected scenes in a reviewed manifest. It works with other characters too. Image discovery and generation happen separately; preparation and building use supplied local files.
+Claudia is an optional animated presenter in the normal explainer pipeline. She uses the selected **Bella-reference Chatterbox** voice, with lip sync, expressions, gaze, and connected gestures derived from each new recording. The model runs locally after explicit setup. The bundled character rig is credited to **Claudia by anabology**.
 
-## Try the supplied example
+This is the 0.2.5 development feature, not a published release tag. General voice pacing, music, and project configuration stay with 0.3. The earlier videos remain experiments and review records.
+
+## Build an animated explainer
+
+Complete the normal [app setup](quick-install.md) and the optional [Claudia runtime setup](claudia-setup.md), then choose a fresh output directory:
+
+```sh
+node scripts/explain.mjs doctor
+node scripts/explain.mjs build --manifest fixtures/presenters/claudia/animated-story.json --output out/claudia-app
+```
+
+The manifest already selects Claudia. To add her to your own reviewed manifest or template-directed document:
+
+```sh
+node scripts/explain.mjs build --manifest path/to/story.json --presenter claudia --output out/my-claudia-story
+node scripts/explain.mjs build path/to/document.md --director template --presenter claudia --duration 60s --output out/my-claudia-document
+```
+
+The flag selects supported title, statement, bullets, and outro scenes. For selective placement, put `"presenter": {"character": "claudia"}` inside a scene's `visual` object. For quieter body movement, use `"presenter": {"character": "claudia", "motion": "reduced"}`. Diagrams, comparisons, code, and image scenes retain their teaching layouts.
+
+Claudia selects `--tts chatterbox --voice chatterbox-bella` when the backend and voice are automatic. An incompatible explicit backend or voice is rejected. `--tts chatterbox` also works without a presenter; ordinary builds without Claudia keep their existing automatic backend selection.
+
+**Duration is measured, not forced.** Chatterbox keeps natural speech speed. `--duration` guides document direction but does not squeeze a fixed script into that length. Reports record the requested and measured duration separately; media QC checks the complete measured audio/video/caption timeline. Shorten the script if a strict time limit matters.
+
+Build outputs include the ordinary video, audio, captions, manifest, and report, plus `narration-alignment.json` and, for animated builds, `presenter-animation.json`. Word and phoneme timings are bound to the exact synthesized PCM. Pronunciation overrides change spoken alignment while preserving display captions. The original audition timing is not reused for new scripts.
+
+Review `video.mp4` before sharing: automatic alignment estimates phonemes and words; the phrase gestures are deterministic heuristics, not a semantic performance director. Unchanged speech/alignment and rendered frames can be reused from the normal cache. Rebuild an emitted `manifest.json` into another fresh directory to retain scene selection.
+
+## Still-image presenter packs
+
+The earlier local pack workflow remains supported for Claudia and other characters. Image discovery and generation happen separately; preparation and building use supplied local files.
 
 Complete normal [setup](quick-install.md) first. Run from this checkout and choose fresh output directories. The preparation command requires its output's parent directory to exist:
 
@@ -22,7 +52,7 @@ node scripts/explain.mjs build --manifest out/claudia-movie/manifest.json --tts 
 
 Keep `manifest.json` and its adjacent `assets/` together when moving an output. Existing output directories are refused; source manifests and packs are not modified.
 
-## Voice casting experiment
+## Historical voice casting experiment
 
 Claudia's default for the [animated character workflow](../scripts/claudia-character/README.md) is **original English Chatterbox with Bella as its voice reference**, selected by the user after comparing the complete animated performances on 2026-10-22. [selected-voice.json](../fixtures/presenters/claudia/selected-voice.json) records the model profile, generation settings, reference, and approved performance hashes. The bundled [approved Chatterbox inputs](../fixtures/presenters/claudia/approved-chatterbox/) preserve the exact recording, phoneme and word timing, and alignment report from the accepted test.
 
@@ -32,7 +62,7 @@ To render that default with the existing local renderer and Node 24, choose a fr
 node --import tsx scripts/claudia-character/main.ts --output out/claudia-character-default
 ```
 
-The 14.875-second Remotion movie retains the approved lip sync, word-timed facial expressions, gaze, blinks, and smoothly retimed body gestures. Speech keeps control of lip closure and vowel rounding. Rendering reuses the saved take without speech synthesis or realignment. Facial cues are authored for this narration and phoneme timing is automatically estimated. The standalone character workflow does not add Chatterbox to the general explainer CLI or change its production manifest; the still-presenter commands above continue to use their explicitly selected speech backend.
+The 14.875-second Remotion movie retains the approved lip sync, word-timed facial expressions, gaze, blinks, and smoothly retimed body gestures. Speech keeps control of lip closure and vowel rounding. This historical runner reuses the saved take without speech synthesis or realignment. Its facial cues were authored for that narration. The 0.2.5 build path above uses the promoted rig and derives new timing for arbitrary scripts; still-presenter commands continue to use their explicitly selected backend.
 
 The initial [voice-audition.json](../fixtures/presenters/claudia/voice-audition.json) cast A (`af_bella`), B (`af_heart`), and C (`af_nicole`) with the same text at speed 1.0 and matched loudness. Bella was the first selection and supplied the accepted fourth-iteration animation and voice reference. [bella-baseline.json](../fixtures/presenters/claudia/bella-baseline.json) preserves that historical profile for explicit comparisons.
 

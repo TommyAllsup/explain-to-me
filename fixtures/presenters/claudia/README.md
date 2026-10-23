@@ -1,4 +1,6 @@
-# Claudia demo asset
+# Claudia presenter fixtures
+
+`animated-story.json` is the neutral three-scene 0.2.5 app example. Build it through the ordinary CLI after [optional local setup](../../../docs/claudia-setup.md). It selects Claudia in the manifest and synthesizes fresh speech; it does not replay the approved audition recording.
 
 The selected animated voice is recorded in `selected-voice.json`.
 `approved-chatterbox/` retains the approved synthetic speech, the frozen Bella
@@ -19,4 +21,4 @@ Claudia by anabology · AI-generated image from the DOWNFORCE gallery.
 
 For the separate [animated character test](../../../scripts/claudia-character/README.md), `selected-voice.json` records the user's choice of original English Chatterbox with Bella as the voice reference. It pins the model profile, generation settings, and approved performance hashes. `approved-chatterbox/` contains the exact accepted `audio.wav`, `timings.json`, and alignment `report.json`, allowing the default animation to render without speech synthesis or realignment. Its lip sync, expressions, gaze, blinks, and body timing preserve the approved Chatterbox test.
 
-`bella-baseline.json` retains the earlier Kokoro Bella profile for explicit comparisons. `voice-audition.json` supplies the shared script and original three Kokoro casting candidates. These local speaking voices are separate from Claudia's music-video voice. The general explainer CLI does not yet provide a Chatterbox speech backend.
+`bella-baseline.json` retains the earlier Kokoro Bella profile for explicit comparisons. `voice-audition.json` supplies the shared script and original three Kokoro casting candidates. These local speaking voices are separate from Claudia's music-video voice. The 0.2.5 CLI provides the selected Chatterbox/Bella profile as an optional local backend.

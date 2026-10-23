@@ -4,7 +4,9 @@
 
 Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrated, captioned explainer videos. A local model can plan the story; deterministic scenes do the drawing; measured speech keeps the whole crew on time.
 
-**v0.2.1 · Windows x64 + macOS · TypeScript CLI · MIT project code**
+**v0.2.5 development · Windows x64 + macOS · TypeScript CLI · MIT project code**
+
+This branch integrates [animated Claudia](docs/claudia.md) into normal builds with local Chatterbox speech, lip sync, expressions, and gestures. The published installation examples below stay pinned to v0.2.1; 0.2.5 is not yet a release tag. The separate 0.3 narration/music work remains in progress.
 
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
@@ -90,7 +92,7 @@ Choose a **new output directory** each time. Existing targets are refused. Docto
 
 ## Three ways to explain a thing
 
-**Experimental on this branch:** add Claudia beside selected scenes with a local presenter pack. The [two-command demo](docs/claudia.md) needs no generation service and preserves credits and provenance. See the [feature plan](docs/plans/2026-10-22-claudia-presenter.md).
+**Animated Claudia in 0.2.5:** after the optional local voice setup, use `--presenter claudia` in a normal build or select her in a reviewed manifest. [Try the example](docs/claudia.md). Local still-image presenter packs remain supported. See the [integration scope](docs/plans/0.2.5-claudia-integration.md).
 
 ### “Use this document. Keep setup simple.”
 
@@ -121,7 +123,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --output out/document-local
 ```
 
-`--director local` requires that backend on macOS. `--director auto` reports an extractive fallback when local direction is unavailable, including on Windows. `--tts auto` prefers installed Kokoro and can fall back to Apple speech on macOS; Windows requires Kokoro. No cloud/subscription model adapter is built in.
+`--director local` requires that backend on macOS. `--director auto` reports an extractive fallback when local direction is unavailable, including on Windows. For builds without animated Claudia, `--tts auto` prefers installed Kokoro and can fall back to Apple speech on macOS; automatic selection on Windows requires Kokoro. Animated Claudia selects her optional Chatterbox backend. No cloud/subscription model adapter is built in.
 
 ### “I want to edit the script.”
 
@@ -131,7 +133,8 @@ Useful knobs:
 
 | Option | What it does |
 |---|---|
-| `--duration 60s` | Requests 10–600 seconds; measured speech must fit within the accepted tolerance. |
+| `--duration 60s` | Requests 10–600 seconds. Apple/Kokoro enforce the accepted tolerance; Chatterbox keeps natural speed and reports the measured duration separately. |
+| `--presenter claudia` | Adds animated Claudia to title, statement, bullets, and outro scenes, using her selected Chatterbox voice. Requires the optional local setup. |
 | `--audience "new teammates"` / `--style "friendly and concise"` | Guides document direction; doesn't add renderer themes. |
 | `--pronunciations map.json` | Changes spoken forms, e.g. `{"PCM":"P C M"}`, while preserving visible text. |
 | `--cache-dir path` | Moves the cache from `.explain-to-me/cache`. |

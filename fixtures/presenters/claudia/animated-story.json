@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "title": "A small idea, clearly explained",
+  "profile": "preview",
+  "targetDurationMs": 25000,
+  "theme": "technical-whiteboard",
+  "scenes": [
+    {
+      "id": "welcome",
+      "kind": "title",
+      "title": "A small idea, clearly explained",
+      "narration": [{ "id": "welcome-voice", "text": "Hi, I'm Claudia! Let's make a tiny explainer. One idea, a clear example, and absolutely no fifty-slide detour." }],
+      "visual": { "subtitle": "One idea. One useful example.", "presenter": { "character": "claudia" } }
+    },
+    {
+      "id": "example",
+      "kind": "bullets",
+      "title": "Give the idea somewhere to land",
+      "narration": [{ "id": "example-voice", "text": "Start with the point. Show what it means. Then give your viewer one useful next step. See? We're already getting somewhere." }],
+      "visual": { "lines": ["Make the point", "Show an example", "Offer a next step"], "presenter": { "character": "claudia" } }
+    },
+    {
+      "id": "finish",
+      "kind": "outro",
+      "title": "Your idea is next",
+      "narration": [{ "id": "finish-voice", "text": "Now try your own story. Review the words, watch the result, and keep the version you like. Tiny movie, useful idea." }],
+      "visual": { "subtitle": "Review. Build. Watch.", "presenter": { "character": "claudia" } }
+    }
+  ]
+}

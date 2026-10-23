@@ -14,6 +14,20 @@ import { prepareWindowsBrowserLauncher, writeWindowsBrowserLauncher } from "./wi
 
 const runSmoke = process.platform === "win32" && process.env.EXPLAIN_TO_ME_RENDER_SMOKE === "1";
 
+test("animated presenter requests reject missing alignment-derived performance before browser launch", async () => {
+  const manifest: ProductionManifest = {
+    version: "1", title: "Aligned Claudia", profile: "preview", targetDurationMs: 10_000, theme: "technical-whiteboard",
+    scenes: ["title", "statement", "outro"].map((kind, index) => ({ id: `scene-${index}`, kind: kind as "title" | "statement" | "outro",
+      title: "A production presenter", narration: [{ id: `chunk-${index}`, text: "These words need matching speech." }],
+      visual: { presenter: { character: "claudia" } } })),
+  };
+  const request: RenderRequest = { manifest, timeline: buildTimeline(manifest, manifest.scenes.map((scene) => ({ id: scene.narration[0]!.id, samples: 72_000 }))),
+    width: 1280, height: 720, fps: 24, outputPath: join(process.cwd(), ".cache", "tests", "must-not-render.mp4") };
+  await assert.rejects(renderVideo(request), /Animated Claudia requires valid presenter animation/);
+  manifest.scenes[0]!.kind = "diagram";
+  await assert.rejects(renderVideo(request), /presenter is supported only/);
+});
+
 test("presenter-only assets are hash-verified and staged once for the renderer", async () => {
   const scratch = join(process.cwd(), ".cache", "tests");
   await mkdir(scratch, { recursive: true });

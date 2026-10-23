@@ -1,6 +1,6 @@
 # Claudia presenter experiment
 
-Date: 2026-10-22. Status: feature-branch experiment.
+Date: 2026-10-22. Status: completed feature-branch experiment; superseded for new work by the owner-authorized [0.2.5 app integration](0.2.5-claudia-integration.md). This document preserves the original scope and evidence.
 
 Implemented and exercised locally; see the [validation record](../benchmarks/claudia-presenter.md).
 

@@ -1,6 +1,6 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v0.2.1 is the Windows patch release following the published v0.2.0 release. The broader product milestones below remain proposed, not blanket implementation authorization.
+**Status:** v0.2.1 is the published Windows patch release. The owner authorized the bounded [0.2.5 Claudia integration](docs/plans/0.2.5-claudia-integration.md) on 2026-10-22; 0.3 narration/music work remains separate and in progress. Broader milestones remain proposed, not blanket implementation authorization.
 **Baseline:** v0.1.0, tagged at `1d62754`.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
@@ -47,6 +47,12 @@ Custom cartoons, imported music, human-selected sentence pacing and listening ev
 - Improve infeasible-duration diagnostics and document a verified quickstart.
 
 **Done when:** A clean supported setup completes the documented example; missing prerequisites and infeasible targets produce useful errors; the existing golden paths remain working.
+
+### 0.2.5 — Claudia in ordinary builds
+
+**Scope:** Optional animated Claudia in the existing presenter panel, with the selected Bella-reference Chatterbox voice, fresh word/phoneme alignment, expressions, gaze, connected gestures, local setup diagnostics, and reproducible caches. Existing still presenters and narration backends remain supported.
+
+**Acceptance:** A neutral reviewed manifest completes the ordinary CLI pipeline with fresh speech and standard media QC, and a warm rebuild reuses speech and frames. Requested duration is advisory for natural-speed Chatterbox. See the [integration plan](docs/plans/0.2.5-claudia-integration.md) and [release notes](docs/releases/0.2.5.md).
 
 ### 0.3 — Narration and music as product features
 
@@ -167,7 +173,7 @@ Tag 1.0 when these outcomes are demonstrated, not merely when the version sequen
 - Arbitrary remote webpages, authenticated browser captures and broad document ingestion.
 - Scanned-PDF OCR and recorded-narration import/alignment.
 - Word-by-word highlighting requiring validated word timing.
-- Generated images/B-roll, optional cloud adapters, avatar or consented voice-cloning workflows.
+- Generated images/B-roll, optional cloud adapters, and general avatar or consented voice-cloning workflows beyond the fixed Claudia profile authorized for 0.2.5.
 - General-purpose video editing, collaborative cloud projects and automatic publishing.
 - Default 4K and universal Windows/Linux support.
 - Alternative renderer implementation; bring its evaluation forward only if licensing or technical constraints block the selected 1.0 scope.
@@ -185,4 +191,4 @@ Tag 1.0 when these outcomes are demonstrated, not merely when the version sequen
 
 ## Next recommended slice
 
-After v0.2.1, prioritize the narration-pacing and imported-music outcomes in the historical 0.3 milestone, with a separately agreed release number and scope. That converts the strongest demonstrated production improvements into ordinary product behavior before expanding formats or building a UI.
+Complete the authorized 0.2.5 Claudia integration while the separate 0.3 narration-pacing and imported-music work progresses. Keep those boundaries explicit before expanding formats or building a UI.

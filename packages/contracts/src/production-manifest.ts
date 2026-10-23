@@ -44,6 +44,9 @@ export interface Cue {
   timingFallback: "sentence-start";
 }
 
+/** A local still or the bundled, audio-aligned Claudia rig. */
+export type PresenterIntent = { assetId: string } | { character: "claudia"; motion?: "full" | "reduced" };
+
 export interface Scene {
   id: string;
   kind: SceneKind;
@@ -58,7 +61,7 @@ export interface Scene {
     right?: { title: string; lines: string[] };
     code?: string;
     assetId?: string;
-    presenter?: { assetId: string };
+    presenter?: PresenterIntent;
   };
   cues?: Cue[];
 }
@@ -125,7 +128,10 @@ const visualSchema = z.strictObject({
   right: z.strictObject({ title: shortText, lines: lineList }).optional(),
   code: z.string().min(1).max(2_400).optional(),
   assetId: boundedId.optional(),
-  presenter: z.strictObject({ assetId: boundedId }).optional(),
+  presenter: z.union([
+    z.strictObject({ assetId: boundedId }),
+    z.strictObject({ character: z.literal("claudia"), motion: z.enum(["full", "reduced"]).optional() }),
+  ]).optional(),
 });
 
 const cueSchema = z.strictObject({
@@ -205,11 +211,13 @@ export const productionManifestSchema = productionManifestStructureSchema.superR
       if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
         ctx.addIssue({ code: "custom", path: presenterPath, message: "Presenters are supported only on title, statement, bullets, and outro scenes" });
       }
-      const presenterAsset = assetsById.get(scene.visual.presenter.assetId);
-      if (!presenterAsset) {
-        ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenters require an approved asset id" });
-      } else if (!presenterAsset.provenance) {
-        ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenter assets require provenance with a credit" });
+      if ("assetId" in scene.visual.presenter) {
+        const presenterAsset = assetsById.get(scene.visual.presenter.assetId);
+        if (!presenterAsset) {
+          ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenters require an approved asset id" });
+        } else if (!presenterAsset.provenance) {
+          ctx.addIssue({ code: "custom", path: [...presenterPath, "assetId"], message: "Presenter assets require provenance with a credit" });
+        }
       }
     }
     const localChunks = new Map<string, string>();
@@ -274,7 +282,7 @@ export const productionManifestSchema = productionManifestStructureSchema.superR
 
 export const productionManifestJsonSchema = {
   ...z.toJSONSchema(productionManifestStructureSchema),
-  $comment: "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/presenter references, presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. Asset provenance records declarations, not verified authenticity.",
+  $comment: "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/still-presenter references, still-presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. The bundled animated Claudia presenter uses no image reference. Asset provenance records declarations, not verified authenticity.",
 };
 
 export function normalizeTokens(text: string): string[] {

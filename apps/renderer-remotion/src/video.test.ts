@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { AssetProvenance, LocalAssetIntent, Scene } from "../../../packages/contracts/src/production-manifest.js";
 import { getPresenterLayout, resolvePresenterAsset } from "./video.js";
+import { CLAUDIA_PROVENANCE } from "../../../packages/presenter/src/animation-types.js";
 
 const provenance: AssetProvenance = {
   character: "Claudia",
@@ -70,5 +71,17 @@ test("presenter layout fails visibly instead of shrinking dense content or attri
   const layout = getPresenterLayout(scene(), largeCredit, 1280, 720);
   assert.ok(layout.creditHeight > 100, "long credits reserve multiple lines, rather than truncate");
   assert.ok(layout.imageHeight >= 120);
+});
+
+test("animated Claudia uses the reserved presenter panel with visible attribution and a safe caption lane", () => {
+  for (const kind of ["title", "statement", "bullets", "outro"] as const) {
+    const animated = scene(kind); animated.visual.presenter = { character: "claudia" };
+    assert.equal(resolvePresenterAsset(animated, undefined, {}), undefined, "The bundled rig does not stage an image");
+    const layout = getPresenterLayout(animated, CLAUDIA_PROVENANCE, 1280, 720);
+    assert.ok(layout.imageHeight >= 250);
+    assert.ok(layout.creditSize >= 16);
+    assert.ok(layout.left + layout.contentWidth < layout.panelLeft);
+    assert.ok(layout.bottom < 720 - 105);
+  }
 });
 

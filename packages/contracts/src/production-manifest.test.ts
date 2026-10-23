@@ -156,3 +156,32 @@ test("published JSON schema matches the runtime structure", async () => {
   const actual = JSON.parse(await readFile(schemaPath, "utf8")) as unknown;
   assert.deepEqual(actual, productionManifestJsonSchema);
 });
+
+test("bundled animated Claudia needs no image asset and preserves motion intent", async () => {
+  const manifest = JSON.parse(await readFile(fixturePath, "utf8")) as ProductionManifest;
+  for (const kind of ["title", "statement", "bullets", "outro"] as const) {
+    manifest.scenes[0]!.kind = kind;
+    manifest.scenes[0]!.visual = { lines: ["Keep the reviewed explanation"], presenter: { character: "claudia", motion: "reduced" } };
+    const parsed = productionManifestSchema.parse(manifest);
+    assert.deepEqual(parsed.scenes[0]!.visual.presenter, { character: "claudia", motion: "reduced" });
+  }
+});
+
+test("animated presenters reject mixed still intent, unknown rigs, invalid motion, and incompatible scenes", async () => {
+  const manifest = JSON.parse(await readFile(fixturePath, "utf8")) as ProductionManifest;
+  for (const presenter of [
+    { character: "claudia", assetId: "unexpected" },
+    { character: "someone-else" },
+    { character: "claudia", motion: "extreme" },
+    { character: "claudia", modelPath: "local.pt" },
+  ]) {
+    const input = structuredClone(manifest);
+    Object.assign(input.scenes[0]!.visual, { presenter });
+    assert.equal(productionManifestSchema.safeParse(input).success, false);
+  }
+  for (const kind of ["diagram", "comparison", "code"] as const) {
+    const input = structuredClone(manifest);
+    input.scenes.find((scene) => scene.kind === kind)!.visual.presenter = { character: "claudia" };
+    assert.equal(productionManifestSchema.safeParse(input).success, false, kind);
+  }
+});

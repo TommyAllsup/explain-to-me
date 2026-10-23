@@ -68,3 +68,27 @@ test("Windows rejects Apple speech before invoking platform tools", { skip: proc
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Apple.*macOS/u);
 });
+
+test("incompatible Claudia choices fail before reading inputs or initializing models", () => {
+  const result = runCli("build", "--manifest", "does-not-exist.json", "--presenter", "claudia", "--tts", "kokoro");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Animated Claudia requires --tts chatterbox/u);
+  assert.doesNotMatch(result.stderr, /ENOENT|not available|unavailable/u);
+  const voice = runCli("build", "--manifest", "does-not-exist.json", "--tts", "chatterbox", "--voice", "af_bella");
+  assert.equal(voice.status, 1);
+  assert.match(voice.stderr, /selected voice only/u);
+});
+
+test("help describes the integrated presenter and natural duration", () => {
+  const result = runCli("--help");
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /--presenter claudia/u);
+  assert.match(result.stdout, /natural duration.*advisory/u);
+});
+
+test("saved animated intent rejects an incompatible backend before synthesis", () => {
+  const result = runCli("build", "--manifest", "fixtures/presenters/claudia/animated-story.json", "--tts", "kokoro");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Animated Claudia requires --tts chatterbox/u);
+  assert.doesNotMatch(result.stderr, /Failure diagnostics retained/u);
+});

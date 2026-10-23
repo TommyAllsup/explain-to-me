@@ -1,5 +1,6 @@
 import type { LocalAssetIntent, ProductionManifest } from "../../contracts/src/production-manifest.js";
 import type { Timeline } from "../../timeline/src/timeline.js";
+import type { PresenterAnimation } from "../../presenter/src/animation-types.js";
 
 export type RenderAsset = {
   /** Canonical, parent-approved local path to the image bytes. */
@@ -12,6 +13,7 @@ export interface RenderRequest {
   manifest: ProductionManifest;
   timeline: Timeline;
   assets?: Record<string, RenderAsset>;
+  presenterAnimation?: PresenterAnimation;
   outputPath: string;
   width: number;
   height: number;

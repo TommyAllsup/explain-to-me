@@ -13,6 +13,7 @@ import type { RenderAsset, RenderRequest, RenderResult } from "../../../packages
 import { writeWindowsBrowserLauncher } from "./windows-browser-launcher.js";
 import { ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
 import { assetProvenanceSchema } from "../../../packages/contracts/src/production-manifest.js";
+import { assertPresenterAnimation } from "../../../packages/presenter/src/animation.js";
 export { getLauncherReadiness } from "./windows-browser-launcher.js";
 
 const REMOTION_PIN = "4.0.535";
@@ -352,6 +353,7 @@ function validateRequest(request: RenderRequest): void {
   }
   if (!request.outputPath.trim()) throw new Error("Render outputPath must not be empty.");
   renderAssetIds(request);
+  assertPresenterAnimation(manifest, timeline, request.presenterAnimation);
 }
 
 function renderAssetIds(request: RenderRequest): string[] {
@@ -368,6 +370,10 @@ function renderAssetIds(request: RenderRequest): string[] {
     if (scene.visual.presenter) {
       if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
         throw new Error(`Scene ${scene.id}: a presenter is supported only on title, statement, bullets, and outro scenes.`);
+      }
+      if ("character" in scene.visual.presenter) {
+        if (scene.visual.presenter.character !== "claudia") throw new Error(`Scene ${scene.id}: unsupported animated presenter.`);
+        continue;
       }
       const assetId = scene.visual.presenter.assetId;
       const asset = declared.get(assetId);
@@ -524,6 +530,7 @@ export async function renderVideo(request: RenderRequest): Promise<RenderResult>
       height: request.height,
       fps: request.fps,
       assetFilesById,
+      ...(request.presenterAnimation ? { presenterAnimation: request.presenterAnimation } : {}),
     };
     const sharedBrowserOptions = {
       serveUrl: served.origin,

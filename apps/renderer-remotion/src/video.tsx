@@ -12,6 +12,9 @@ import {
 } from "remotion";
 import type { AssetProvenance, LocalAssetIntent, ProductionManifest, Scene } from "../../../packages/contracts/src/production-manifest.js";
 import type { Timeline } from "../../../packages/timeline/src/timeline.js";
+import { Claudia } from "../../../packages/presenter/src/claudia/Claudia.js";
+import { presenterPoseAt } from "../../../packages/presenter/src/performance.js";
+import { CLAUDIA_PROVENANCE, type PresenterAnimation, type PresenterSceneAnimation } from "../../../packages/presenter/src/animation-types.js";
 
 export type VideoProps = {
   manifest: ProductionManifest;
@@ -20,6 +23,7 @@ export type VideoProps = {
   height?: number;
   fps?: number;
   assetFilesById?: Record<string, string>;
+  presenterAnimation?: PresenterAnimation;
 };
 
 type TimedScene = Timeline["scenes"][number];
@@ -705,7 +709,7 @@ export function resolvePresenterAsset(
   assetFilesById: Record<string, string>,
 ): PresenterAsset | undefined {
   const presenter = scene.visual.presenter;
-  if (!presenter) return undefined;
+  if (!presenter || "character" in presenter) return undefined;
   if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
     throw new Error(`Scene ${scene.id}: a presenter is supported only on title, statement, bullets, and outro scenes.`);
   }
@@ -761,7 +765,7 @@ export function getPresenterLayout(scene: Scene, provenance: AssetProvenance, wi
   return { left, top, bottom, panelLeft, panelWidth, contentWidth, areaHeight, subtitle, subtitleSize, subtitleHeight, titleSize, titleHeight, bodySize, bodyGap, nameSize, nameHeight, creditSize, creditHeight, imageHeight };
 }
 
-function PresenterScene({ scene, presenter, accent, width, height, frame, durationInFrames }: {
+function PresenterScene({ scene, presenter, accent, width, height, frame, durationInFrames, character }: {
   scene: Scene;
   presenter: PresenterAsset;
   accent: string;
@@ -769,6 +773,7 @@ function PresenterScene({ scene, presenter, accent, width, height, frame, durati
   height: number;
   frame: number;
   durationInFrames: number;
+  character?: React.ReactNode;
 }) {
   const layout = getPresenterLayout(scene, presenter.provenance, width, height);
   const lines = scene.visual.lines ?? [];
@@ -791,10 +796,10 @@ function PresenterScene({ scene, presenter, accent, width, height, frame, durati
           </div>
         )}
       </div>
-      <div data-presenter-panel={scene.visual.presenter?.assetId} style={{ position: "absolute", left: layout.panelLeft, top: layout.top, width: layout.panelWidth, height: layout.areaHeight, boxSizing: "border-box", padding: 18, display: "flex", flexDirection: "column", borderLeft: `2px solid ${accent}`, backgroundColor: C.sheet, borderRadius: "0 14px 14px 0" }}>
+      <div data-presenter-panel={scene.visual.presenter && "assetId" in scene.visual.presenter ? scene.visual.presenter.assetId : "claudia"} style={{ position: "absolute", left: layout.panelLeft, top: layout.top, width: layout.panelWidth, height: layout.areaHeight, boxSizing: "border-box", padding: 18, display: "flex", flexDirection: "column", borderLeft: `2px solid ${accent}`, backgroundColor: C.sheet, borderRadius: "0 14px 14px 0" }}>
         <div style={{ flex: "0 0 auto", minHeight: layout.nameHeight, fontFamily: SERIF, fontSize: layout.nameSize, lineHeight: 1.15, fontWeight: 700, overflowWrap: "anywhere" }}>{presenter.provenance.character}</div>
         <div style={{ flex: 1, minHeight: 120, marginTop: 14, marginBottom: 20 }}>
-          <Img src={staticFile(presenter.fileName)} alt={presenter.provenance.character} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }} />
+          {character ?? <Img src={staticFile(presenter.fileName)} alt={presenter.provenance.character} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }} />}
         </div>
         <div style={{ flex: "0 0 auto", minHeight: layout.creditHeight, color: C.muted, fontSize: layout.creditSize, lineHeight: 1.25, overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}>{presenter.provenance.credit}</div>
         {presenter.provenance.aiGenerated && <div style={{ flex: "0 0 auto", marginTop: 8, color: accent, fontSize: 14, lineHeight: "17px", fontWeight: 750 }}>AI-generated image</div>}
@@ -813,6 +818,7 @@ function SceneView({
   durationInFrames,
   assetFilesById,
   presenterAsset,
+  animation,
 }: {
   scene: Scene;
   index: number;
@@ -823,15 +829,21 @@ function SceneView({
   durationInFrames: number;
   assetFilesById: Record<string, string>;
   presenterAsset: LocalAssetIntent | undefined;
+  animation: PresenterSceneAnimation | undefined;
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const accent = sceneAccent(scene);
-  const entrance = spring({ frame, fps, config: { damping: 22, stiffness: 100, mass: 0.72 } });
+  const entrance = animation?.motion === "reduced" ? 1 : spring({ frame, fps, config: { damping: 22, stiffness: 100, mass: 0.72 } });
   const reveal = clamp01(interpolate(frame, [0, Math.max(1, fps * 0.65)], [0, 1], { extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) }));
   const presenter = resolvePresenterAsset(scene, presenterAsset, assetFilesById);
   let content: React.ReactNode;
-  if (presenter) {
+  if (scene.visual.presenter && "character" in scene.visual.presenter) {
+    if (!animation || animation.sceneId !== scene.id || !animation.mouth[frame]) throw new Error(`Missing Claudia animation for scene ${scene.id}, frame ${frame}`);
+    const acting = presenterPoseAt((frame + .5) / fps, (animation.from + frame + .5) / fps, animation.performance, animation.motion);
+    content = <PresenterScene scene={scene} presenter={{ fileName: "", provenance: CLAUDIA_PROVENANCE }} accent={accent} width={width} height={height} frame={frame} durationInFrames={durationInFrames}
+      character={<Claudia mouth={animation.mouth[frame]!} acting={acting} />} />;
+  } else if (presenter) {
     content = <PresenterScene scene={scene} presenter={presenter} accent={accent} width={width} height={height} frame={frame} durationInFrames={durationInFrames} />;
   } else switch (scene.kind) {
     case "title":
@@ -908,7 +920,7 @@ function Caption({ chunk, accent, width, height }: { chunk: TimedChunk | undefin
   );
 }
 
-export const Video: React.FC<VideoProps> = ({ manifest, timeline, width = 1280, height = 720, assetFilesById = {} }) => {
+export const Video: React.FC<VideoProps> = ({ manifest, timeline, width = 1280, height = 720, assetFilesById = {}, presenterAnimation }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const cueWindows = resolveCueWindows(manifest, timeline);
@@ -933,7 +945,8 @@ export const Video: React.FC<VideoProps> = ({ manifest, timeline, width = 1280, 
         if (!scene || timedScene.durationInFrames <= 0) return null;
         return (
           <Sequence key={scene.id} from={timedScene.from} durationInFrames={timedScene.durationInFrames} name={scene.title}>
-            <SceneView scene={scene} index={index} count={manifest.scenes.length} activeTargets={activeByScene.get(scene.id) ?? new Set<string>()} width={width} height={height} durationInFrames={timedScene.durationInFrames} assetFilesById={assetFilesById} presenterAsset={scene.visual.presenter ? assetById.get(scene.visual.presenter.assetId) : undefined} />
+            <SceneView scene={scene} index={index} count={manifest.scenes.length} activeTargets={activeByScene.get(scene.id) ?? new Set<string>()} width={width} height={height} durationInFrames={timedScene.durationInFrames} assetFilesById={assetFilesById} presenterAsset={scene.visual.presenter && "assetId" in scene.visual.presenter ? assetById.get(scene.visual.presenter.assetId) : undefined}
+              animation={presenterAnimation?.scenes.find((entry) => entry.sceneId === scene.id)} />
           </Sequence>
         );
       })}

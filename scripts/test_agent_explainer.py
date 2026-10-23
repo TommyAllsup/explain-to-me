@@ -224,6 +224,29 @@ class AgentLauncherTests(unittest.TestCase):
         for option, value in [('--director', 'template'), ('--audience', 'new teammates'), ('--style', 'friendly')]:
             self.assertEqual(command[command.index(option) + 1], value)
 
+    def test_claudia_options_reach_the_production_cli(self):
+        source = self.workspace / 'story.json'
+        source.write_text('{}')
+        identity = {'version': '0.2.5', 'sourceFingerprint': 'unit-fixture'}
+        with mock.patch.object(agent, 'software_identity', return_value=identity), \
+                mock.patch.object(agent.shutil, 'which', return_value='/fixture/node'), \
+                mock.patch.object(agent.subprocess, 'check_output', return_value='explain-to-me 0.2.5\n'), \
+                mock.patch.object(agent, 'run_owned') as run, \
+                mock.patch.object(agent, 'validate_output', return_value={}), \
+                redirect_stdout(io.StringIO()):
+            result = agent.main(['build', '--workspace', str(self.workspace), '--manifest', str(source), '--presenter', 'claudia', '--tts', 'chatterbox', '--voice', 'chatterbox-bella'])
+        self.assertEqual(result, 0)
+        command = run.call_args.args[0]
+        for flag, value in [('--presenter', 'claudia'), ('--tts', 'chatterbox'), ('--voice', 'chatterbox-bella')]:
+            self.assertEqual(command[command.index(flag) + 1], value)
+
+    def test_incompatible_claudia_options_fail_before_creating_a_job(self):
+        for options in [('--tts', 'kokoro'), ('--voice', 'af_bella')]:
+            with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as failure:
+                agent.main(['build', '--workspace', str(self.workspace), '--manifest', str(self.workspace / 'missing.json'), '--presenter', 'claudia', *options])
+            self.assertEqual(failure.exception.code, 2)
+            self.assertFalse((self.workspace / '.explain-to-me').exists())
+
 
 if __name__ == '__main__':
     unittest.main()
