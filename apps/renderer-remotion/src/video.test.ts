@@ -84,4 +84,3 @@ test("animated Claudia uses the reserved presenter panel with visible attributio
     assert.ok(layout.bottom < 720 - 105);
   }
 });
-

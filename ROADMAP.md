@@ -1,6 +1,6 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v0.2.1 is the published Windows patch release. The owner authorized the bounded [0.2.5 Claudia integration](docs/plans/0.2.5-claudia-integration.md) on 2026-10-22; 0.3 narration/music work remains separate and in progress. Broader milestones remain proposed, not blanket implementation authorization.
+**Status:** v0.2.5 releases the bounded [Claudia integration](docs/plans/0.2.5-claudia-integration.md), following the v0.2.1 Windows patch release. The owner authorized its merge and release on 2026-10-22. The 0.3 narration/music work remains separate and in progress. Broader milestones remain proposed, not blanket implementation authorization.
 **Baseline:** v0.1.0, tagged at `1d62754`.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
@@ -8,7 +8,11 @@
 
 > This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan only for the next approved slice. Historical implementation plans and benchmark records remain evidence, not an instruction to execute every deferred idea.
 
-## Current release: v0.2.1 — Windows installation and local agent workflow
+## Current release: v0.2.5 — Claudia joins the app
+
+Animated Claudia is an optional presenter in ordinary builds, using the selected local Chatterbox voice and fresh audio alignment. Existing Apple/Kokoro and still-presenter paths remain supported. See the [release notes](docs/releases/0.2.5.md), [setup](docs/claudia-setup.md), and [validation record](docs/benchmarks/claudia-0.2.5.md).
+
+## Previous release: v0.2.1 — Windows installation and local agent workflow
 
 Windows 11 x64 now has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
 
@@ -191,4 +195,4 @@ Tag 1.0 when these outcomes are demonstrated, not merely when the version sequen
 
 ## Next recommended slice
 
-Complete the authorized 0.2.5 Claudia integration while the separate 0.3 narration-pacing and imported-music work progresses. Keep those boundaries explicit before expanding formats or building a UI.
+Continue the separate 0.3 narration-pacing and imported-music work after the 0.2.5 Claudia release. Keep those boundaries explicit before expanding formats or building a UI.

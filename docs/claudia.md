@@ -2,7 +2,7 @@
 
 Claudia is an optional animated presenter in the normal explainer pipeline. She uses the selected **Bella-reference Chatterbox** voice, with lip sync, expressions, gaze, and connected gestures derived from each new recording. The model runs locally after explicit setup. The bundled character rig is credited to **Claudia by anabology**.
 
-This is the 0.2.5 development feature, not a published release tag. General voice pacing, music, and project configuration stay with 0.3. The earlier videos remain experiments and review records.
+This feature is available in [v0.2.5](releases/0.2.5.md). General voice pacing, music, and project configuration stay with the separate 0.3 work. The earlier videos remain experiments and review records.
 
 ## Build an animated explainer
 
