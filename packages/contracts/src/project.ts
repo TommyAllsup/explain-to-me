@@ -40,7 +40,7 @@ const projectStructure = z.strictObject({
     style: boundedText(240).default("friendly technical whiteboard"),
   }).prefault({}),
   narration: z.strictObject({
-    backend: z.enum(["auto", "apple", "kokoro"]).default("auto"),
+    backend: z.enum(["auto", "apple", "kokoro", "chatterbox"]).default("auto"),
     voice: boundedText(120).default("auto"),
     pronunciations: z.record(boundedText(80), boundedText(160)).default({}),
     pacing: pacingStructure.prefault({}),
@@ -71,8 +71,11 @@ const projectStructure = z.strictObject({
 });
 
 export const projectSchema = projectStructure.superRefine((project, ctx) => {
-  if (project.narration.delivery && project.narration.backend === "apple") {
+  if (project.narration.delivery && ["apple", "chatterbox"].includes(project.narration.backend)) {
     ctx.addIssue({ code: "custom", path: ["narration", "delivery"], message: "Connected delivery requires Kokoro" });
+  }
+  if (project.narration.backend === "chatterbox" && !["auto", "chatterbox-bella"].includes(project.narration.voice)) {
+    ctx.addIssue({ code: "custom", path: ["narration", "voice"], message: "Chatterbox requires Claudia's selected voice: chatterbox-bella (or auto)" });
   }
   if ((project.input.source === undefined) === (project.input.manifest === undefined)) {
     ctx.addIssue({ code: "custom", path: ["input"], message: "Specify exactly one source or manifest" });
@@ -102,7 +105,7 @@ export type ProjectMusic = NonNullable<ProjectConfig["music"]>;
 
 export const projectJsonSchema = {
   ...z.toJSONSchema(projectStructure, { io: "input" }),
-  $comment: "Runtime validation additionally enforces exactly one input, portable bounded relative paths, nonblank text, pronunciation uniqueness/combined limits, pacing override counts, and total serialized bytes. Passage keys identify original reviewed-manifest narration chunks before preparation.",
+  $comment: "Runtime validation additionally enforces exactly one input, portable bounded relative paths, nonblank text, pronunciation uniqueness/combined limits, pacing override counts, narrator voice/delivery compatibility, and total serialized bytes. Passage keys identify original reviewed-manifest narration chunks before preparation. Plan validation resolves animated Claudia to Chatterbox and requires natural pace (1) for every effective passage.",
 };
 
 export function formatProjectIssues(error: z.ZodError): string[] {

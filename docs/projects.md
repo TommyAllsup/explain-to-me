@@ -1,6 +1,6 @@
 # Saved projects, reviewed scripts, and music (0.3 working tree)
 
-This unreleased workflow adds project JSON, a script review before speech, narration previews, chosen pacing, and one local music track. It uses the existing 720p/24 fps technical-whiteboard renderer. The tag-pinned 0.2.1 quickstarts remain valid for that release; these commands require the updated working tree.
+This unreleased workflow adds project JSON, a script review before speech, narration previews, chosen pacing, and one local music track. It builds on the released 0.2.5 Claudia integration and uses the existing 720p/24 fps technical-whiteboard renderer. The tag-pinned 0.2.5 quickstarts describe the published release; project commands require the 0.3 feature branch checkout.
 
 ## Plan, review, preview, build
 
@@ -20,7 +20,15 @@ node scripts/explain.mjs build --project out/measured-walk/project.json --plan o
 
 Listen to `preview/audio.wav`; watch and listen to `movie/video.mp4`. Preview uses the same text preparation, pronunciations, voice, pace, and speech cache as the full build. It selects up to three prepared chunks and 600 characters of visible or spoken text; add `--passage measure-passage` or `--scene measure` to choose the example's excerpt. An oversized explicit spoken passage must be split in the reviewed plan before preview. Preview contains narration only. It writes measured captions and `preview.json`, including the selected chunks, timing, cache work, signal checks, and pending human review.
 
-The [neutral fixture](../fixtures/projects/measured-walk/project.json) binds the [bundled story](../fixtures/projects/measured-walk/story.json). The example generator copies both and creates `pad.wav`; the generated track does not require a download. To use a different installed narrator, edit `narration.backend` and `narration.voice` in the saved project before preview/build: `apple`/`Samantha` on macOS, or `kokoro`/`af_heart` on macOS or Windows. Backend `auto` uses the existing selection/fallback behavior; use an explicit backend for repeatable comparisons.
+The [neutral fixture](../fixtures/projects/measured-walk/project.json) binds the [bundled story](../fixtures/projects/measured-walk/story.json). The example generator copies both and creates `pad.wav`; the generated track does not require a download. To use a different installed narrator, edit `narration.backend` and `narration.voice` in the saved project before preview/build: `apple`/`Samantha` on macOS, `kokoro`/`af_heart` on macOS or Windows, or `chatterbox`/`chatterbox-bella` after the optional [Claudia setup](claudia-setup.md). Backend `auto` keeps the existing selection/fallback behavior for ordinary projects and selects Chatterbox for a manifest with animated Claudia.
+
+## Animated Claudia in a saved project
+
+Select Claudia in the input manifest or reviewed `plan/manifest.json`: add `"presenter": {"character": "claudia"}` to the `visual` object of supported title, statement, bullets, or outro scenes. Use `"motion": "reduced"` inside that presenter object for quieter movement. Project commands use this manifest selection, not a `--presenter` flag.
+
+Set the project's narration backend and voice to `auto`/`auto` or explicitly to `chatterbox`/`chatterbox-bella`. An incompatible explicit backend or voice is rejected. Keep the effective pace of every passage at `1` and omit `narration.delivery`: Chatterbox preserves its natural delivery and rejects rate changes or Kokoro connected-delivery settings. Pronunciation overrides remain available. The neutral example's slower-passage override must therefore be removed before using it with Claudia.
+
+Preview uses the same selected voice as the full build. A build derives lip sync, expressions and gestures from the new unmixed narration, then applies any project music. Music-only revisions reuse narration and rendered frames. The `strict` duration policy still checks the measured result once and fails outside the tolerance; it never retimes Chatterbox speech. See the [presenter guide](claudia.md) for setup, scene limits and animation outputs.
 
 ## Project format
 
@@ -75,9 +83,9 @@ Configuration bounds:
 |---|---|
 | Project | At most 64 KiB; title 1–120 nonblank characters. |
 | Direction | `auto`, `template`, or `local`; audience/style at most 240 characters each. Windows uses template direction; local AI direction remains macOS-only. |
-| Voice | Backend `auto`, `apple`, or `kokoro`; voice ID at most 120 characters and available in the selected adapter. |
+| Voice | Backend `auto`, `apple`, `kokoro`, or `chatterbox`; voice ID at most 120 characters and available in the selected adapter. Animated Claudia requires `chatterbox-bella`. |
 | Pronunciations | At most 64 literal terms; each term ≤80 and spoken replacement ≤160 characters, ≤4,096 combined characters; case-insensitive duplicate terms fail. |
-| Pace | `0.65`–`1.25`; at most 16 scene and 128 passage overrides using existing manifest IDs. |
+| Pace | `0.65`–`1.25`; at most 16 scene and 128 passage overrides using existing manifest IDs. Chatterbox requires effective pace `1` for every passage. |
 | Music | One WAV, MP3, M4A, AAC, FLAC, or OGG file, at most 100 MiB. Gain −60 to 0 dB; additional ducking −30 to 0 dB; integer fades 0–10,000 ms. |
 | Rights | Optional `holder` (≤240), `license` (≤512), and `note` (≤2,000 characters); descriptive user-supplied information, never automatic clearance. |
 | Output | Only `preview`; desired duration 10,000–600,000 ms; policy `paced` or `strict`. |
@@ -88,7 +96,7 @@ CLI `--project`, `--plan`, `--output`, and `--cache-dir` paths are explicit loca
 
 ## Pace and duration precedence
 
-Pacing values are absolute multipliers: passage override > scene override > project default. A value of `0.8` means deliberately slower speech; `1` maps to Apple 170 words/minute or Kokoro speed 1. Apple rounds its requested rate to a whole word/minute. Adapters and voices can produce different measured durations at the same multiplier.
+Pacing values are absolute multipliers: passage override > scene override > project default. A value of `0.8` means deliberately slower speech with Apple/Kokoro; `1` maps to Apple 170 words/minute, Kokoro speed 1, or Chatterbox's unchanged natural delivery. Apple rounds its requested rate to a whole word/minute. Adapters and voices can produce different measured durations at the same multiplier. Chatterbox rejects effective multipliers other than `1` rather than stretching speech or discarding its alignment.
 
 To slow one passage, take its narration `id` from the editable plan and set, for example, `"passages": {"your-passage-id": 0.8}`. Keep that original ID when editing its text. Preparation may split the passage into sentence/phrase chunks; every derived chunk retains the original passage's override. Reports record this mapping. Unknown IDs fail instead of silently ignoring an override. Split a passage into separate reviewed narration chunks if only part should have a different pace.
 
@@ -96,7 +104,7 @@ The default `paced` policy synthesizes once at the chosen settings. Measured aud
 
 `strict` is an opt-in duration check, not automatic rate fitting. The same chosen pacing is synthesized once and must land within ±1 second of the desired duration. Otherwise the build fails with measured recovery guidance. Change the target, explicitly revise pacing, or edit and review the narration; no automatic correction, narration rewrite, speech truncation, or narration silence padding occurs. A short preview always uses paced timing; strict duration applies to the full build.
 
-Legacy commands without `--project` retain their existing measured duration fitting and bounded rate correction behavior, including `build --manifest ... --duration 60s` and source-based builds.
+Legacy commands without `--project` retain their released behavior: Apple/Kokoro use measured duration fitting and bounded rate correction, including `build --manifest ... --duration 60s` and source-based builds; Chatterbox retains natural duration without rate fitting.
 
 ## Connected Kokoro delivery
 
@@ -170,4 +178,4 @@ node scripts/verify-project.mjs --tts kokoro --output out/project-verification-k
 
 These exercise script planning, preview, normal/slower narration, music-only cache reuse, and measured timing. Automated media/signal checks, cache evidence, and a scripted edit do not constitute human script approval or a human watch/listen pass. Reports leave human review pending; record actual approval separately after inspecting the exact artifacts.
 
-The [0.3 verification record](benchmarks/0.3-project-results.md) records macOS Apple/Kokoro builds, cache counters, strict failures and regression results. Native Windows 11 x64 verification of this 0.3 workflow is pending/unavailable in the implementation environment. Existing [Windows 0.2.1 evidence](benchmarks/windows-support.md) does not establish a 0.3 media pass. Use Kokoro with prepared manifests or template direction on Windows; Apple speech and Windows AI direction are unavailable there. Whole-process no-egress proof, ASR, cartoons, 1080p, new input formats, and a Studio UI remain outside this change.
+The [original 0.3 verification record](benchmarks/0.3-project-results.md) records macOS Apple/Kokoro builds. The [Claudia merge verification](benchmarks/0.3-claudia-merge.md) adds Windows 11 x64 project builds with Kokoro and Chatterbox, strict-duration checks, and music-only reuse of narration and frames. Use Kokoro, or the separately configured Chatterbox for Claudia, with prepared manifests or template direction on Windows; Apple speech and Windows AI direction are unavailable there. Human watch/listen approval, whole-process no-egress proof, ASR, general cartoon authoring, 1080p, new input formats, and a Studio UI remain outside this verification.

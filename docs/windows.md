@@ -1,10 +1,12 @@
-# Explain-to-Me 0.2.1 on Windows
+# Explain-to-Me 0.2.5 on Windows
 
-Version **0.2.1** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
+Version **0.2.5** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
+
+This release adds optional animated Claudia with Chatterbox narration, lip sync, expressions, and gestures. It requires the separate advanced [Claudia setup](claudia-setup.md) on Windows with NVIDIA CUDA. The ordinary installer and commands below still use Kokoro; they do not install Chatterbox.
 
 ## Saved projects in the 0.3 working tree
 
-The unreleased [project workflow](projects.md) uses the same installed Kokoro and media tools. It is available only from the updated working tree, not the tag-pinned 0.2.1 checkout below. Choose `narration.backend: "kokoro"` and `narration.voice: "af_heart"` in the saved project; use prepared manifests or `direction.mode: "template"` for documents.
+The unreleased [project workflow](projects.md) uses the same installed Kokoro and media tools. It is available from the 0.3 feature branch, which includes the released Claudia integration; it is not included in the tag-pinned 0.2.5 checkout below. Choose `narration.backend: "kokoro"` and `narration.voice: "af_heart"` in the saved project; use prepared manifests or `direction.mode: "template"` for documents. For animated Claudia, follow the [project compatibility settings](projects.md#animated-claudia-in-a-saved-project) after the separate Chatterbox setup: select Claudia in the manifest, use backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, and keep natural pace without Kokoro delivery settings.
 
 ```powershell
 node scripts/create-example-project.mjs --output out/measured-walk
@@ -17,7 +19,7 @@ Start-Process out/measured-walk/movie/video.mp4
 
 Inside project JSON, use forward-slash paths relative to the project file, including paths with spaces/non-ASCII names. Existing local-drive and reparse-point restrictions apply. Chosen pacing controls measured duration; optional strict checking fails instead of adjusting it. `audio.wav` stays narration-only; music adds `music.wav` and `mixed.wav`. The mixer uses bounded PCM processing and the bundled media decoder, avoiding reliance on optional FFmpeg mixing filters.
 
-Native Windows 11 x64 execution of the 0.3 workflow is pending/unavailable in the implementation environment. Existing 0.2.1 validation is not a 0.3 pass. On a Windows machine, `node scripts/verify-project.mjs --tts kokoro --output out/project-verification-kokoro` exercises the new media/cache paths; human listening and viewing approval remains a separate step. See [project settings and limitations](projects.md).
+Native Windows 11 x64 project builds with Kokoro and separately configured Chatterbox passed the [Claudia merge verification](benchmarks/0.3-claudia-merge.md), including music-only reuse and strict-duration failures. On a prepared Windows machine, `node scripts/verify-project.mjs --tts kokoro --output out/project-verification-kokoro` repeats the Kokoro media/cache checks. Human listening and viewing approval remains separate. See [project settings and limitations](projects.md).
 
 Optional `narration.delivery` settings use the same Kokoro adapter for connected
 phrasing and bounded sentence/clause pauses. They require native model duration
@@ -28,15 +30,15 @@ without a duplicate selectable subtitle track; SRT/VTT remain separate files.
 
 ## Let your local agent install it
 
-Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-021-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
+Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-025-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
 
 ## Install once
 
 Install [Node.js 24 LTS or newer with npm](https://nodejs.org/en/download) and [Git for Windows](https://git-scm.com/downloads/win). Open a new PowerShell terminal after installing Node, then:
 
 ```powershell
-git clone --branch v0.2.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.1
-cd explain-to-me-v0.2.1
+git clone --branch v0.2.5 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.5
+cd explain-to-me-v0.2.5
 git rev-parse HEAD
 node scripts/setup.mjs
 ```
@@ -91,7 +93,7 @@ Use ordinary local-drive directories. Paths containing spaces and non-ASCII char
 node scripts/explain.mjs doctor
 ```
 
-Doctor checks Node, bundled media tools, actual Kokoro synthesis, the installed browser, and the compiled launcher. Local AI direction appears as unavailable/optional on Windows and does not prevent template/prepared-manifest builds.
+Doctor checks Node, bundled media tools, actual Kokoro synthesis, the installed browser, and the compiled launcher. Claudia and local AI direction are optional checks; unavailable optional dependencies do not prevent Kokoro/template or prepared-manifest builds.
 
 - **Node version error:** install Node 24+ with npm and open a new terminal. `node --version` shows the selected runtime.
 - **Missing model, browser, launcher, or Python dependency:** rerun `node scripts/setup.mjs`; it is the recovery command as well as the installer.
@@ -109,4 +111,4 @@ Setup needs download access and write access to the checkout. Agent jobs also ne
 
 The recorded Windows validation encountered sandbox denials for Chromium/media execution and directory access-control changes. If that happens, inspect the exact error and request approval for the specific setup or build command and required directories, according to the harness and organization policy. Running an approved command as the ordinary Windows user is separate from administrator elevation. If policy prevents the needed operation, report it and let the user run the documented command in PowerShell. Keep unrelated permissions and protections in place.
 
-The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.2.1 release notes](releases/0.2.1.md) describe the shipped scope and remaining limits.
+The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.2.5 release notes](releases/0.2.5.md) describe the shipped scope and remaining limits.

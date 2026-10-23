@@ -51,6 +51,19 @@ test("connected delivery is opt-in, bounded, and requires a capable narrator", (
     { mode: "connected", clausePauseMs: 501 }, { mode: "connected", emphasis: "strong" },
   ]) assert.equal(projectSchema.safeParse({ ...minimal, narration: { ...narration, delivery } }).success, false);
   assert.equal(projectSchema.safeParse({ ...minimal, narration: { ...narration, backend: "apple" } }).success, false);
+  assert.equal(projectSchema.safeParse({ ...minimal, narration: { ...narration, backend: "chatterbox" } }).success, false);
+});
+
+test("saved projects accept Claudia's selected Chatterbox voice without changing ordinary defaults", () => {
+  for (const voice of ["auto", "chatterbox-bella"]) {
+    const narration = { backend: "chatterbox", voice };
+    assert.equal(projectSchema.parse({ ...minimal, narration }).narration.voice, voice);
+  }
+  assert.equal(projectSchema.parse({ ...minimal, narration: { backend: "chatterbox" } }).narration.voice, "auto");
+  for (const voice of ["af_bella", "Samantha", "another-reference"]) {
+    assert.equal(projectSchema.safeParse({ ...minimal, narration: { backend: "chatterbox", voice } }).success, false);
+  }
+  assert.equal(projectSchema.parse({ ...minimal, narration: { backend: "kokoro", voice: "af_bella" } }).narration.voice, "af_bella");
 });
 
 test("pronunciations share preparation's term, text, uniqueness, and aggregate limits", () => {

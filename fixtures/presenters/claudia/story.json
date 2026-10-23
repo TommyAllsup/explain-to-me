@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "title": "A familiar face, a local film",
+  "profile": "preview",
+  "targetDurationMs": 30000,
+  "theme": "technical-whiteboard",
+  "scenes": [
+    {
+      "id": "welcome",
+      "kind": "title",
+      "title": "A familiar face, a local film",
+      "narration": [{ "id": "welcome-voice", "text": "Meet Claudia, an open character by anabology. A familiar face can welcome viewers without taking over the explanation." }],
+      "visual": { "subtitle": "Claudia joins the whiteboard" }
+    },
+    {
+      "id": "receipts",
+      "kind": "bullets",
+      "title": "Keep the creative decisions",
+      "narration": [{ "id": "receipts-voice", "text": "Choose a local image and the scenes where it belongs. Keep its source, prompt, and credit together. A file hash checks that the chosen image stays unchanged." }],
+      "visual": { "lines": ["Choose the image", "Choose the scenes", "Keep the source and credit"] }
+    },
+    {
+      "id": "finish",
+      "kind": "outro",
+      "title": "Ready to make it yours",
+      "narration": [{ "id": "finish-voice", "text": "The usual pipeline adds narration, captions, and the final movie locally. Review the result, then reuse the same presenter pack for another story." }],
+      "visual": { "subtitle": "One portable pack. Your next story." }
+    }
+  ]
+}

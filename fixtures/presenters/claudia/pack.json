@@ -1,0 +1,21 @@
+{
+  "version": "1",
+  "asset": {
+    "id": "claudia",
+    "source": "claudia.webp",
+    "sha256": "6503fdefc1edbef61002efc5365745f63558048a4c8f6fa1299dc8c1e9504845",
+    "mimeType": "image/webp",
+    "provenance": {
+      "character": "Claudia",
+      "origin": "gallery",
+      "sourceUrl": "https://claudia.gallery/i/rh-02-plates.id-full.4/",
+      "prompt": "full-length shot, a 28-year-old Caucasian American woman with a grown-up angular face, defined cheekbones and a strong jawline, pale skin and light freckles, a glossy black blunt jaw-length bob with heavy straight bangs and one clay-orange streak through the bangs, a small flat clay-orange eight-pointed star hair clip, a thin headset microphone at her cheek, wearing a fitted white racing suit with thin clay-orange piping and a high collar, white racing gloves, no lettering on her clothes, white racing boots, standing upright facing the camera, arms relaxed at her sides, deadpan, a plain matte black studio, soft top light, 35mm film photograph, motorsport fashion editorial, no text, no letters, no logos --ar 9:16 --v 8.2 --raw --hd",
+      "identityText": "a 28-year-old Caucasian American woman with a grown-up angular face, defined cheekbones and a strong jawline, pale skin and light freckles, a glossy black blunt jaw-length bob with heavy straight bangs and one clay-orange streak through the bangs, a small flat clay-orange eight-pointed star hair clip, a thin headset microphone at her cheek",
+      "identitySha256": "050304a556b2c2be497d14c8d5a94de09ace0e3580f87bb779caef5251449018",
+      "canonUrl": "https://claudia.gallery/api/canon.json",
+      "canonRetrievedAt": "2026-10-22",
+      "credit": "Claudia by anabology",
+      "aiGenerated": true
+    }
+  }
+}

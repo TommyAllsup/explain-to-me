@@ -1,18 +1,22 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v0.2.1 is the current Windows patch release following the published v0.2.0 release. Version 0.3 is the next scoped product milestone; later milestone numbers and scope remain proposed.
-**Baseline:** v0.2.1, with macOS and Windows 11 x64 support within the documented feature matrix.
+**Status:** v0.2.5 is the current release and includes the bounded [Claudia integration](docs/plans/0.2.5-claudia-integration.md). The unreleased 0.3 saved-project, narration and music work now builds on that release in this feature branch. Later milestone numbers and scope remain proposed.
+**Baseline:** v0.2.5, with macOS and Windows 11 x64 support within the documented feature matrix; Claudia's optional runtime has separate Windows/CUDA setup requirements.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
 **Tech stack:** Existing TypeScript/Node/pnpm pipeline, React/Remotion adapter, FFmpeg/ffprobe, local narration and direction adapters.
 
 > This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan for the next approved slice. Historical plans and benchmark records remain evidence with their original limits, not an instruction to execute every deferred idea.
 
-## Current release: v0.2.1 — Windows installation and local agent workflow
+## Current release: v0.2.5 — Claudia joins the app
+
+Animated Claudia is an optional presenter in ordinary builds, using the selected local Chatterbox voice and fresh audio alignment. Existing Apple/Kokoro and still-presenter paths remain supported. See the [release notes](docs/releases/0.2.5.md), [setup](docs/claudia-setup.md), and [validation record](docs/benchmarks/claudia-0.2.5.md).
+
+## Previous release: v0.2.1 — Windows installation and local agent workflow
 
 Windows 11 x64 has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
 
-macOS retains Apple speech, optional Kokoro, prepared manifests, template direction and the optional local AI director. Native Windows local AI direction, ARM64, whole-process egress proof, general music/cartoon controls, and the broader review/project workflow remain deferred. Supported platforms need not have identical optional backends; document and test the supported paths explicitly.
+macOS retains Apple speech, optional Kokoro, prepared manifests, template direction and the optional local AI director. Native Windows local AI direction, ARM64, whole-process egress proof and general cartoon controls remain deferred. Saved projects, narration controls and one-track music are in progress for 0.3 below. Supported platforms need not have identical optional backends; document and test the supported paths explicitly.
 
 ## What 1.0 means
 
@@ -42,6 +46,12 @@ The supported matrix starts with macOS and Windows 11 x64. Windows uses Kokoro a
 See the [0.2.0 release notes](docs/releases/0.2.0.md), [0.2.1 release notes](docs/releases/0.2.1.md), and [changelog](CHANGELOG.md). Project code licensing does not relicense dependencies, models, voices or supplied assets.
 
 Custom cartoons, imported music and human-selected sentence pacing have demonstrated a stronger production workflow, but are not general v0.2.1 CLI features. A custom demonstration does not establish acceptance of every product path.
+
+### 0.2.5 — Claudia in ordinary builds, released
+
+**Scope:** Optional animated Claudia in the existing presenter panel, with the selected Bella-reference Chatterbox voice, fresh word/phoneme alignment, expressions, gaze, connected gestures, local setup diagnostics, and reproducible caches. Existing still presenters and narration backends remain supported.
+
+**Acceptance:** A neutral reviewed manifest completes the ordinary CLI pipeline with fresh speech and standard media QC, and a warm rebuild reuses speech and frames. Requested duration is advisory for natural-speed Chatterbox. See the [integration plan](docs/plans/0.2.5-claudia-integration.md) and [release notes](docs/releases/0.2.5.md).
 
 ## Next: 0.3 — A saved project, a reviewed script, and a soundtrack
 
@@ -162,7 +172,7 @@ Tag 1.0 when these outcomes are demonstrated, not when every proposed feature or
 - Music looping, crossfades and richer multi-track production.
 - Arbitrary remote webpages, authenticated browser captures and broad document ingestion.
 - ASR/transcript QC, automated listening/naturalness research and word-aligned highlighting.
-- Generated images/B-roll, optional cloud adapters, avatar or consented voice-cloning workflows.
+- Generated images/B-roll, optional cloud adapters, and general avatar or consented voice-cloning workflows beyond the fixed Claudia profile authorized for 0.2.5.
 - General-purpose video editing, collaborative cloud projects and automatic publishing.
 - Default 4K, extensive animation primitives and deadline-aware optional-generation scheduling.
 - Alternative renderer implementation; bring its evaluation forward only if licensing or technical constraints block the selected 1.0 scope.
@@ -177,8 +187,8 @@ Tag 1.0 when these outcomes are demonstrated, not when every proposed feature or
 - The [historical acceptance benchmark](docs/benchmarks/acceptance.md) retains its original scope and unimplemented assumptions. Carry forward useful media/timing invariants and provisional measurements; write current, scoped acceptance criteria for each new milestone instead of inheriting that entire contract.
 - Record actual commands, environment, outputs, limitations and unavailable verification. A configured workflow, a sampled frame or an automated pass is not full human approval.
 - Keep private production material, model weights and credentials out of source releases. Include only deliberately selected, documented demonstration media.
-- Preserve the published v0.2.0/v0.2.1 history. This roadmap authorizes no product implementation, commit, push, tag or publication by itself.
+- Preserve the published v0.2.0/v0.2.1/v0.2.5 history. This roadmap authorizes no product implementation, commit, push, tag or publication by itself.
 
 ## Next implementation slice
 
-Scope 0.3 around the smallest saved-project and pre-TTS review foundation needed for narration previews, deliberate pacing and one-track music. Prove one neutral project on the supported macOS/Windows paths, preserve legacy commands, and leave full revision tooling, cartoons and new input adapters to their later milestones.
+Continue the 0.3 saved-project and pre-TTS review foundation on the released Claudia integration, with narration previews, deliberate pacing and one-track music. Prove one neutral project on the supported macOS/Windows paths, preserve the released Claudia and legacy commands, and leave full revision tooling, general cartoon authoring and new input adapters to their later milestones.

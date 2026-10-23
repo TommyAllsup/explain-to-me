@@ -1,18 +1,22 @@
 # Install Explain-to-Me with your local agent
 
-## Windows 0.2.1 with Codex or Claude Code
+<a id="windows-021-with-codex-or-claude-code"></a>
+
+## Windows 0.2.5 with Codex or Claude Code
 
 Use an existing **Codex** or **Claude Code** session with local terminal access to your Windows 11 x64 computer. Install/sign in to that harness separately using its official instructions. Explain-to-Me requires Node.js 24+ with npm and Git for Windows; its setup prepares local pnpm, uv/Python, Kokoro, FFmpeg/ffprobe, and the rendering browser. Global Python, pnpm, uv, and FFmpeg installs are unnecessary. Existing Windows Visual C++/.NET runtime components are required; repairing a missing system component can require administrator help.
 
-Open the [complete Windows installer prompt](install-windows-agent.txt), copy its text, and paste it into your agent. It pins `v0.2.1`, uses a new checkout and a separate private workspace, runs doctor and the bundled build, and asks for the actual output/QC results. It does not install the agent harness or upload your inputs.
+Open the [complete Windows installer prompt](install-windows-agent.txt), copy its text, and paste it into your agent. It pins `v0.2.5`, uses a new checkout and a separate private workspace, runs doctor and the bundled build, and asks for the actual output/QC results. It does not install the agent harness or upload your inputs.
+
+Animated Claudia is optional in 0.2.5 and needs separate advanced [Windows/CUDA setup](claudia-setup.md). These first-build instructions use Kokoro and do not install Chatterbox.
 
 ### Codex example
 
 In an installed Codex local chat, or an interactive Codex CLI session started with `codex` in your chosen local parent directory, paste:
 
 ```text
-Install Explain-to-Me v0.2.1 on this Windows computer. Read and follow:
-https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v0.2.1/docs/install-windows-agent.txt
+Install Explain-to-Me v0.2.5 on this Windows computer. Read and follow:
+https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v0.2.5/docs/install-windows-agent.txt
 Use the local terminal, preserve existing projects, and report the verified
 checkout version, doctor result, job JSON, and generated video/caption paths.
 ```
@@ -24,8 +28,8 @@ Codex's active permissions determine filesystem/network access and approvals. Se
 In an installed, signed-in Claude Code local terminal session started with `claude` in your chosen local parent directory, paste the same request:
 
 ```text
-Install Explain-to-Me v0.2.1 on this Windows computer. Read and follow:
-https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v0.2.1/docs/install-windows-agent.txt
+Install Explain-to-Me v0.2.5 on this Windows computer. Read and follow:
+https://raw.githubusercontent.com/TommyAllsup/explain-to-me/v0.2.5/docs/install-windows-agent.txt
 Use the local terminal, preserve existing projects, and report the verified
 checkout version, doctor result, job JSON, and generated video/caption paths.
 ```
@@ -37,16 +41,16 @@ Use a native Windows checkout and PowerShell-capable execution for this guide. F
 In PowerShell, choose an unused checkout directory:
 
 ```powershell
-git clone --branch v0.2.1 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.1
-cd explain-to-me-v0.2.1
+git clone --branch v0.2.5 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.5
+cd explain-to-me-v0.2.5
 node scripts/setup.mjs
 node scripts/explain.mjs --version
 node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --output out/first-movie
 ```
 
-The version command must print `explain-to-me 0.2.1`. Existing output directories are refused. See [Windows setup](windows.md) for private-workspace commands, recovery, supported paths, and the difference between automated QC and human review. Native Windows local AI direction is deferred; use Kokoro with prepared manifests or `--director template`.
+The version command must print `explain-to-me 0.2.5`. Existing output directories are refused. See [Windows setup](windows.md) for private-workspace commands, recovery, supported paths, and the difference between automated QC and human review. Native Windows local AI direction is deferred; use Kokoro with prepared manifests or `--director template`.
 
-For the current macOS v0.2.1 commands, use the [README macOS quickstart](../README.md#macos-quickstart-roll-your-first-tiny-movie).
+For the current macOS v0.2.5 commands, use the [README macOS quickstart](../README.md#macos-quickstart-roll-your-first-tiny-movie).
 
 ## Historical macOS v0.2.0 agent setup
 

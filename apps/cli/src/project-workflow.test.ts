@@ -4,7 +4,8 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { createPlan, extractPreviewPcm, loadPlan, projectCommand, selectPreview, selectPreviewContext, withNewOutput } from "./project-workflow.js";
+import { createPlan, extractPreviewPcm, loadPlan, projectCommand, selectPreview, selectPreviewContext, selectProjectNarration, withNewOutput } from "./project-workflow.js";
+import { projectSchema } from "../../../packages/contracts/src/project.js";
 import { loadProject } from "../../../packages/project/src/files.js";
 import { prepareNarration } from "../../../packages/audio/src/prepare-narration.js";
 import { resolveChunkPacing } from "../../../packages/audio/src/pacing.js";
@@ -18,6 +19,66 @@ const manifest: ProductionManifest = {
     narration: [{ id: `${id}-passage`, text: "A PCM sample has a measured duration. The timeline follows the actual sound." }],
   })),
 };
+
+const claudiaManifest: ProductionManifest = { ...manifest, scenes: manifest.scenes.map((scene) => ({
+  ...scene, visual: scene.id === "measure" ? { presenter: { character: "claudia" as const } } : scene.visual,
+})) };
+
+test("saved build and preview narration resolve Claudia from the complete reviewed plan", () => {
+  const config = projectSchema.parse({ version: "1", title: "Review Claudia", input: { manifest: "story.json" } });
+  assert.deepEqual(selectProjectNarration(config, manifest), { backend: "auto", voice: "auto" });
+  assert.deepEqual(selectProjectNarration(config, claudiaManifest), { backend: "chatterbox", voice: "chatterbox-bella" });
+  const excerpt = selectPreview(claudiaManifest, {}, undefined, "start");
+  assert.equal(excerpt.scenes.some((scene) => scene.visual.presenter), false, "a preview can exclude Claudia's visible scene");
+  assert.deepEqual(selectProjectNarration(config, claudiaManifest), { backend: "chatterbox", voice: "chatterbox-bella" }, "the full plan still chooses the build voice");
+  const kokoro = { ...config, narration: { ...config.narration, backend: "kokoro" as const, voice: "af_bella" } };
+  assert.deepEqual(selectProjectNarration(kokoro, manifest), { backend: "kokoro", voice: "af_bella" });
+  assert.throws(() => selectProjectNarration(kokoro, claudiaManifest), /Animated Claudia requires/);
+  assert.throws(() => selectProjectNarration({ ...config, narration: { ...config.narration, voice: "af_bella" } }, claudiaManifest), /selected voice only/);
+  assert.throws(() => selectProjectNarration({ ...config, narration: { ...config.narration,
+    delivery: { mode: "connected", sentencePauseMs: 250, clausePauseMs: 100 },
+  } }, claudiaManifest), /Connected delivery requires Kokoro/);
+});
+
+test("Claudia validates effective pacing across the complete plan before preview selection", () => {
+  const config = projectSchema.parse({ version: "1", title: "Review Claudia", input: { manifest: "story.json" } });
+  const pacing = { default: 0.9, scenes: { start: 1, measure: 1, finish: 1 }, passages: {} };
+  assert.doesNotThrow(() => selectProjectNarration({ ...config, narration: { ...config.narration, pacing } }, claudiaManifest));
+  assert.throws(() => selectProjectNarration({ ...config, narration: { ...config.narration,
+    pacing: { ...pacing, passages: { "measure-passage": 0.8 } },
+  } }, claudiaManifest), /Chatterbox/);
+});
+
+test("saved Claudia plans forward the selected voice to build and reject incompatible preview options before synthesis", async () => {
+  const root = await mkdtemp(join(tmpdir(), "etm-project-claudia-"));
+  try {
+    await writeFile(join(root, "story.json"), JSON.stringify(claudiaManifest));
+    const config = { version: "1", title: "Review Claudia", input: { manifest: "story.json" } };
+    const projectPath = join(root, "project.json");
+    await writeFile(projectPath, JSON.stringify(config));
+    const project = await loadProject(projectPath);
+    const planPath = join(root, "plan");
+    await createPlan(project, planPath, join(root, "cache"));
+    let builds = 0;
+    await projectCommand("build", ["--project", projectPath, "--plan", planPath, "--output", join(root, "build")], async (options) => {
+      builds += 1;
+      assert.equal(options.backend, "chatterbox");
+      assert.equal(options.voice, "chatterbox-bella");
+      assert.deepEqual(options.project!.manifest.scenes[1]!.visual.presenter, { character: "claudia" });
+    });
+    assert.equal(builds, 1);
+    const neverBuild = async () => { assert.fail("preview must not build video"); };
+    for (const narration of [
+      { voice: "af_bella" },
+      { pacing: { passages: { "measure-passage": 0.8 } } },
+      { delivery: { mode: "connected" } },
+    ]) {
+      await writeFile(projectPath, JSON.stringify({ ...config, narration }));
+      await assert.rejects(() => projectCommand("preview", ["--project", projectPath, "--plan", planPath, "--scene", "start", "--output", join(root, "preview")], neverBuild), /Chatterbox|Connected delivery/);
+    }
+    assert.equal((await readdir(root)).some((name) => name.includes("preview")), false, "invalid settings fail before preview output or synthesis work");
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
 
 test("connected previews keep full scene context and extract only measured selected PCM", () => {
   const full: ProductionManifest = { ...manifest, scenes: [{ ...manifest.scenes[0]!, narration: [

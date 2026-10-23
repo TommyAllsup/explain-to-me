@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Claudia: Bella or Chatterbox</title>
+    <style>
+      :root {
+        font-family: Arial, sans-serif;
+        color: #26352e;
+        background: #f5f3ec;
+        font-synthesis: none;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { max-width: 1184px; margin: 0 auto; padding: 28px 32px 32px; }
+      h1 { margin: 0 0 12px; font: normal 32px/1.15 Georgia, serif; letter-spacing: -0.6px; }
+      p { margin: 0; font-size: 16px; line-height: 1.5; }
+      .intro { max-width: 760px; }
+      .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 22px 0 14px; }
+      .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+      button {
+        min-height: 44px;
+        padding: 10px 16px;
+        border: 1px solid #63765c;
+        border-radius: 0;
+        background: transparent;
+        color: #26352e;
+        font: 600 16px/1.2 Arial, sans-serif;
+        cursor: pointer;
+      }
+      button:hover { background: #e5e8dd; }
+      button[aria-pressed="true"] { color: #f5f3ec; background: #26352e; border-color: #26352e; }
+      button:active { transform: translateY(1px); }
+      button:focus-visible, a:focus-visible, video:focus-visible { outline: 3px solid #63765c; outline-offset: 4px; }
+      .status { flex: 1 1 220px; font-size: 14px; }
+      video { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 720; background: #f5f3ec; }
+      .error { margin-top: 12px; color: #8c251c; }
+      .details { margin-top: 18px; }
+      .links { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 14px; }
+      a { color: #26352e; text-decoration-thickness: 1px; text-underline-offset: 3px; font-size: 16px; line-height: 1.5; }
+      a:hover { text-decoration-thickness: 2px; }
+      .default-note { margin-top: 14px; font-size: 14px; }
+      @media (max-width: 600px) {
+        main { padding: 20px 16px 24px; }
+        h1 { font-size: 28px; }
+        .controls { margin-top: 18px; gap: 10px; }
+        .choices { width: 100%; }
+        button { flex: 1; padding-inline: 10px; }
+        .status { flex-basis: 100%; }
+        .links { flex-direction: column; gap: 12px; }
+      }
+      @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Compare Claudia’s voices</h1>
+      <p class="intro">Bella on the left, Chatterbox on the right. Choose an audio track, then press play to compare the voice, lip sync, and expressions.</p>
+      <div class="controls">
+        <div class="choices" role="group" aria-label="Audio track">
+          <button type="button" data-voice="bella" aria-pressed="false" aria-controls="performance">Hear Bella</button>
+          <button type="button" data-voice="chatterbox" aria-pressed="true" aria-controls="performance">Hear Chatterbox</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite">Chatterbox audio selected. Press play to begin.</p>
+      </div>
+      <video id="performance" controls playsinline preload="auto" poster="chatterbox-poster.png" src="chatterbox.mp4" aria-label="Bella and Chatterbox animated performances side by side" aria-describedby="comparison-note">
+        Your browser cannot play this video. <a href="comparison.mp4">Open the comparison video</a>.
+      </video>
+      <p class="error" id="error" role="alert" hidden></p>
+      <div class="details">
+        <p id="comparison-note">Both performances run at their natural speed, with one audio track at a time. The script is the same; word timings differ. Switching audio keeps your place.</p>
+        <nav class="links" aria-label="Other ways to compare">
+          <a href="comparison.mp4">Watch both audio tracks in sequence</a>
+          <a href="../claudia-character-v4/video.mp4">Original Bella test</a>
+          <a href="../claudia-character-chatterbox/video.mp4">Original Chatterbox test</a>
+        </nav>
+        <p class="default-note">Selected default: Chatterbox. Both takes remain available for comparison.</p>
+      </div>
+      <noscript><p class="details">Audio switching needs JavaScript. Use the comparison video above to hear Bella followed by Chatterbox.</p></noscript>
+    </main>
+    <script>
+      (() => {
+        const video = document.getElementById('performance');
+        const status = document.getElementById('status');
+        const error = document.getElementById('error');
+        const buttons = [...document.querySelectorAll('[data-voice]')];
+        const voices = { bella: { name: 'Bella', file: 'bella.mp4', poster: 'bella-poster.png' }, chatterbox: { name: 'Chatterbox', file: 'chatterbox.mp4', poster: 'chatterbox-poster.png' } };
+        let selected = 'chatterbox';
+        let pending = null;
+        let revision = 0;
+        let failed = false;
+        let retry = null;
+
+        function showError(message) {
+          error.textContent = message;
+          error.hidden = false;
+        }
+
+        function choose(voice) {
+          if (!voices[voice]) return;
+          if (voice === selected && !video.ended && !video.error && !failed) return;
+
+          // A second click during a load inherits the original playhead and intent.
+          const previousRequest = pending || retry;
+          const time = previousRequest ? previousRequest.time : video.ended ? 0 : video.currentTime;
+          const playing = previousRequest ? previousRequest.playing : !video.paused && !video.ended;
+          const volume = video.volume;
+          const muted = video.muted;
+          if (pending) pending.cancel();
+          const token = ++revision;
+          const controller = new AbortController();
+          let timeout;
+          const request = {
+            time: Number.isFinite(time) ? time : 0,
+            playing,
+            cancel() { controller.abort(); clearTimeout(timeout); },
+          };
+          pending = request;
+          retry = null;
+          selected = voice;
+          failed = false;
+          error.hidden = true;
+          buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.voice === voice)));
+          status.textContent = `Loading ${voices[voice].name} audio…`;
+
+          const fail = message => {
+            if (token !== revision) return;
+            request.cancel();
+            pending = null;
+            failed = true;
+            retry = { time: request.time, playing: request.playing };
+            status.textContent = `${voices[voice].name} audio could not be loaded.`;
+            showError(message);
+          };
+          const finish = async () => {
+            if (token !== revision) return;
+            request.cancel();
+            pending = null;
+            status.textContent = `${voices[voice].name} audio selected.`;
+            if (!request.playing) return;
+            try {
+              await video.play();
+            } catch (cause) {
+              if (token !== revision || cause?.name === 'AbortError') return;
+              status.textContent = `${voices[voice].name} audio selected. Press play to continue.`;
+              showError('Playback could not resume automatically. Press play in the video controls.');
+            }
+          };
+
+          video.addEventListener('loadedmetadata', () => {
+            if (token !== revision || video.readyState < 1) return;
+            try {
+              video.volume = volume;
+              video.muted = muted;
+              video.playbackRate = 1;
+              const end = Number.isFinite(video.duration) ? Math.max(0, video.duration - 0.001) : request.time;
+              const target = Math.max(0, Math.min(request.time, end));
+              if (Math.abs(video.currentTime - target) < 0.001) {
+                void finish();
+              } else {
+                video.addEventListener('seeked', () => void finish(), { once: true, signal: controller.signal });
+                video.currentTime = target;
+              }
+            } catch {
+              fail('The video could not return to that position. Select the audio track again to retry.');
+            }
+          }, { once: true, signal: controller.signal });
+          video.addEventListener('error', () => fail('The selected video could not be opened. Keep this player alongside bella.mp4 and chatterbox.mp4, or use a video link below.'), { once: true, signal: controller.signal });
+          timeout = setTimeout(() => fail('The selected video is taking too long to load. Select an audio track to retry, or open a video below.'), 20000);
+
+          try {
+            video.pause();
+            video.poster = voices[voice].poster;
+            video.src = voices[voice].file;
+            video.load();
+          } catch {
+            fail('The selected video could not be opened. Try one of the video links below.');
+          }
+        }
+
+        buttons.forEach(button => button.addEventListener('click', () => choose(button.dataset.voice)));
+        video.addEventListener('error', () => {
+          if (!pending) showError('The video could not be opened. Keep the player and its videos together, or use one of the links below.');
+        });
+        video.addEventListener('ratechange', () => {
+          // Compare the performances at their original speaking speeds.
+          if (video.playbackRate !== 1) video.playbackRate = 1;
+        });
+      })();
+    </script>
+  </body>
+</html>

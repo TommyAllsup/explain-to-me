@@ -4,13 +4,15 @@ import { basename, dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { z } from "zod";
 import type { CliOptions } from "./index.js";
+import { hasAnimatedClaudia, selectBuildNarration } from "./claudia.js";
+import type { ProjectConfig } from "../../../packages/contracts/src/project.js";
 import { productionManifestSchema, MAX_MANIFEST_BYTES, type ProductionManifest } from "../../../packages/contracts/src/production-manifest.js";
 import { loadProject, resolveProjectFile, resolveProjectOutput } from "../../../packages/project/src/files.js";
 import { loadDocument, resolveManifestAssets } from "../../../packages/ingest/src/markdown.js";
 import { directDocument } from "../../../packages/director/src/director.js";
 import { ensurePrivateDirectory, assertNoLinkedPath, openRegularFile } from "../../../packages/assets/src/file-safety.js";
 import { prepareNarration } from "../../../packages/audio/src/prepare-narration.js";
-import { validatePacing } from "../../../packages/audio/src/pacing.js";
+import { assertChatterboxPacing, resolveChunkPacing, validatePacing } from "../../../packages/audio/src/pacing.js";
 import { synthesizeNarration, writeWavFromPcm, PCM_SAMPLE_RATE, type SynthesizedChunk } from "../../../packages/audio/src/synthesize.js";
 import { buildTimeline, createSentenceCaptions, renderSrt, renderWebVtt } from "../../../packages/timeline/src/timeline.js";
 import { inspectPcm } from "../../../packages/validation/src/qc.js";
@@ -113,6 +115,7 @@ export async function loadPlan(project: LoadedProject, planPath: string): Promis
   const saved = await readBoundedJson(join(planPath, "manifest.json"), MAX_MANIFEST_BYTES);
   const manifest = productionManifestSchema.parse(saved.value) as ProductionManifest;
   validatePacing(project.config.narration.pacing, manifest);
+  selectProjectNarration(project.config, manifest);
   // Validate plan assets even for preview; only the explicitly selected plan is read.
   await resolveManifestAssets(manifest, join(planPath, "manifest.json"), { projectRoot: planPath });
   return { project, planPath, manifest, planSha256: saved.sha256, planRecordSha256: savedRecord.sha256, provenance: record };
@@ -151,13 +154,24 @@ export async function projectCommand(command: string, args: string[], build: (op
     return;
   }
   if (project.config.music) execution.music = await resolveMusic(project.root, project.config.music as MusicConfig);
+  const narration = selectProjectNarration(project.config, execution.manifest);
   await build({
     manifestPath: join(execution.planPath, "manifest.json"), directorMode: project.config.direction.mode,
     audience: project.config.direction.audience, style: project.config.direction.style,
     profile: project.config.output.profile, targetDurationMs: project.config.output.desiredDurationMs,
-    outputPath: output, voice: project.config.narration.voice, backend: project.config.narration.backend,
+    outputPath: output, voice: narration.voice, backend: narration.backend,
     cacheDir, project: execution,
   });
+}
+
+/** Resolve the complete reviewed plan before choosing a preview excerpt. */
+export function selectProjectNarration(config: ProjectConfig, manifest: ProductionManifest) {
+  const selected = selectBuildNarration(config.narration.backend, config.narration.voice, hasAnimatedClaudia(manifest));
+  if (selected.backend === "chatterbox") {
+    if (config.narration.delivery) throw new Error("Connected delivery requires Kokoro; Claudia uses Chatterbox's natural delivery.");
+    assertChatterboxPacing(resolveChunkPacing(manifest, config.narration.pacing));
+  }
+  return selected;
 }
 
 export function selectPreview(manifest: ProductionManifest, origins: Record<string, string>, passage?: string, sceneId?: string): ProductionManifest {
@@ -207,6 +221,7 @@ export function extractPreviewPcm(pcm: Buffer, chunks: SynthesizedChunk[], ids: 
 
 async function previewPlan(execution: ProjectExecution, output: string, cacheDir: string, passage?: string, scene?: string): Promise<void> {
   const { project } = execution;
+  const narration = selectProjectNarration(project.config, execution.manifest);
   const prepared = prepareNarration(execution.manifest, project.config.narration.pronunciations, { preserveReviewedSpeech: true });
   const manifest = selectPreview(prepared.manifest, prepared.originByChunkId, passage, scene);
   const delivery = project.config.narration.delivery;
@@ -216,7 +231,7 @@ async function previewPlan(execution: ProjectExecution, output: string, cacheDir
   try {
     await withNewOutput(output, async (staging) => {
       const contextSynthesis = await synthesizeNarration({
-        manifest: contextManifest, voice: project.config.narration.voice, backend: project.config.narration.backend,
+        manifest: contextManifest, voice: narration.voice, backend: narration.backend,
         pacing: project.config.narration.pacing, passageOrigins: prepared.originByChunkId,
         ...(delivery ? { delivery } : {}),
         durationPolicy: "paced", targetDurationMs: project.config.output.desiredDurationMs, workDir: temp, cacheDir,

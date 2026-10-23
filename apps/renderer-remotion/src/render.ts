@@ -12,6 +12,8 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import type { RenderAsset, RenderRequest, RenderResult } from "../../../packages/renderer-core/src/renderer.js";
 import { writeWindowsBrowserLauncher } from "./windows-browser-launcher.js";
 import { ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+import { assetProvenanceSchema } from "../../../packages/contracts/src/production-manifest.js";
+import { assertPresenterAnimation } from "../../../packages/presenter/src/animation.js";
 export { getLauncherReadiness } from "./windows-browser-launcher.js";
 
 const REMOTION_PIN = "4.0.535";
@@ -143,7 +145,7 @@ function readPackageVersion(packageName: string): string {
   }
 }
 
-function assertPinnedRendererVersions(): string {
+export function assertPinnedRendererVersions(): string {
   const actual = ["remotion", "@remotion/bundler", "@remotion/renderer"].map((name) => ({ name, version: readPackageVersion(name) }));
   const incompatible = actual.filter((pkg) => pkg.version !== REMOTION_PIN);
   if (incompatible.length > 0) {
@@ -214,7 +216,7 @@ function isWithin(root: string, candidate: string): boolean {
   return candidate === root || candidate.startsWith(`${root}${sep}`);
 }
 
-async function startBundleServer(bundleDir: string): Promise<{ server: Server; origin: string }> {
+export async function startBundleServer(bundleDir: string): Promise<{ server: Server; origin: string }> {
   const root = resolve(bundleDir);
   const server = createServer(async (request, response) => {
     const relative = requestPath(request);
@@ -314,7 +316,7 @@ export async function startRestrictingProxy(allowedOrigin: string): Promise<{
   };
 }
 
-async function writeBrowserWrapper(directory: string, browserPath: string, proxyOrigin: string): Promise<string> {
+export async function writeBrowserWrapper(directory: string, browserPath: string, proxyOrigin: string): Promise<string> {
   if (process.platform === "win32") return writeWindowsBrowserLauncher(directory, browserPath, proxyOrigin);
   const wrapperPath = join(directory, "renderer-chrome.mjs");
   const script = [
@@ -351,18 +353,35 @@ function validateRequest(request: RenderRequest): void {
   }
   if (!request.outputPath.trim()) throw new Error("Render outputPath must not be empty.");
   renderAssetIds(request);
+  assertPresenterAnimation(manifest, timeline, request.presenterAnimation);
 }
 
 function renderAssetIds(request: RenderRequest): string[] {
   const declared = new Map((request.manifest.assets ?? []).map((asset) => [asset.id, asset]));
   if (declared.size !== (request.manifest.assets ?? []).length) throw new Error("Render manifest contains duplicate asset ids.");
 
-  const imageIds = new Set<string>();
+  const requiredAssetIds = new Set<string>();
   for (const scene of request.manifest.scenes) {
-    if (scene.kind !== "image") continue;
-    const assetId = scene.visual.assetId;
-    if (!assetId) throw new Error(`Image scene ${scene.id} is missing its approved asset id.`);
-    imageIds.add(assetId);
+    if (scene.kind === "image") {
+      const assetId = scene.visual.assetId;
+      if (!assetId) throw new Error(`Image scene ${scene.id} is missing its approved asset id.`);
+      requiredAssetIds.add(assetId);
+    }
+    if (scene.visual.presenter) {
+      if (!["title", "statement", "bullets", "outro"].includes(scene.kind)) {
+        throw new Error(`Scene ${scene.id}: a presenter is supported only on title, statement, bullets, and outro scenes.`);
+      }
+      if ("character" in scene.visual.presenter) {
+        if (scene.visual.presenter.character !== "claudia") throw new Error(`Scene ${scene.id}: unsupported animated presenter.`);
+        continue;
+      }
+      const assetId = scene.visual.presenter.assetId;
+      const asset = declared.get(assetId);
+      if (!asset || !assetProvenanceSchema.safeParse(asset.provenance).success) {
+        throw new Error(`Scene ${scene.id}: presenter ${assetId} requires an approved asset with valid provenance.`);
+      }
+      requiredAssetIds.add(assetId);
+    }
   }
 
   const provided = request.assets ?? {};
@@ -382,12 +401,12 @@ function renderAssetIds(request: RenderRequest): string[] {
     }
     if (asset.mimeType !== intent.mimeType) throw new Error(`Render asset ${assetId} MIME type does not match the manifest.`);
   }
-  for (const assetId of imageIds) {
+  for (const assetId of requiredAssetIds) {
     if (!Object.prototype.hasOwnProperty.call(provided, assetId)) {
-      throw new Error(`Image scene asset ${assetId} was not resolved to an approved local file.`);
+      throw new Error(`Scene asset ${assetId} was not resolved to an approved local file.`);
     }
   }
-  return [...imageIds].sort();
+  return [...requiredAssetIds].sort();
 }
 
 function matchesImageSignature(contents: Buffer, mimeType: RenderAsset["mimeType"]): boolean {
@@ -404,7 +423,8 @@ function extensionForImage(mimeType: RenderAsset["mimeType"]): string {
   return "webp";
 }
 
-async function copyAssetsIntoPublicDirectory(request: RenderRequest, directory: string): Promise<Record<string, string>> {
+/** Stage only referenced, hash-verified image and presenter assets for the local browser. */
+export async function copyAssetsIntoPublicDirectory(request: RenderRequest, directory: string): Promise<Record<string, string>> {
   const publicDirectory = join(directory, "public-assets");
   await mkdir(publicDirectory, { mode: 0o700 });
   const assetFilesById: Record<string, string> = {};
@@ -510,6 +530,7 @@ export async function renderVideo(request: RenderRequest): Promise<RenderResult>
       height: request.height,
       fps: request.fps,
       assetFilesById,
+      ...(request.presenterAnimation ? { presenterAnimation: request.presenterAnimation } : {}),
     };
     const sharedBrowserOptions = {
       serveUrl: served.origin,

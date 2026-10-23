@@ -55,6 +55,13 @@ export function appleRateForPace(pace: number): number {
   return Math.round(APPLE_BASE_RATE_WPM * pace);
 }
 
+/** Claudia's approved delivery and phoneme timing require the original speech rate. */
+export function assertChatterboxPacing(paceByChunkId: Record<string, number>): void {
+  if (Object.values(paceByChunkId).some((pace) => pace !== 1)) {
+    throw new Error("Claudia Chatterbox preserves natural delivery and supports only pace 1. Remove non-1 pacing overrides or select a different narration backend. No speech or facial timing was changed.");
+  }
+}
+
 export function assertPacedDuration(policy: DurationPolicy, measuredMs: number, targetMs: number): void {
   if (policy === "strict" && Math.abs(measuredMs - targetMs) > 1_000) {
     throw new Error(`Strict project duration requested ${(targetMs / 1_000).toFixed(3)}s, but the reviewed narration measured ${(measuredMs / 1_000).toFixed(3)}s at the chosen pacing (tolerance ±1.000s). Disable strict duration fitting, change the target, or explicitly revise pacing or reviewed narration. No pacing correction, narration rewrite, speech truncation, or silence padding was performed.`);

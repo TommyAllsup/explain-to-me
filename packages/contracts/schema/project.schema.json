@@ -65,7 +65,8 @@
           "enum": [
             "auto",
             "apple",
-            "kokoro"
+            "kokoro",
+            "chatterbox"
           ]
         },
         "voice": {
@@ -253,5 +254,5 @@
     "input"
   ],
   "additionalProperties": false,
-  "$comment": "Runtime validation additionally enforces exactly one input, portable bounded relative paths, nonblank text, pronunciation uniqueness/combined limits, pacing override counts, and total serialized bytes. Passage keys identify original reviewed-manifest narration chunks before preparation."
+  "$comment": "Runtime validation additionally enforces exactly one input, portable bounded relative paths, nonblank text, pronunciation uniqueness/combined limits, pacing override counts, narrator voice/delivery compatibility, and total serialized bytes. Passage keys identify original reviewed-manifest narration chunks before preparation. Plan validation resolves animated Claudia to Chatterbox and requires natural pace (1) for every effective passage."
 }
