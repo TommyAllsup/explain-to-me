@@ -45,7 +45,9 @@
               "diagram",
               "comparison",
               "code",
-              "outro"
+              "outro",
+              "bullets",
+              "image"
             ]
           },
           "title": {
@@ -55,7 +57,7 @@
           },
           "narration": {
             "minItems": 1,
-            "maxItems": 8,
+            "maxItems": 32,
             "type": "array",
             "items": {
               "type": "object",
@@ -67,6 +69,11 @@
                   "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
                 },
                 "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1600
+                },
+                "spokenText": {
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 1600
@@ -201,6 +208,51 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 2400
+              },
+              "assetId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+              },
+              "presenter": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "assetId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+                      }
+                    },
+                    "required": [
+                      "assetId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "character": {
+                        "type": "string",
+                        "const": "claudia"
+                      },
+                      "motion": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "reduced"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "character"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
               }
             },
             "additionalProperties": false
@@ -257,6 +309,107 @@
         ],
         "additionalProperties": false
       }
+    },
+    "assets": {
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "mimeType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "character": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "gallery",
+                  "generated",
+                  "manual"
+                ]
+              },
+              "sourceUrl": {
+                "type": "string",
+                "maxLength": 2048,
+                "pattern": "^https?:\\/\\/"
+              },
+              "prompt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 6000
+              },
+              "identityText": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "identitySha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "canonUrl": {
+                "type": "string",
+                "maxLength": 2048,
+                "pattern": "^https?:\\/\\/"
+              },
+              "canonRetrievedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              "credit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 180
+              },
+              "aiGenerated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "character",
+              "origin",
+              "credit",
+              "aiGenerated"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "sha256",
+          "mimeType"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [
@@ -268,5 +421,5 @@
     "scenes"
   ],
   "additionalProperties": false,
-  "$comment": "Cross-field checks for duplicate identifiers, scene-kind requirements, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime."
+  "$comment": "Cross-field checks for duplicate identifiers, scene-kind requirements, approved image/still-presenter references, still-presenter provenance, generated-asset prompts, paired identity text and matching SHA-256 digest, cue chunk/token references, cue targets, and edge endpoints are enforced by productionManifestSchema at runtime. The bundled animated Claudia presenter uses no image reference. Asset provenance records declarations, not verified authenticity."
 }

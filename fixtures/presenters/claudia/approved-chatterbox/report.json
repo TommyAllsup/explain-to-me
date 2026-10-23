@@ -1,0 +1,3322 @@
+{
+  "performance": "Exact accepted Chatterbox audition; no resynthesis or audio processing",
+  "engine": "Chatterbox",
+  "voice": "chatterbox-bella",
+  "audioSha256": "20cd6bb34b566fadee4a2e37d1897a86e472d8cc060409bc2f2477fbfe2b6767",
+  "referenceSha256": "3188194b9e9cacc7e35b48fbb2095b5d139adfe967abd4c2f5dd5cc5bade1733",
+  "sourceAudio": "C:\\src\\github\\TommyAllsup\\explain-to-me\\out\\claudia-prosody-auditions\\C-chatterbox.wav",
+  "samples": 356160,
+  "sampleRate": 24000,
+  "durationSeconds": 14.84,
+  "durationCorrection": false,
+  "generatorSha256": "4bf52e752ca35b63d941fc4db2ee705a55fd7f4090b7e41bcfc95fcfb32daece",
+  "scriptFileSha256": "8aa964dfe5875c92428d9843f23c54db3430733ee569e68702eb93c25b7e044a",
+  "alignment": {
+    "method": "Local Meta wav2vec2 phoneme-CTC forced alignment of exact Chatterbox WAV and contextual eSpeak script phones; blank gaps bounded and diphthongs subdivided for visemes",
+    "model": {
+      "model": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4",
+      "license": "Apache-2.0",
+      "author": "Meta / Facebook AI",
+      "files": {
+        "README.md": {
+          "sha256": "81a55816a87034bcf0828d6181fa88abad32a0cbfcebc2ebc8b336664b69ba60",
+          "bytes": 3035,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/README.md"
+        },
+        "config.json": {
+          "sha256": "4609fb49b7e1d28aecb2840da1926c40bd915bc6f1120a940afacf7159bbfb13",
+          "bytes": 1856,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/config.json"
+        },
+        "preprocessor_config.json": {
+          "sha256": "a2254a5b58f72cd4de3632f8eee64f3f098b7c1402128d2f419e7d00ae13e335",
+          "bytes": 212,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/preprocessor_config.json"
+        },
+        "pytorch_model.bin": {
+          "sha256": "3173bde9e9ce490fa0f989e413c42f25bc1820c020adc1e6b9b87025b3cfcc5e",
+          "bytes": 1263535127,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/pytorch_model.bin"
+        },
+        "special_tokens_map.json": {
+          "sha256": "bb7068de1150661a10b55f9e4b12a0e77af8bf91f5e45e1b58afaf1d0e17f675",
+          "bytes": 85,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/special_tokens_map.json"
+        },
+        "tokenizer_config.json": {
+          "sha256": "1273ec458332cc55226ec596904bae811420755ace7e5d69462b61c4f480b457",
+          "bytes": 321,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/tokenizer_config.json"
+        },
+        "vocab.json": {
+          "sha256": "d732ab2456c0c017930001dc9af0b41b3b93d25b2eb9740bf9d925508d7d87d0",
+          "bytes": 4637,
+          "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/vocab.json"
+        }
+      }
+    },
+    "phonemization": {
+      "wordPhones": [
+        [
+          "aɪ",
+          "m"
+        ],
+        [
+          "k",
+          "l",
+          "ɔː",
+          "d",
+          "i",
+          "ə"
+        ],
+        [
+          "l",
+          "ɛ",
+          "t",
+          "s"
+        ],
+        [
+          "m",
+          "eɪ",
+          "k"
+        ],
+        [
+          "ð",
+          "ɪ",
+          "s"
+        ],
+        [
+          "s",
+          "ɪ",
+          "m",
+          "p",
+          "l",
+          "ɚ",
+          "ɹ"
+        ],
+        [
+          "ɐ"
+        ],
+        [
+          "k",
+          "æ",
+          "ʃ"
+        ],
+        [
+          "ɹ",
+          "ᵻ",
+          "m",
+          "ɛ",
+          "m",
+          "b",
+          "ɚ",
+          "z"
+        ],
+        [
+          "w",
+          "ɜː",
+          "k"
+        ],
+        [
+          "w",
+          "iː",
+          "v"
+        ],
+        [
+          "ɔː",
+          "l",
+          "ɹ",
+          "ɛ",
+          "d",
+          "i"
+        ],
+        [
+          "d",
+          "ʌ",
+          "n"
+        ],
+        [
+          "ð",
+          "ɪ"
+        ],
+        [
+          "ɪ",
+          "n",
+          "t",
+          "ɹ",
+          "ɛ",
+          "s",
+          "t",
+          "ɪ",
+          "ŋ"
+        ],
+        [
+          "k",
+          "w",
+          "ɛ",
+          "s",
+          "tʃ",
+          "ə",
+          "n"
+        ],
+        [
+          "ɪ",
+          "z"
+        ],
+        [
+          "w",
+          "ɛ",
+          "n"
+        ],
+        [
+          "t",
+          "ə"
+        ],
+        [
+          "f",
+          "ɚ",
+          "ɡ",
+          "ɛ",
+          "t"
+        ],
+        [
+          "k",
+          "iː",
+          "p"
+        ],
+        [
+          "ɪ",
+          "t"
+        ],
+        [
+          "t",
+          "uː"
+        ],
+        [
+          "l",
+          "ɔ",
+          "ŋ"
+        ],
+        [
+          "æ",
+          "n",
+          "d"
+        ],
+        [
+          "j",
+          "ɛ",
+          "s",
+          "t",
+          "ɚ",
+          "d",
+          "eɪ",
+          "z"
+        ],
+        [
+          "æ",
+          "n",
+          "s",
+          "ɚ"
+        ],
+        [
+          "l",
+          "ʊ",
+          "k",
+          "s"
+        ],
+        [
+          "l",
+          "aɪ",
+          "k"
+        ],
+        [
+          "t",
+          "ə",
+          "d",
+          "eɪ",
+          "z"
+        ],
+        [
+          "t",
+          "ɹ",
+          "uː",
+          "θ"
+        ],
+        [
+          "s",
+          "oʊ"
+        ],
+        [
+          "w",
+          "ʌ",
+          "t"
+        ],
+        [
+          "ʃ",
+          "ʊ",
+          "d"
+        ],
+        [
+          "w",
+          "iː"
+        ],
+        [
+          "k",
+          "iː",
+          "p"
+        ],
+        [
+          "æ",
+          "n",
+          "d"
+        ],
+        [
+          "w",
+          "ʌ",
+          "t"
+        ],
+        [
+          "ʃ",
+          "ʊ",
+          "d"
+        ],
+        [
+          "w",
+          "iː"
+        ],
+        [
+          "ɹ",
+          "ᵻ",
+          "f",
+          "ɹ",
+          "ɛ",
+          "ʃ"
+        ]
+      ],
+      "espeakVersion": "(1, 52, 0)",
+      "versions": {
+        "phonemizer": "3.4.0",
+        "espeakng-loader": "0.2.4"
+      }
+    },
+    "elapsedSeconds": 7.080647599999793,
+    "sourcePhones": [
+      {
+        "phoneme": "aɪ",
+        "start": 0.2225,
+        "end": 0.2425,
+        "score": 0.027212126180529594,
+        "wordIndex": 0,
+        "firstFrame": 11,
+        "lastFrame": 11
+      },
+      {
+        "phoneme": "m",
+        "start": 0.3225,
+        "end": 0.3425,
+        "score": 0.0022050284314900637,
+        "wordIndex": 0,
+        "firstFrame": 16,
+        "lastFrame": 16
+      },
+      {
+        "phoneme": "k",
+        "start": 0.4025,
+        "end": 0.4225,
+        "score": 0.98897784948349,
+        "wordIndex": 1,
+        "firstFrame": 20,
+        "lastFrame": 20
+      },
+      {
+        "phoneme": "l",
+        "start": 0.4625,
+        "end": 0.5025,
+        "score": 0.7663713693618774,
+        "wordIndex": 1,
+        "firstFrame": 23,
+        "lastFrame": 24
+      },
+      {
+        "phoneme": "ɔː",
+        "start": 0.5225,
+        "end": 0.5425,
+        "score": 0.08756048232316971,
+        "wordIndex": 1,
+        "firstFrame": 26,
+        "lastFrame": 26
+      },
+      {
+        "phoneme": "d",
+        "start": 0.6425,
+        "end": 0.6625,
+        "score": 0.8070767521858215,
+        "wordIndex": 1,
+        "firstFrame": 32,
+        "lastFrame": 32
+      },
+      {
+        "phoneme": "i",
+        "start": 0.6625,
+        "end": 0.6825,
+        "score": 0.3551402986049652,
+        "wordIndex": 1,
+        "firstFrame": 33,
+        "lastFrame": 33
+      },
+      {
+        "phoneme": "ə",
+        "start": 0.7625,
+        "end": 0.7825,
+        "score": 0.2038148045539856,
+        "wordIndex": 1,
+        "firstFrame": 38,
+        "lastFrame": 38
+      },
+      {
+        "phoneme": "l",
+        "start": 1.3425,
+        "end": 1.3625,
+        "score": 0.9904512166976929,
+        "wordIndex": 2,
+        "firstFrame": 67,
+        "lastFrame": 67
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 1.3825,
+        "end": 1.4025,
+        "score": 0.8564413189888,
+        "wordIndex": 2,
+        "firstFrame": 69,
+        "lastFrame": 69
+      },
+      {
+        "phoneme": "t",
+        "start": 1.4625,
+        "end": 1.4825,
+        "score": 0.9409946203231812,
+        "wordIndex": 2,
+        "firstFrame": 73,
+        "lastFrame": 73
+      },
+      {
+        "phoneme": "s",
+        "start": 1.4825,
+        "end": 1.5025,
+        "score": 0.8735578656196594,
+        "wordIndex": 2,
+        "firstFrame": 74,
+        "lastFrame": 74
+      },
+      {
+        "phoneme": "m",
+        "start": 1.5625,
+        "end": 1.5825,
+        "score": 0.9963557720184326,
+        "wordIndex": 3,
+        "firstFrame": 78,
+        "lastFrame": 78
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 1.5825,
+        "end": 1.6025,
+        "score": 0.858448326587677,
+        "wordIndex": 3,
+        "firstFrame": 79,
+        "lastFrame": 79
+      },
+      {
+        "phoneme": "k",
+        "start": 1.6824999999999999,
+        "end": 1.7025,
+        "score": 0.9707121849060059,
+        "wordIndex": 3,
+        "firstFrame": 84,
+        "lastFrame": 84
+      },
+      {
+        "phoneme": "ð",
+        "start": 1.7225,
+        "end": 1.7425,
+        "score": 0.9767758250236511,
+        "wordIndex": 4,
+        "firstFrame": 86,
+        "lastFrame": 86
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 1.7625,
+        "end": 1.7825,
+        "score": 0.9364415407180786,
+        "wordIndex": 4,
+        "firstFrame": 88,
+        "lastFrame": 88
+      },
+      {
+        "phoneme": "s",
+        "start": 1.8225,
+        "end": 1.8625,
+        "score": 0.9650816321372986,
+        "wordIndex": 4,
+        "firstFrame": 91,
+        "lastFrame": 92
+      },
+      {
+        "phoneme": "s",
+        "start": 1.9025,
+        "end": 1.9224999999999999,
+        "score": 0.8956833481788635,
+        "wordIndex": 5,
+        "firstFrame": 95,
+        "lastFrame": 95
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 1.9425,
+        "end": 1.9625,
+        "score": 0.9410601854324341,
+        "wordIndex": 5,
+        "firstFrame": 97,
+        "lastFrame": 97
+      },
+      {
+        "phoneme": "m",
+        "start": 2.0025,
+        "end": 2.0225,
+        "score": 0.9896732568740845,
+        "wordIndex": 5,
+        "firstFrame": 100,
+        "lastFrame": 100
+      },
+      {
+        "phoneme": "p",
+        "start": 2.0425,
+        "end": 2.0625,
+        "score": 0.9694315195083618,
+        "wordIndex": 5,
+        "firstFrame": 102,
+        "lastFrame": 102
+      },
+      {
+        "phoneme": "l",
+        "start": 2.1025,
+        "end": 2.1225,
+        "score": 0.9852873682975769,
+        "wordIndex": 5,
+        "firstFrame": 105,
+        "lastFrame": 105
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 2.1425,
+        "end": 2.1625,
+        "score": 0.7213086485862732,
+        "wordIndex": 5,
+        "firstFrame": 107,
+        "lastFrame": 107
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 2.2425,
+        "end": 2.2625,
+        "score": 0.019177420064806938,
+        "wordIndex": 5,
+        "firstFrame": 112,
+        "lastFrame": 112
+      },
+      {
+        "phoneme": "ɐ",
+        "start": 2.7025,
+        "end": 2.7225,
+        "score": 0.8611969351768494,
+        "wordIndex": 6,
+        "firstFrame": 135,
+        "lastFrame": 135
+      },
+      {
+        "phoneme": "k",
+        "start": 2.8025,
+        "end": 2.8225,
+        "score": 0.9817050099372864,
+        "wordIndex": 7,
+        "firstFrame": 140,
+        "lastFrame": 140
+      },
+      {
+        "phoneme": "æ",
+        "start": 2.9025,
+        "end": 2.9225,
+        "score": 0.8394596576690674,
+        "wordIndex": 7,
+        "firstFrame": 145,
+        "lastFrame": 145
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 3.0425,
+        "end": 3.0625,
+        "score": 0.9725072979927063,
+        "wordIndex": 7,
+        "firstFrame": 152,
+        "lastFrame": 152
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 3.1225,
+        "end": 3.1425,
+        "score": 0.9872564077377319,
+        "wordIndex": 8,
+        "firstFrame": 156,
+        "lastFrame": 156
+      },
+      {
+        "phoneme": "ᵻ",
+        "start": 3.1425,
+        "end": 3.1625,
+        "score": 0.3867011070251465,
+        "wordIndex": 8,
+        "firstFrame": 157,
+        "lastFrame": 157
+      },
+      {
+        "phoneme": "m",
+        "start": 3.2025,
+        "end": 3.2225,
+        "score": 0.9967226386070251,
+        "wordIndex": 8,
+        "firstFrame": 160,
+        "lastFrame": 160
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 3.2425,
+        "end": 3.2625,
+        "score": 0.8752132654190063,
+        "wordIndex": 8,
+        "firstFrame": 162,
+        "lastFrame": 162
+      },
+      {
+        "phoneme": "m",
+        "start": 3.3025,
+        "end": 3.3225000000000002,
+        "score": 0.982958197593689,
+        "wordIndex": 8,
+        "firstFrame": 165,
+        "lastFrame": 165
+      },
+      {
+        "phoneme": "b",
+        "start": 3.3225000000000002,
+        "end": 3.3625,
+        "score": 0.738366425037384,
+        "wordIndex": 8,
+        "firstFrame": 166,
+        "lastFrame": 167
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 3.3625,
+        "end": 3.3825,
+        "score": 0.775158166885376,
+        "wordIndex": 8,
+        "firstFrame": 168,
+        "lastFrame": 168
+      },
+      {
+        "phoneme": "z",
+        "start": 3.4425,
+        "end": 3.4625,
+        "score": 0.9837487936019897,
+        "wordIndex": 8,
+        "firstFrame": 172,
+        "lastFrame": 172
+      },
+      {
+        "phoneme": "w",
+        "start": 3.5625,
+        "end": 3.5825,
+        "score": 0.9816259741783142,
+        "wordIndex": 9,
+        "firstFrame": 178,
+        "lastFrame": 178
+      },
+      {
+        "phoneme": "ɜː",
+        "start": 3.6225,
+        "end": 3.6425,
+        "score": 0.5381746888160706,
+        "wordIndex": 9,
+        "firstFrame": 181,
+        "lastFrame": 181
+      },
+      {
+        "phoneme": "k",
+        "start": 3.7625,
+        "end": 3.7825,
+        "score": 0.9799774289131165,
+        "wordIndex": 9,
+        "firstFrame": 188,
+        "lastFrame": 188
+      },
+      {
+        "phoneme": "w",
+        "start": 3.8225000000000002,
+        "end": 3.8425,
+        "score": 0.9809399843215942,
+        "wordIndex": 10,
+        "firstFrame": 191,
+        "lastFrame": 191
+      },
+      {
+        "phoneme": "iː",
+        "start": 3.8425,
+        "end": 3.8625,
+        "score": 0.8199811577796936,
+        "wordIndex": 10,
+        "firstFrame": 192,
+        "lastFrame": 192
+      },
+      {
+        "phoneme": "v",
+        "start": 3.9225,
+        "end": 3.9425,
+        "score": 0.018360497429966927,
+        "wordIndex": 10,
+        "firstFrame": 196,
+        "lastFrame": 196
+      },
+      {
+        "phoneme": "ɔː",
+        "start": 4.0425,
+        "end": 4.062500000000001,
+        "score": 0.4028724133968353,
+        "wordIndex": 11,
+        "firstFrame": 202,
+        "lastFrame": 202
+      },
+      {
+        "phoneme": "l",
+        "start": 4.1025,
+        "end": 4.1425,
+        "score": 0.6846832036972046,
+        "wordIndex": 11,
+        "firstFrame": 205,
+        "lastFrame": 206
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 4.1625000000000005,
+        "end": 4.1825,
+        "score": 0.9855629801750183,
+        "wordIndex": 11,
+        "firstFrame": 208,
+        "lastFrame": 208
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 4.1825,
+        "end": 4.202500000000001,
+        "score": 0.7748574614524841,
+        "wordIndex": 11,
+        "firstFrame": 209,
+        "lastFrame": 209
+      },
+      {
+        "phoneme": "d",
+        "start": 4.242500000000001,
+        "end": 4.2625,
+        "score": 0.734911322593689,
+        "wordIndex": 11,
+        "firstFrame": 212,
+        "lastFrame": 212
+      },
+      {
+        "phoneme": "i",
+        "start": 4.2625,
+        "end": 4.282500000000001,
+        "score": 0.9452003240585327,
+        "wordIndex": 11,
+        "firstFrame": 213,
+        "lastFrame": 213
+      },
+      {
+        "phoneme": "d",
+        "start": 4.3825,
+        "end": 4.402500000000001,
+        "score": 0.99437415599823,
+        "wordIndex": 12,
+        "firstFrame": 219,
+        "lastFrame": 219
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 4.442500000000001,
+        "end": 4.4625,
+        "score": 0.7429227828979492,
+        "wordIndex": 12,
+        "firstFrame": 222,
+        "lastFrame": 222
+      },
+      {
+        "phoneme": "n",
+        "start": 4.602500000000001,
+        "end": 4.6425,
+        "score": 0.87314772605896,
+        "wordIndex": 12,
+        "firstFrame": 230,
+        "lastFrame": 231
+      },
+      {
+        "phoneme": "ð",
+        "start": 5.2225,
+        "end": 5.242500000000001,
+        "score": 0.9910487532615662,
+        "wordIndex": 13,
+        "firstFrame": 261,
+        "lastFrame": 261
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.2625,
+        "end": 5.282500000000001,
+        "score": 0.45452871918678284,
+        "wordIndex": 13,
+        "firstFrame": 263,
+        "lastFrame": 263
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.362500000000001,
+        "end": 5.3825,
+        "score": 0.9660035371780396,
+        "wordIndex": 14,
+        "firstFrame": 268,
+        "lastFrame": 268
+      },
+      {
+        "phoneme": "n",
+        "start": 5.402500000000001,
+        "end": 5.442500000000001,
+        "score": 0.9130393266677856,
+        "wordIndex": 14,
+        "firstFrame": 270,
+        "lastFrame": 271
+      },
+      {
+        "phoneme": "t",
+        "start": 5.4625,
+        "end": 5.482500000000001,
+        "score": 0.9398696422576904,
+        "wordIndex": 14,
+        "firstFrame": 273,
+        "lastFrame": 273
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 5.5025,
+        "end": 5.522500000000001,
+        "score": 0.9630454778671265,
+        "wordIndex": 14,
+        "firstFrame": 275,
+        "lastFrame": 275
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 5.522500000000001,
+        "end": 5.5425,
+        "score": 0.030329309403896332,
+        "wordIndex": 14,
+        "firstFrame": 276,
+        "lastFrame": 276
+      },
+      {
+        "phoneme": "s",
+        "start": 5.5825000000000005,
+        "end": 5.602500000000001,
+        "score": 0.9923804402351379,
+        "wordIndex": 14,
+        "firstFrame": 279,
+        "lastFrame": 279
+      },
+      {
+        "phoneme": "t",
+        "start": 5.6425,
+        "end": 5.6625000000000005,
+        "score": 0.9899301528930664,
+        "wordIndex": 14,
+        "firstFrame": 282,
+        "lastFrame": 282
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.6625000000000005,
+        "end": 5.6825,
+        "score": 0.9422712326049805,
+        "wordIndex": 14,
+        "firstFrame": 283,
+        "lastFrame": 283
+      },
+      {
+        "phoneme": "ŋ",
+        "start": 5.7225,
+        "end": 5.742500000000001,
+        "score": 0.9468463659286499,
+        "wordIndex": 14,
+        "firstFrame": 286,
+        "lastFrame": 286
+      },
+      {
+        "phoneme": "k",
+        "start": 5.782500000000001,
+        "end": 5.8025,
+        "score": 0.9859184622764587,
+        "wordIndex": 15,
+        "firstFrame": 289,
+        "lastFrame": 289
+      },
+      {
+        "phoneme": "w",
+        "start": 5.822500000000001,
+        "end": 5.862500000000001,
+        "score": 0.899664044380188,
+        "wordIndex": 15,
+        "firstFrame": 291,
+        "lastFrame": 292
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 5.862500000000001,
+        "end": 5.8825,
+        "score": 0.8744973540306091,
+        "wordIndex": 15,
+        "firstFrame": 293,
+        "lastFrame": 293
+      },
+      {
+        "phoneme": "s",
+        "start": 5.9625,
+        "end": 5.982500000000001,
+        "score": 0.9902414679527283,
+        "wordIndex": 15,
+        "firstFrame": 298,
+        "lastFrame": 298
+      },
+      {
+        "phoneme": "tʃ",
+        "start": 6.062500000000001,
+        "end": 6.0825000000000005,
+        "score": 0.7493649125099182,
+        "wordIndex": 15,
+        "firstFrame": 303,
+        "lastFrame": 303
+      },
+      {
+        "phoneme": "ə",
+        "start": 6.102500000000001,
+        "end": 6.1225000000000005,
+        "score": 0.9699485301971436,
+        "wordIndex": 15,
+        "firstFrame": 305,
+        "lastFrame": 305
+      },
+      {
+        "phoneme": "n",
+        "start": 6.1825,
+        "end": 6.202500000000001,
+        "score": 0.996603786945343,
+        "wordIndex": 15,
+        "firstFrame": 309,
+        "lastFrame": 309
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 6.2225,
+        "end": 6.242500000000001,
+        "score": 0.9757012128829956,
+        "wordIndex": 16,
+        "firstFrame": 311,
+        "lastFrame": 311
+      },
+      {
+        "phoneme": "z",
+        "start": 6.362500000000001,
+        "end": 6.3825,
+        "score": 0.9904928207397461,
+        "wordIndex": 16,
+        "firstFrame": 318,
+        "lastFrame": 318
+      },
+      {
+        "phoneme": "w",
+        "start": 6.6825,
+        "end": 6.7225,
+        "score": 0.9582348465919495,
+        "wordIndex": 17,
+        "firstFrame": 334,
+        "lastFrame": 335
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 6.742500000000001,
+        "end": 6.7625,
+        "score": 0.9515587687492371,
+        "wordIndex": 17,
+        "firstFrame": 337,
+        "lastFrame": 337
+      },
+      {
+        "phoneme": "n",
+        "start": 6.822500000000001,
+        "end": 6.8425,
+        "score": 0.9973345994949341,
+        "wordIndex": 17,
+        "firstFrame": 341,
+        "lastFrame": 341
+      },
+      {
+        "phoneme": "t",
+        "start": 6.8825,
+        "end": 6.902500000000001,
+        "score": 0.9548401236534119,
+        "wordIndex": 18,
+        "firstFrame": 344,
+        "lastFrame": 344
+      },
+      {
+        "phoneme": "ə",
+        "start": 6.9225,
+        "end": 6.942500000000001,
+        "score": 0.9681768417358398,
+        "wordIndex": 18,
+        "firstFrame": 346,
+        "lastFrame": 346
+      },
+      {
+        "phoneme": "f",
+        "start": 7.022500000000001,
+        "end": 7.0425,
+        "score": 0.9908387660980225,
+        "wordIndex": 19,
+        "firstFrame": 351,
+        "lastFrame": 351
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 7.062500000000001,
+        "end": 7.0825000000000005,
+        "score": 0.3184989392757416,
+        "wordIndex": 19,
+        "firstFrame": 353,
+        "lastFrame": 353
+      },
+      {
+        "phoneme": "ɡ",
+        "start": 7.1625000000000005,
+        "end": 7.1825,
+        "score": 0.9809263944625854,
+        "wordIndex": 19,
+        "firstFrame": 358,
+        "lastFrame": 358
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 7.2225,
+        "end": 7.242500000000001,
+        "score": 0.6828708648681641,
+        "wordIndex": 19,
+        "firstFrame": 361,
+        "lastFrame": 361
+      },
+      {
+        "phoneme": "t",
+        "start": 7.4225,
+        "end": 7.442500000000001,
+        "score": 0.9748096466064453,
+        "wordIndex": 19,
+        "firstFrame": 371,
+        "lastFrame": 371
+      },
+      {
+        "phoneme": "k",
+        "start": 7.862500000000001,
+        "end": 7.8825,
+        "score": 0.9889922142028809,
+        "wordIndex": 20,
+        "firstFrame": 393,
+        "lastFrame": 393
+      },
+      {
+        "phoneme": "iː",
+        "start": 7.9225,
+        "end": 7.942500000000001,
+        "score": 0.9634383320808411,
+        "wordIndex": 20,
+        "firstFrame": 396,
+        "lastFrame": 396
+      },
+      {
+        "phoneme": "p",
+        "start": 8.022499999999999,
+        "end": 8.0425,
+        "score": 0.9608097672462463,
+        "wordIndex": 20,
+        "firstFrame": 401,
+        "lastFrame": 401
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 8.0625,
+        "end": 8.0825,
+        "score": 0.8062810301780701,
+        "wordIndex": 21,
+        "firstFrame": 403,
+        "lastFrame": 403
+      },
+      {
+        "phoneme": "t",
+        "start": 8.1225,
+        "end": 8.1425,
+        "score": 0.938541829586029,
+        "wordIndex": 21,
+        "firstFrame": 406,
+        "lastFrame": 406
+      },
+      {
+        "phoneme": "t",
+        "start": 8.1825,
+        "end": 8.202499999999999,
+        "score": 0.9550689458847046,
+        "wordIndex": 22,
+        "firstFrame": 409,
+        "lastFrame": 409
+      },
+      {
+        "phoneme": "uː",
+        "start": 8.2625,
+        "end": 8.282499999999999,
+        "score": 0.9315540790557861,
+        "wordIndex": 22,
+        "firstFrame": 413,
+        "lastFrame": 413
+      },
+      {
+        "phoneme": "l",
+        "start": 8.4025,
+        "end": 8.442499999999999,
+        "score": 0.8214191794395447,
+        "wordIndex": 23,
+        "firstFrame": 420,
+        "lastFrame": 421
+      },
+      {
+        "phoneme": "ɔ",
+        "start": 8.4625,
+        "end": 8.4825,
+        "score": 0.20008066296577454,
+        "wordIndex": 23,
+        "firstFrame": 423,
+        "lastFrame": 423
+      },
+      {
+        "phoneme": "ŋ",
+        "start": 8.7025,
+        "end": 8.7225,
+        "score": 0.9710705280303955,
+        "wordIndex": 23,
+        "firstFrame": 435,
+        "lastFrame": 435
+      },
+      {
+        "phoneme": "æ",
+        "start": 8.9825,
+        "end": 9.0025,
+        "score": 0.9155954122543335,
+        "wordIndex": 24,
+        "firstFrame": 449,
+        "lastFrame": 449
+      },
+      {
+        "phoneme": "n",
+        "start": 9.0425,
+        "end": 9.0625,
+        "score": 0.9813779592514038,
+        "wordIndex": 24,
+        "firstFrame": 452,
+        "lastFrame": 452
+      },
+      {
+        "phoneme": "d",
+        "start": 9.0625,
+        "end": 9.0825,
+        "score": 0.7416061758995056,
+        "wordIndex": 24,
+        "firstFrame": 453,
+        "lastFrame": 453
+      },
+      {
+        "phoneme": "j",
+        "start": 9.1225,
+        "end": 9.1425,
+        "score": 0.9549275636672974,
+        "wordIndex": 25,
+        "firstFrame": 456,
+        "lastFrame": 456
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 9.1625,
+        "end": 9.1825,
+        "score": 0.91780686378479,
+        "wordIndex": 25,
+        "firstFrame": 458,
+        "lastFrame": 458
+      },
+      {
+        "phoneme": "s",
+        "start": 9.2425,
+        "end": 9.2625,
+        "score": 0.9958027005195618,
+        "wordIndex": 25,
+        "firstFrame": 462,
+        "lastFrame": 462
+      },
+      {
+        "phoneme": "t",
+        "start": 9.3225,
+        "end": 9.3425,
+        "score": 0.9851144552230835,
+        "wordIndex": 25,
+        "firstFrame": 466,
+        "lastFrame": 466
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 9.362499999999999,
+        "end": 9.3825,
+        "score": 0.815784215927124,
+        "wordIndex": 25,
+        "firstFrame": 468,
+        "lastFrame": 468
+      },
+      {
+        "phoneme": "d",
+        "start": 9.4025,
+        "end": 9.442499999999999,
+        "score": 0.8785673975944519,
+        "wordIndex": 25,
+        "firstFrame": 470,
+        "lastFrame": 471
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 9.442499999999999,
+        "end": 9.4625,
+        "score": 0.9245229959487915,
+        "wordIndex": 25,
+        "firstFrame": 472,
+        "lastFrame": 472
+      },
+      {
+        "phoneme": "z",
+        "start": 9.5425,
+        "end": 9.5825,
+        "score": 0.9235670566558838,
+        "wordIndex": 25,
+        "firstFrame": 477,
+        "lastFrame": 478
+      },
+      {
+        "phoneme": "æ",
+        "start": 9.6825,
+        "end": 9.7025,
+        "score": 0.8511222004890442,
+        "wordIndex": 26,
+        "firstFrame": 484,
+        "lastFrame": 484
+      },
+      {
+        "phoneme": "n",
+        "start": 9.7625,
+        "end": 9.782499999999999,
+        "score": 0.9968528151512146,
+        "wordIndex": 26,
+        "firstFrame": 488,
+        "lastFrame": 488
+      },
+      {
+        "phoneme": "s",
+        "start": 9.8225,
+        "end": 9.8425,
+        "score": 0.9476488828659058,
+        "wordIndex": 26,
+        "firstFrame": 491,
+        "lastFrame": 491
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 9.9025,
+        "end": 9.9225,
+        "score": 0.813718855381012,
+        "wordIndex": 26,
+        "firstFrame": 495,
+        "lastFrame": 495
+      },
+      {
+        "phoneme": "l",
+        "start": 10.022499999999999,
+        "end": 10.0625,
+        "score": 0.9452550411224365,
+        "wordIndex": 27,
+        "firstFrame": 501,
+        "lastFrame": 502
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 10.0625,
+        "end": 10.0825,
+        "score": 0.8017266988754272,
+        "wordIndex": 27,
+        "firstFrame": 503,
+        "lastFrame": 503
+      },
+      {
+        "phoneme": "k",
+        "start": 10.1425,
+        "end": 10.1625,
+        "score": 0.9926384687423706,
+        "wordIndex": 27,
+        "firstFrame": 507,
+        "lastFrame": 507
+      },
+      {
+        "phoneme": "s",
+        "start": 10.1825,
+        "end": 10.2025,
+        "score": 0.9748401641845703,
+        "wordIndex": 27,
+        "firstFrame": 509,
+        "lastFrame": 509
+      },
+      {
+        "phoneme": "l",
+        "start": 10.2425,
+        "end": 10.282499999999999,
+        "score": 0.6416211128234863,
+        "wordIndex": 28,
+        "firstFrame": 512,
+        "lastFrame": 513
+      },
+      {
+        "phoneme": "aɪ",
+        "start": 10.282499999999999,
+        "end": 10.3025,
+        "score": 0.8880155086517334,
+        "wordIndex": 28,
+        "firstFrame": 514,
+        "lastFrame": 514
+      },
+      {
+        "phoneme": "k",
+        "start": 10.3825,
+        "end": 10.4025,
+        "score": 0.9749571084976196,
+        "wordIndex": 28,
+        "firstFrame": 519,
+        "lastFrame": 519
+      },
+      {
+        "phoneme": "t",
+        "start": 10.4625,
+        "end": 10.4825,
+        "score": 0.98540860414505,
+        "wordIndex": 29,
+        "firstFrame": 523,
+        "lastFrame": 523
+      },
+      {
+        "phoneme": "ə",
+        "start": 10.522499999999999,
+        "end": 10.5425,
+        "score": 0.8843103051185608,
+        "wordIndex": 29,
+        "firstFrame": 526,
+        "lastFrame": 526
+      },
+      {
+        "phoneme": "d",
+        "start": 10.5625,
+        "end": 10.5825,
+        "score": 0.983513593673706,
+        "wordIndex": 29,
+        "firstFrame": 528,
+        "lastFrame": 528
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 10.6225,
+        "end": 10.6425,
+        "score": 0.8925944566726685,
+        "wordIndex": 29,
+        "firstFrame": 531,
+        "lastFrame": 531
+      },
+      {
+        "phoneme": "z",
+        "start": 10.7625,
+        "end": 10.782499999999999,
+        "score": 0.9660429954528809,
+        "wordIndex": 29,
+        "firstFrame": 538,
+        "lastFrame": 538
+      },
+      {
+        "phoneme": "t",
+        "start": 10.862499999999999,
+        "end": 10.8825,
+        "score": 0.9526368379592896,
+        "wordIndex": 30,
+        "firstFrame": 543,
+        "lastFrame": 543
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 10.942499999999999,
+        "end": 10.9825,
+        "score": 0.9614466428756714,
+        "wordIndex": 30,
+        "firstFrame": 547,
+        "lastFrame": 548
+      },
+      {
+        "phoneme": "uː",
+        "start": 11.0025,
+        "end": 11.022499999999999,
+        "score": 0.9229691624641418,
+        "wordIndex": 30,
+        "firstFrame": 550,
+        "lastFrame": 550
+      },
+      {
+        "phoneme": "θ",
+        "start": 11.2025,
+        "end": 11.2425,
+        "score": 0.8317627906799316,
+        "wordIndex": 30,
+        "firstFrame": 560,
+        "lastFrame": 561
+      },
+      {
+        "phoneme": "s",
+        "start": 11.6825,
+        "end": 11.7025,
+        "score": 0.9919734001159668,
+        "wordIndex": 31,
+        "firstFrame": 584,
+        "lastFrame": 584
+      },
+      {
+        "phoneme": "oʊ",
+        "start": 11.8025,
+        "end": 11.8225,
+        "score": 0.7814926505088806,
+        "wordIndex": 31,
+        "firstFrame": 590,
+        "lastFrame": 590
+      },
+      {
+        "phoneme": "w",
+        "start": 12.362499999999999,
+        "end": 12.4025,
+        "score": 0.819898247718811,
+        "wordIndex": 32,
+        "firstFrame": 618,
+        "lastFrame": 619
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 12.4225,
+        "end": 12.442499999999999,
+        "score": 0.8578216433525085,
+        "wordIndex": 32,
+        "firstFrame": 621,
+        "lastFrame": 621
+      },
+      {
+        "phoneme": "t",
+        "start": 12.522499999999999,
+        "end": 12.5425,
+        "score": 0.9695461988449097,
+        "wordIndex": 32,
+        "firstFrame": 626,
+        "lastFrame": 626
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 12.5825,
+        "end": 12.6025,
+        "score": 0.9651006460189819,
+        "wordIndex": 33,
+        "firstFrame": 629,
+        "lastFrame": 629
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 12.6625,
+        "end": 12.6825,
+        "score": 0.04361831396818161,
+        "wordIndex": 33,
+        "firstFrame": 633,
+        "lastFrame": 633
+      },
+      {
+        "phoneme": "d",
+        "start": 12.7025,
+        "end": 12.7225,
+        "score": 0.9853473901748657,
+        "wordIndex": 33,
+        "firstFrame": 635,
+        "lastFrame": 635
+      },
+      {
+        "phoneme": "w",
+        "start": 12.7625,
+        "end": 12.7825,
+        "score": 0.9704582691192627,
+        "wordIndex": 34,
+        "firstFrame": 638,
+        "lastFrame": 638
+      },
+      {
+        "phoneme": "iː",
+        "start": 12.8025,
+        "end": 12.8225,
+        "score": 0.9330335259437561,
+        "wordIndex": 34,
+        "firstFrame": 640,
+        "lastFrame": 640
+      },
+      {
+        "phoneme": "k",
+        "start": 12.9225,
+        "end": 12.942499999999999,
+        "score": 0.975808322429657,
+        "wordIndex": 35,
+        "firstFrame": 646,
+        "lastFrame": 646
+      },
+      {
+        "phoneme": "iː",
+        "start": 13.0025,
+        "end": 13.022499999999999,
+        "score": 0.9676066637039185,
+        "wordIndex": 35,
+        "firstFrame": 650,
+        "lastFrame": 650
+      },
+      {
+        "phoneme": "p",
+        "start": 13.2025,
+        "end": 13.2225,
+        "score": 0.9787111878395081,
+        "wordIndex": 35,
+        "firstFrame": 660,
+        "lastFrame": 660
+      },
+      {
+        "phoneme": "æ",
+        "start": 13.4825,
+        "end": 13.5025,
+        "score": 0.9455040693283081,
+        "wordIndex": 36,
+        "firstFrame": 674,
+        "lastFrame": 674
+      },
+      {
+        "phoneme": "n",
+        "start": 13.5425,
+        "end": 13.5625,
+        "score": 0.9908905029296875,
+        "wordIndex": 36,
+        "firstFrame": 677,
+        "lastFrame": 677
+      },
+      {
+        "phoneme": "d",
+        "start": 13.5625,
+        "end": 13.5825,
+        "score": 0.9769142270088196,
+        "wordIndex": 36,
+        "firstFrame": 678,
+        "lastFrame": 678
+      },
+      {
+        "phoneme": "w",
+        "start": 13.6225,
+        "end": 13.6625,
+        "score": 0.809571385383606,
+        "wordIndex": 37,
+        "firstFrame": 681,
+        "lastFrame": 682
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 13.6825,
+        "end": 13.7025,
+        "score": 0.8913735747337341,
+        "wordIndex": 37,
+        "firstFrame": 684,
+        "lastFrame": 684
+      },
+      {
+        "phoneme": "t",
+        "start": 13.7825,
+        "end": 13.8025,
+        "score": 0.969296932220459,
+        "wordIndex": 37,
+        "firstFrame": 689,
+        "lastFrame": 689
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 13.8425,
+        "end": 13.862499999999999,
+        "score": 0.9707562327384949,
+        "wordIndex": 38,
+        "firstFrame": 692,
+        "lastFrame": 692
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 13.9025,
+        "end": 13.9225,
+        "score": 0.06093573570251465,
+        "wordIndex": 38,
+        "firstFrame": 695,
+        "lastFrame": 695
+      },
+      {
+        "phoneme": "d",
+        "start": 13.942499999999999,
+        "end": 13.9625,
+        "score": 0.4271225929260254,
+        "wordIndex": 38,
+        "firstFrame": 697,
+        "lastFrame": 697
+      },
+      {
+        "phoneme": "w",
+        "start": 13.9825,
+        "end": 14.0025,
+        "score": 0.9618589878082275,
+        "wordIndex": 39,
+        "firstFrame": 699,
+        "lastFrame": 699
+      },
+      {
+        "phoneme": "iː",
+        "start": 14.022499999999999,
+        "end": 14.0425,
+        "score": 0.8883301615715027,
+        "wordIndex": 39,
+        "firstFrame": 701,
+        "lastFrame": 701
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 14.1225,
+        "end": 14.1425,
+        "score": 0.9822748303413391,
+        "wordIndex": 40,
+        "firstFrame": 706,
+        "lastFrame": 706
+      },
+      {
+        "phoneme": "ᵻ",
+        "start": 14.1625,
+        "end": 14.1825,
+        "score": 0.6514474153518677,
+        "wordIndex": 40,
+        "firstFrame": 708,
+        "lastFrame": 708
+      },
+      {
+        "phoneme": "f",
+        "start": 14.2625,
+        "end": 14.2825,
+        "score": 0.9910680651664734,
+        "wordIndex": 40,
+        "firstFrame": 713,
+        "lastFrame": 713
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 14.3225,
+        "end": 14.362499999999999,
+        "score": 0.7554236650466919,
+        "wordIndex": 40,
+        "firstFrame": 716,
+        "lastFrame": 717
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 14.362499999999999,
+        "end": 14.3825,
+        "score": 0.6914048194885254,
+        "wordIndex": 40,
+        "firstFrame": 718,
+        "lastFrame": 718
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 14.5425,
+        "end": 14.5625,
+        "score": 0.9678086638450623,
+        "wordIndex": 40,
+        "firstFrame": 727,
+        "lastFrame": 727
+      }
+    ],
+    "interpretedPhones": [
+      {
+        "phoneme": "aɪ",
+        "start": 0.2225,
+        "end": 0.2825,
+        "score": 0.027212126180529594,
+        "wordIndex": 0,
+        "firstFrame": 11,
+        "lastFrame": 11
+      },
+      {
+        "phoneme": "m",
+        "start": 0.2825,
+        "end": 0.37250000000000005,
+        "score": 0.0022050284314900637,
+        "wordIndex": 0,
+        "firstFrame": 16,
+        "lastFrame": 16
+      },
+      {
+        "phoneme": "k",
+        "start": 0.37250000000000005,
+        "end": 0.4425,
+        "score": 0.98897784948349,
+        "wordIndex": 1,
+        "firstFrame": 20,
+        "lastFrame": 20
+      },
+      {
+        "phoneme": "l",
+        "start": 0.4425,
+        "end": 0.5125,
+        "score": 0.7663713693618774,
+        "wordIndex": 1,
+        "firstFrame": 23,
+        "lastFrame": 24
+      },
+      {
+        "phoneme": "ɔː",
+        "start": 0.5125,
+        "end": 0.5925,
+        "score": 0.08756048232316971,
+        "wordIndex": 1,
+        "firstFrame": 26,
+        "lastFrame": 26
+      },
+      {
+        "phoneme": "d",
+        "start": 0.5925,
+        "end": 0.6625,
+        "score": 0.8070767521858215,
+        "wordIndex": 1,
+        "firstFrame": 32,
+        "lastFrame": 32
+      },
+      {
+        "phoneme": "i",
+        "start": 0.6625,
+        "end": 0.7224999999999999,
+        "score": 0.3551402986049652,
+        "wordIndex": 1,
+        "firstFrame": 33,
+        "lastFrame": 33
+      },
+      {
+        "phoneme": "ə",
+        "start": 0.7224999999999999,
+        "end": 0.8225,
+        "score": 0.2038148045539856,
+        "wordIndex": 1,
+        "firstFrame": 38,
+        "lastFrame": 38
+      },
+      {
+        "phoneme": "l",
+        "start": 1.3025,
+        "end": 1.3725,
+        "score": 0.9904512166976929,
+        "wordIndex": 2,
+        "firstFrame": 67,
+        "lastFrame": 67
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 1.3725,
+        "end": 1.4325,
+        "score": 0.8564413189888,
+        "wordIndex": 2,
+        "firstFrame": 69,
+        "lastFrame": 69
+      },
+      {
+        "phoneme": "t",
+        "start": 1.4325,
+        "end": 1.4825,
+        "score": 0.9409946203231812,
+        "wordIndex": 2,
+        "firstFrame": 73,
+        "lastFrame": 73
+      },
+      {
+        "phoneme": "s",
+        "start": 1.4825,
+        "end": 1.5325,
+        "score": 0.8735578656196594,
+        "wordIndex": 2,
+        "firstFrame": 74,
+        "lastFrame": 74
+      },
+      {
+        "phoneme": "m",
+        "start": 1.5325,
+        "end": 1.5825,
+        "score": 0.9963557720184326,
+        "wordIndex": 3,
+        "firstFrame": 78,
+        "lastFrame": 78
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 1.5825,
+        "end": 1.6425,
+        "score": 0.858448326587677,
+        "wordIndex": 3,
+        "firstFrame": 79,
+        "lastFrame": 79
+      },
+      {
+        "phoneme": "k",
+        "start": 1.6425,
+        "end": 1.7125,
+        "score": 0.9707121849060059,
+        "wordIndex": 3,
+        "firstFrame": 84,
+        "lastFrame": 84
+      },
+      {
+        "phoneme": "ð",
+        "start": 1.7125,
+        "end": 1.7525,
+        "score": 0.9767758250236511,
+        "wordIndex": 4,
+        "firstFrame": 86,
+        "lastFrame": 86
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 1.7525,
+        "end": 1.8025,
+        "score": 0.9364415407180786,
+        "wordIndex": 4,
+        "firstFrame": 88,
+        "lastFrame": 88
+      },
+      {
+        "phoneme": "s",
+        "start": 1.8025,
+        "end": 1.8825,
+        "score": 0.9650816321372986,
+        "wordIndex": 4,
+        "firstFrame": 91,
+        "lastFrame": 92
+      },
+      {
+        "phoneme": "s",
+        "start": 1.8825,
+        "end": 1.9324999999999999,
+        "score": 0.8956833481788635,
+        "wordIndex": 5,
+        "firstFrame": 95,
+        "lastFrame": 95
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 1.9324999999999999,
+        "end": 1.9825,
+        "score": 0.9410601854324341,
+        "wordIndex": 5,
+        "firstFrame": 97,
+        "lastFrame": 97
+      },
+      {
+        "phoneme": "m",
+        "start": 1.9825,
+        "end": 2.0324999999999998,
+        "score": 0.9896732568740845,
+        "wordIndex": 5,
+        "firstFrame": 100,
+        "lastFrame": 100
+      },
+      {
+        "phoneme": "p",
+        "start": 2.0324999999999998,
+        "end": 2.0825,
+        "score": 0.9694315195083618,
+        "wordIndex": 5,
+        "firstFrame": 102,
+        "lastFrame": 102
+      },
+      {
+        "phoneme": "l",
+        "start": 2.0825,
+        "end": 2.1325000000000003,
+        "score": 0.9852873682975769,
+        "wordIndex": 5,
+        "firstFrame": 105,
+        "lastFrame": 105
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 2.1325000000000003,
+        "end": 2.2025,
+        "score": 0.7213086485862732,
+        "wordIndex": 5,
+        "firstFrame": 107,
+        "lastFrame": 107
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 2.2025,
+        "end": 2.3025,
+        "score": 0.019177420064806938,
+        "wordIndex": 5,
+        "firstFrame": 112,
+        "lastFrame": 112
+      },
+      {
+        "phoneme": "ɐ",
+        "start": 2.6625,
+        "end": 2.7625,
+        "score": 0.8611969351768494,
+        "wordIndex": 6,
+        "firstFrame": 135,
+        "lastFrame": 135
+      },
+      {
+        "phoneme": "k",
+        "start": 2.7625,
+        "end": 2.8625,
+        "score": 0.9817050099372864,
+        "wordIndex": 7,
+        "firstFrame": 140,
+        "lastFrame": 140
+      },
+      {
+        "phoneme": "æ",
+        "start": 2.8625,
+        "end": 2.9625,
+        "score": 0.8394596576690674,
+        "wordIndex": 7,
+        "firstFrame": 145,
+        "lastFrame": 145
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 3.0025,
+        "end": 3.0925000000000002,
+        "score": 0.9725072979927063,
+        "wordIndex": 7,
+        "firstFrame": 152,
+        "lastFrame": 152
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 3.0925000000000002,
+        "end": 3.1425,
+        "score": 0.9872564077377319,
+        "wordIndex": 8,
+        "firstFrame": 156,
+        "lastFrame": 156
+      },
+      {
+        "phoneme": "ᵻ",
+        "start": 3.1425,
+        "end": 3.1825,
+        "score": 0.3867011070251465,
+        "wordIndex": 8,
+        "firstFrame": 157,
+        "lastFrame": 157
+      },
+      {
+        "phoneme": "m",
+        "start": 3.1825,
+        "end": 3.2325,
+        "score": 0.9967226386070251,
+        "wordIndex": 8,
+        "firstFrame": 160,
+        "lastFrame": 160
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 3.2325,
+        "end": 3.2825,
+        "score": 0.8752132654190063,
+        "wordIndex": 8,
+        "firstFrame": 162,
+        "lastFrame": 162
+      },
+      {
+        "phoneme": "m",
+        "start": 3.2825,
+        "end": 3.3225000000000002,
+        "score": 0.982958197593689,
+        "wordIndex": 8,
+        "firstFrame": 165,
+        "lastFrame": 165
+      },
+      {
+        "phoneme": "b",
+        "start": 3.3225000000000002,
+        "end": 3.3625,
+        "score": 0.738366425037384,
+        "wordIndex": 8,
+        "firstFrame": 166,
+        "lastFrame": 167
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 3.3625,
+        "end": 3.4124999999999996,
+        "score": 0.775158166885376,
+        "wordIndex": 8,
+        "firstFrame": 168,
+        "lastFrame": 168
+      },
+      {
+        "phoneme": "z",
+        "start": 3.4124999999999996,
+        "end": 3.5125,
+        "score": 0.9837487936019897,
+        "wordIndex": 8,
+        "firstFrame": 172,
+        "lastFrame": 172
+      },
+      {
+        "phoneme": "w",
+        "start": 3.5125,
+        "end": 3.6025,
+        "score": 0.9816259741783142,
+        "wordIndex": 9,
+        "firstFrame": 178,
+        "lastFrame": 178
+      },
+      {
+        "phoneme": "ɜː",
+        "start": 3.6025,
+        "end": 3.6825,
+        "score": 0.5381746888160706,
+        "wordIndex": 9,
+        "firstFrame": 181,
+        "lastFrame": 181
+      },
+      {
+        "phoneme": "k",
+        "start": 3.7225,
+        "end": 3.8025,
+        "score": 0.9799774289131165,
+        "wordIndex": 9,
+        "firstFrame": 188,
+        "lastFrame": 188
+      },
+      {
+        "phoneme": "w",
+        "start": 3.8025,
+        "end": 3.8425,
+        "score": 0.9809399843215942,
+        "wordIndex": 10,
+        "firstFrame": 191,
+        "lastFrame": 191
+      },
+      {
+        "phoneme": "iː",
+        "start": 3.8425,
+        "end": 3.8925,
+        "score": 0.8199811577796936,
+        "wordIndex": 10,
+        "firstFrame": 192,
+        "lastFrame": 192
+      },
+      {
+        "phoneme": "v",
+        "start": 3.8925,
+        "end": 3.9925,
+        "score": 0.018360497429966927,
+        "wordIndex": 10,
+        "firstFrame": 196,
+        "lastFrame": 196
+      },
+      {
+        "phoneme": "ɔː",
+        "start": 3.9925,
+        "end": 4.0825000000000005,
+        "score": 0.4028724133968353,
+        "wordIndex": 11,
+        "firstFrame": 202,
+        "lastFrame": 202
+      },
+      {
+        "phoneme": "l",
+        "start": 4.0825000000000005,
+        "end": 4.1525,
+        "score": 0.6846832036972046,
+        "wordIndex": 11,
+        "firstFrame": 205,
+        "lastFrame": 206
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 4.1525,
+        "end": 4.1825,
+        "score": 0.9855629801750183,
+        "wordIndex": 11,
+        "firstFrame": 208,
+        "lastFrame": 208
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 4.1825,
+        "end": 4.2225,
+        "score": 0.7748574614524841,
+        "wordIndex": 11,
+        "firstFrame": 209,
+        "lastFrame": 209
+      },
+      {
+        "phoneme": "d",
+        "start": 4.2225,
+        "end": 4.2625,
+        "score": 0.734911322593689,
+        "wordIndex": 11,
+        "firstFrame": 212,
+        "lastFrame": 212
+      },
+      {
+        "phoneme": "i",
+        "start": 4.2625,
+        "end": 4.3325000000000005,
+        "score": 0.9452003240585327,
+        "wordIndex": 11,
+        "firstFrame": 213,
+        "lastFrame": 213
+      },
+      {
+        "phoneme": "d",
+        "start": 4.3325000000000005,
+        "end": 4.422500000000001,
+        "score": 0.99437415599823,
+        "wordIndex": 12,
+        "firstFrame": 219,
+        "lastFrame": 219
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 4.422500000000001,
+        "end": 4.5025,
+        "score": 0.7429227828979492,
+        "wordIndex": 12,
+        "firstFrame": 222,
+        "lastFrame": 222
+      },
+      {
+        "phoneme": "n",
+        "start": 4.562500000000001,
+        "end": 4.6825,
+        "score": 0.87314772605896,
+        "wordIndex": 12,
+        "firstFrame": 230,
+        "lastFrame": 231
+      },
+      {
+        "phoneme": "ð",
+        "start": 5.1825,
+        "end": 5.2525,
+        "score": 0.9910487532615662,
+        "wordIndex": 13,
+        "firstFrame": 261,
+        "lastFrame": 261
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.2525,
+        "end": 5.322500000000001,
+        "score": 0.45452871918678284,
+        "wordIndex": 13,
+        "firstFrame": 263,
+        "lastFrame": 263
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.322500000000001,
+        "end": 5.3925,
+        "score": 0.9660035371780396,
+        "wordIndex": 14,
+        "firstFrame": 268,
+        "lastFrame": 268
+      },
+      {
+        "phoneme": "n",
+        "start": 5.3925,
+        "end": 5.452500000000001,
+        "score": 0.9130393266677856,
+        "wordIndex": 14,
+        "firstFrame": 270,
+        "lastFrame": 271
+      },
+      {
+        "phoneme": "t",
+        "start": 5.452500000000001,
+        "end": 5.492500000000001,
+        "score": 0.9398696422576904,
+        "wordIndex": 14,
+        "firstFrame": 273,
+        "lastFrame": 273
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 5.492500000000001,
+        "end": 5.522500000000001,
+        "score": 0.9630454778671265,
+        "wordIndex": 14,
+        "firstFrame": 275,
+        "lastFrame": 275
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 5.522500000000001,
+        "end": 5.5625,
+        "score": 0.030329309403896332,
+        "wordIndex": 14,
+        "firstFrame": 276,
+        "lastFrame": 276
+      },
+      {
+        "phoneme": "s",
+        "start": 5.5625,
+        "end": 5.6225000000000005,
+        "score": 0.9923804402351379,
+        "wordIndex": 14,
+        "firstFrame": 279,
+        "lastFrame": 279
+      },
+      {
+        "phoneme": "t",
+        "start": 5.6225000000000005,
+        "end": 5.6625000000000005,
+        "score": 0.9899301528930664,
+        "wordIndex": 14,
+        "firstFrame": 282,
+        "lastFrame": 282
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 5.6625000000000005,
+        "end": 5.702500000000001,
+        "score": 0.9422712326049805,
+        "wordIndex": 14,
+        "firstFrame": 283,
+        "lastFrame": 283
+      },
+      {
+        "phoneme": "ŋ",
+        "start": 5.702500000000001,
+        "end": 5.762500000000001,
+        "score": 0.9468463659286499,
+        "wordIndex": 14,
+        "firstFrame": 286,
+        "lastFrame": 286
+      },
+      {
+        "phoneme": "k",
+        "start": 5.762500000000001,
+        "end": 5.8125,
+        "score": 0.9859184622764587,
+        "wordIndex": 15,
+        "firstFrame": 289,
+        "lastFrame": 289
+      },
+      {
+        "phoneme": "w",
+        "start": 5.8125,
+        "end": 5.862500000000001,
+        "score": 0.899664044380188,
+        "wordIndex": 15,
+        "firstFrame": 291,
+        "lastFrame": 292
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 5.862500000000001,
+        "end": 5.9225,
+        "score": 0.8744973540306091,
+        "wordIndex": 15,
+        "firstFrame": 293,
+        "lastFrame": 293
+      },
+      {
+        "phoneme": "s",
+        "start": 5.9225,
+        "end": 6.022500000000001,
+        "score": 0.9902414679527283,
+        "wordIndex": 15,
+        "firstFrame": 298,
+        "lastFrame": 298
+      },
+      {
+        "phoneme": "tʃ",
+        "start": 6.022500000000001,
+        "end": 6.092500000000001,
+        "score": 0.7493649125099182,
+        "wordIndex": 15,
+        "firstFrame": 303,
+        "lastFrame": 303
+      },
+      {
+        "phoneme": "ə",
+        "start": 6.092500000000001,
+        "end": 6.1525,
+        "score": 0.9699485301971436,
+        "wordIndex": 15,
+        "firstFrame": 305,
+        "lastFrame": 305
+      },
+      {
+        "phoneme": "n",
+        "start": 6.1525,
+        "end": 6.2125,
+        "score": 0.996603786945343,
+        "wordIndex": 15,
+        "firstFrame": 309,
+        "lastFrame": 309
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 6.2125,
+        "end": 6.282500000000001,
+        "score": 0.9757012128829956,
+        "wordIndex": 16,
+        "firstFrame": 311,
+        "lastFrame": 311
+      },
+      {
+        "phoneme": "z",
+        "start": 6.322500000000001,
+        "end": 6.4225,
+        "score": 0.9904928207397461,
+        "wordIndex": 16,
+        "firstFrame": 318,
+        "lastFrame": 318
+      },
+      {
+        "phoneme": "w",
+        "start": 6.6425,
+        "end": 6.7325,
+        "score": 0.9582348465919495,
+        "wordIndex": 17,
+        "firstFrame": 334,
+        "lastFrame": 335
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 6.7325,
+        "end": 6.7925,
+        "score": 0.9515587687492371,
+        "wordIndex": 17,
+        "firstFrame": 337,
+        "lastFrame": 337
+      },
+      {
+        "phoneme": "n",
+        "start": 6.7925,
+        "end": 6.862500000000001,
+        "score": 0.9973345994949341,
+        "wordIndex": 17,
+        "firstFrame": 341,
+        "lastFrame": 341
+      },
+      {
+        "phoneme": "t",
+        "start": 6.862500000000001,
+        "end": 6.9125000000000005,
+        "score": 0.9548401236534119,
+        "wordIndex": 18,
+        "firstFrame": 344,
+        "lastFrame": 344
+      },
+      {
+        "phoneme": "ə",
+        "start": 6.9125000000000005,
+        "end": 6.982500000000001,
+        "score": 0.9681768417358398,
+        "wordIndex": 18,
+        "firstFrame": 346,
+        "lastFrame": 346
+      },
+      {
+        "phoneme": "f",
+        "start": 6.982500000000001,
+        "end": 7.0525,
+        "score": 0.9908387660980225,
+        "wordIndex": 19,
+        "firstFrame": 351,
+        "lastFrame": 351
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 7.0525,
+        "end": 7.1225000000000005,
+        "score": 0.3184989392757416,
+        "wordIndex": 19,
+        "firstFrame": 353,
+        "lastFrame": 353
+      },
+      {
+        "phoneme": "ɡ",
+        "start": 7.1225000000000005,
+        "end": 7.202500000000001,
+        "score": 0.9809263944625854,
+        "wordIndex": 19,
+        "firstFrame": 358,
+        "lastFrame": 358
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 7.202500000000001,
+        "end": 7.282500000000001,
+        "score": 0.6828708648681641,
+        "wordIndex": 19,
+        "firstFrame": 361,
+        "lastFrame": 361
+      },
+      {
+        "phoneme": "t",
+        "start": 7.3825,
+        "end": 7.482500000000001,
+        "score": 0.9748096466064453,
+        "wordIndex": 19,
+        "firstFrame": 371,
+        "lastFrame": 371
+      },
+      {
+        "phoneme": "k",
+        "start": 7.822500000000001,
+        "end": 7.9025,
+        "score": 0.9889922142028809,
+        "wordIndex": 20,
+        "firstFrame": 393,
+        "lastFrame": 393
+      },
+      {
+        "phoneme": "iː",
+        "start": 7.9025,
+        "end": 7.9825,
+        "score": 0.9634383320808411,
+        "wordIndex": 20,
+        "firstFrame": 396,
+        "lastFrame": 396
+      },
+      {
+        "phoneme": "p",
+        "start": 7.9825,
+        "end": 8.0525,
+        "score": 0.9608097672462463,
+        "wordIndex": 20,
+        "firstFrame": 401,
+        "lastFrame": 401
+      },
+      {
+        "phoneme": "ɪ",
+        "start": 8.0525,
+        "end": 8.1025,
+        "score": 0.8062810301780701,
+        "wordIndex": 21,
+        "firstFrame": 403,
+        "lastFrame": 403
+      },
+      {
+        "phoneme": "t",
+        "start": 8.1025,
+        "end": 8.1625,
+        "score": 0.938541829586029,
+        "wordIndex": 21,
+        "firstFrame": 406,
+        "lastFrame": 406
+      },
+      {
+        "phoneme": "t",
+        "start": 8.1625,
+        "end": 8.232499999999998,
+        "score": 0.9550689458847046,
+        "wordIndex": 22,
+        "firstFrame": 409,
+        "lastFrame": 409
+      },
+      {
+        "phoneme": "uː",
+        "start": 8.232499999999998,
+        "end": 8.322499999999998,
+        "score": 0.9315540790557861,
+        "wordIndex": 22,
+        "firstFrame": 413,
+        "lastFrame": 413
+      },
+      {
+        "phoneme": "l",
+        "start": 8.3625,
+        "end": 8.4525,
+        "score": 0.8214191794395447,
+        "wordIndex": 23,
+        "firstFrame": 420,
+        "lastFrame": 421
+      },
+      {
+        "phoneme": "ɔ",
+        "start": 8.4525,
+        "end": 8.522499999999999,
+        "score": 0.20008066296577454,
+        "wordIndex": 23,
+        "firstFrame": 423,
+        "lastFrame": 423
+      },
+      {
+        "phoneme": "ŋ",
+        "start": 8.662500000000001,
+        "end": 8.7625,
+        "score": 0.9710705280303955,
+        "wordIndex": 23,
+        "firstFrame": 435,
+        "lastFrame": 435
+      },
+      {
+        "phoneme": "æ",
+        "start": 8.9425,
+        "end": 9.0225,
+        "score": 0.9155954122543335,
+        "wordIndex": 24,
+        "firstFrame": 449,
+        "lastFrame": 449
+      },
+      {
+        "phoneme": "n",
+        "start": 9.0225,
+        "end": 9.0625,
+        "score": 0.9813779592514038,
+        "wordIndex": 24,
+        "firstFrame": 452,
+        "lastFrame": 452
+      },
+      {
+        "phoneme": "d",
+        "start": 9.0625,
+        "end": 9.1025,
+        "score": 0.7416061758995056,
+        "wordIndex": 24,
+        "firstFrame": 453,
+        "lastFrame": 453
+      },
+      {
+        "phoneme": "j",
+        "start": 9.1025,
+        "end": 9.1525,
+        "score": 0.9549275636672974,
+        "wordIndex": 25,
+        "firstFrame": 456,
+        "lastFrame": 456
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 9.1525,
+        "end": 9.212499999999999,
+        "score": 0.91780686378479,
+        "wordIndex": 25,
+        "firstFrame": 458,
+        "lastFrame": 458
+      },
+      {
+        "phoneme": "s",
+        "start": 9.212499999999999,
+        "end": 9.2925,
+        "score": 0.9958027005195618,
+        "wordIndex": 25,
+        "firstFrame": 462,
+        "lastFrame": 462
+      },
+      {
+        "phoneme": "t",
+        "start": 9.2925,
+        "end": 9.3525,
+        "score": 0.9851144552230835,
+        "wordIndex": 25,
+        "firstFrame": 466,
+        "lastFrame": 466
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 9.3525,
+        "end": 9.3925,
+        "score": 0.815784215927124,
+        "wordIndex": 25,
+        "firstFrame": 468,
+        "lastFrame": 468
+      },
+      {
+        "phoneme": "d",
+        "start": 9.3925,
+        "end": 9.442499999999999,
+        "score": 0.8785673975944519,
+        "wordIndex": 25,
+        "firstFrame": 470,
+        "lastFrame": 471
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 9.442499999999999,
+        "end": 9.502500000000001,
+        "score": 0.9245229959487915,
+        "wordIndex": 25,
+        "firstFrame": 472,
+        "lastFrame": 472
+      },
+      {
+        "phoneme": "z",
+        "start": 9.502500000000001,
+        "end": 9.6325,
+        "score": 0.9235670566558838,
+        "wordIndex": 25,
+        "firstFrame": 477,
+        "lastFrame": 478
+      },
+      {
+        "phoneme": "æ",
+        "start": 9.6325,
+        "end": 9.7325,
+        "score": 0.8511222004890442,
+        "wordIndex": 26,
+        "firstFrame": 484,
+        "lastFrame": 484
+      },
+      {
+        "phoneme": "n",
+        "start": 9.7325,
+        "end": 9.802499999999998,
+        "score": 0.9968528151512146,
+        "wordIndex": 26,
+        "firstFrame": 488,
+        "lastFrame": 488
+      },
+      {
+        "phoneme": "s",
+        "start": 9.802499999999998,
+        "end": 9.872499999999999,
+        "score": 0.9476488828659058,
+        "wordIndex": 26,
+        "firstFrame": 491,
+        "lastFrame": 491
+      },
+      {
+        "phoneme": "ɚ",
+        "start": 9.872499999999999,
+        "end": 9.9725,
+        "score": 0.813718855381012,
+        "wordIndex": 26,
+        "firstFrame": 495,
+        "lastFrame": 495
+      },
+      {
+        "phoneme": "l",
+        "start": 9.9725,
+        "end": 10.0625,
+        "score": 0.9452550411224365,
+        "wordIndex": 27,
+        "firstFrame": 501,
+        "lastFrame": 502
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 10.0625,
+        "end": 10.1125,
+        "score": 0.8017266988754272,
+        "wordIndex": 27,
+        "firstFrame": 503,
+        "lastFrame": 503
+      },
+      {
+        "phoneme": "k",
+        "start": 10.1125,
+        "end": 10.1725,
+        "score": 0.9926384687423706,
+        "wordIndex": 27,
+        "firstFrame": 507,
+        "lastFrame": 507
+      },
+      {
+        "phoneme": "s",
+        "start": 10.1725,
+        "end": 10.2225,
+        "score": 0.9748401641845703,
+        "wordIndex": 27,
+        "firstFrame": 509,
+        "lastFrame": 509
+      },
+      {
+        "phoneme": "l",
+        "start": 10.2225,
+        "end": 10.282499999999999,
+        "score": 0.6416211128234863,
+        "wordIndex": 28,
+        "firstFrame": 512,
+        "lastFrame": 513
+      },
+      {
+        "phoneme": "aɪ",
+        "start": 10.282499999999999,
+        "end": 10.342500000000001,
+        "score": 0.8880155086517334,
+        "wordIndex": 28,
+        "firstFrame": 514,
+        "lastFrame": 514
+      },
+      {
+        "phoneme": "k",
+        "start": 10.342500000000001,
+        "end": 10.432500000000001,
+        "score": 0.9749571084976196,
+        "wordIndex": 28,
+        "firstFrame": 519,
+        "lastFrame": 519
+      },
+      {
+        "phoneme": "t",
+        "start": 10.432500000000001,
+        "end": 10.5025,
+        "score": 0.98540860414505,
+        "wordIndex": 29,
+        "firstFrame": 523,
+        "lastFrame": 523
+      },
+      {
+        "phoneme": "ə",
+        "start": 10.5025,
+        "end": 10.5525,
+        "score": 0.8843103051185608,
+        "wordIndex": 29,
+        "firstFrame": 526,
+        "lastFrame": 526
+      },
+      {
+        "phoneme": "d",
+        "start": 10.5525,
+        "end": 10.6025,
+        "score": 0.983513593673706,
+        "wordIndex": 29,
+        "firstFrame": 528,
+        "lastFrame": 528
+      },
+      {
+        "phoneme": "eɪ",
+        "start": 10.6025,
+        "end": 10.7025,
+        "score": 0.8925944566726685,
+        "wordIndex": 29,
+        "firstFrame": 531,
+        "lastFrame": 531
+      },
+      {
+        "phoneme": "z",
+        "start": 10.7025,
+        "end": 10.822499999999998,
+        "score": 0.9660429954528809,
+        "wordIndex": 29,
+        "firstFrame": 538,
+        "lastFrame": 538
+      },
+      {
+        "phoneme": "t",
+        "start": 10.822499999999998,
+        "end": 10.9125,
+        "score": 0.9526368379592896,
+        "wordIndex": 30,
+        "firstFrame": 543,
+        "lastFrame": 543
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 10.9125,
+        "end": 10.9925,
+        "score": 0.9614466428756714,
+        "wordIndex": 30,
+        "firstFrame": 547,
+        "lastFrame": 548
+      },
+      {
+        "phoneme": "uː",
+        "start": 10.9925,
+        "end": 11.062499999999998,
+        "score": 0.9229691624641418,
+        "wordIndex": 30,
+        "firstFrame": 550,
+        "lastFrame": 550
+      },
+      {
+        "phoneme": "θ",
+        "start": 11.162500000000001,
+        "end": 11.282499999999999,
+        "score": 0.8317627906799316,
+        "wordIndex": 30,
+        "firstFrame": 560,
+        "lastFrame": 561
+      },
+      {
+        "phoneme": "s",
+        "start": 11.6425,
+        "end": 11.752500000000001,
+        "score": 0.9919734001159668,
+        "wordIndex": 31,
+        "firstFrame": 584,
+        "lastFrame": 584
+      },
+      {
+        "phoneme": "oʊ",
+        "start": 11.752500000000001,
+        "end": 11.862499999999999,
+        "score": 0.7814926505088806,
+        "wordIndex": 31,
+        "firstFrame": 590,
+        "lastFrame": 590
+      },
+      {
+        "phoneme": "w",
+        "start": 12.3225,
+        "end": 12.4125,
+        "score": 0.819898247718811,
+        "wordIndex": 32,
+        "firstFrame": 618,
+        "lastFrame": 619
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 12.4125,
+        "end": 12.482499999999998,
+        "score": 0.8578216433525085,
+        "wordIndex": 32,
+        "firstFrame": 621,
+        "lastFrame": 621
+      },
+      {
+        "phoneme": "t",
+        "start": 12.482499999999998,
+        "end": 12.5625,
+        "score": 0.9695461988449097,
+        "wordIndex": 32,
+        "firstFrame": 626,
+        "lastFrame": 626
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 12.5625,
+        "end": 12.6325,
+        "score": 0.9651006460189819,
+        "wordIndex": 33,
+        "firstFrame": 629,
+        "lastFrame": 629
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 12.6325,
+        "end": 12.692499999999999,
+        "score": 0.04361831396818161,
+        "wordIndex": 33,
+        "firstFrame": 633,
+        "lastFrame": 633
+      },
+      {
+        "phoneme": "d",
+        "start": 12.692499999999999,
+        "end": 12.7425,
+        "score": 0.9853473901748657,
+        "wordIndex": 33,
+        "firstFrame": 635,
+        "lastFrame": 635
+      },
+      {
+        "phoneme": "w",
+        "start": 12.7425,
+        "end": 12.7925,
+        "score": 0.9704582691192627,
+        "wordIndex": 34,
+        "firstFrame": 638,
+        "lastFrame": 638
+      },
+      {
+        "phoneme": "iː",
+        "start": 12.7925,
+        "end": 12.872499999999999,
+        "score": 0.9330335259437561,
+        "wordIndex": 34,
+        "firstFrame": 640,
+        "lastFrame": 640
+      },
+      {
+        "phoneme": "k",
+        "start": 12.872499999999999,
+        "end": 12.9725,
+        "score": 0.975808322429657,
+        "wordIndex": 35,
+        "firstFrame": 646,
+        "lastFrame": 646
+      },
+      {
+        "phoneme": "iː",
+        "start": 12.9725,
+        "end": 13.062499999999998,
+        "score": 0.9676066637039185,
+        "wordIndex": 35,
+        "firstFrame": 650,
+        "lastFrame": 650
+      },
+      {
+        "phoneme": "p",
+        "start": 13.162500000000001,
+        "end": 13.2625,
+        "score": 0.9787111878395081,
+        "wordIndex": 35,
+        "firstFrame": 660,
+        "lastFrame": 660
+      },
+      {
+        "phoneme": "æ",
+        "start": 13.4425,
+        "end": 13.5225,
+        "score": 0.9455040693283081,
+        "wordIndex": 36,
+        "firstFrame": 674,
+        "lastFrame": 674
+      },
+      {
+        "phoneme": "n",
+        "start": 13.5225,
+        "end": 13.5625,
+        "score": 0.9908905029296875,
+        "wordIndex": 36,
+        "firstFrame": 677,
+        "lastFrame": 677
+      },
+      {
+        "phoneme": "d",
+        "start": 13.5625,
+        "end": 13.6025,
+        "score": 0.9769142270088196,
+        "wordIndex": 36,
+        "firstFrame": 678,
+        "lastFrame": 678
+      },
+      {
+        "phoneme": "w",
+        "start": 13.6025,
+        "end": 13.6725,
+        "score": 0.809571385383606,
+        "wordIndex": 37,
+        "firstFrame": 681,
+        "lastFrame": 682
+      },
+      {
+        "phoneme": "ʌ",
+        "start": 13.6725,
+        "end": 13.7425,
+        "score": 0.8913735747337341,
+        "wordIndex": 37,
+        "firstFrame": 684,
+        "lastFrame": 684
+      },
+      {
+        "phoneme": "t",
+        "start": 13.7425,
+        "end": 13.8225,
+        "score": 0.969296932220459,
+        "wordIndex": 37,
+        "firstFrame": 689,
+        "lastFrame": 689
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 13.8225,
+        "end": 13.8825,
+        "score": 0.9707562327384949,
+        "wordIndex": 38,
+        "firstFrame": 692,
+        "lastFrame": 692
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 13.8825,
+        "end": 13.9325,
+        "score": 0.06093573570251465,
+        "wordIndex": 38,
+        "firstFrame": 695,
+        "lastFrame": 695
+      },
+      {
+        "phoneme": "d",
+        "start": 13.9325,
+        "end": 13.9725,
+        "score": 0.4271225929260254,
+        "wordIndex": 38,
+        "firstFrame": 697,
+        "lastFrame": 697
+      },
+      {
+        "phoneme": "w",
+        "start": 13.9725,
+        "end": 14.0125,
+        "score": 0.9618589878082275,
+        "wordIndex": 39,
+        "firstFrame": 699,
+        "lastFrame": 699
+      },
+      {
+        "phoneme": "iː",
+        "start": 14.0125,
+        "end": 14.0825,
+        "score": 0.8883301615715027,
+        "wordIndex": 39,
+        "firstFrame": 701,
+        "lastFrame": 701
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 14.0825,
+        "end": 14.1525,
+        "score": 0.9822748303413391,
+        "wordIndex": 40,
+        "firstFrame": 706,
+        "lastFrame": 706
+      },
+      {
+        "phoneme": "ᵻ",
+        "start": 14.1525,
+        "end": 14.2225,
+        "score": 0.6514474153518677,
+        "wordIndex": 40,
+        "firstFrame": 708,
+        "lastFrame": 708
+      },
+      {
+        "phoneme": "f",
+        "start": 14.2225,
+        "end": 14.3025,
+        "score": 0.9910680651664734,
+        "wordIndex": 40,
+        "firstFrame": 713,
+        "lastFrame": 713
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 14.3025,
+        "end": 14.362499999999999,
+        "score": 0.7554236650466919,
+        "wordIndex": 40,
+        "firstFrame": 716,
+        "lastFrame": 717
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 14.362499999999999,
+        "end": 14.4225,
+        "score": 0.6914048194885254,
+        "wordIndex": 40,
+        "firstFrame": 718,
+        "lastFrame": 718
+      },
+      {
+        "phoneme": "ʃ",
+        "start": 14.502500000000001,
+        "end": 14.5625,
+        "score": 0.9678086638450623,
+        "wordIndex": 40,
+        "firstFrame": 727,
+        "lastFrame": 727
+      }
+    ],
+    "ctcLogScore": -64.320876745708,
+    "greedyPhoneRecognition": [
+      "ʌ",
+      "n",
+      "k",
+      "l",
+      "ɑː",
+      "d",
+      "j",
+      "ɐ",
+      "l",
+      "ɛ",
+      "t",
+      "s",
+      "m",
+      "eɪ",
+      "k",
+      "ð",
+      "ɪ",
+      "s",
+      "s",
+      "ɪ",
+      "m",
+      "p",
+      "l",
+      "ɚ",
+      "ɐ",
+      "k",
+      "æ",
+      "ʃ",
+      "ɹ",
+      "ᵻ",
+      "m",
+      "ɛ",
+      "m",
+      "b",
+      "ɚ",
+      "z",
+      "w",
+      "ɜː",
+      "k",
+      "w",
+      "iː",
+      "ð",
+      "ɔː",
+      "l",
+      "ɹ",
+      "ɛ",
+      "d",
+      "i",
+      "d",
+      "ʌ",
+      "n",
+      "ð",
+      "ɪ",
+      "ɪ",
+      "n",
+      "t",
+      "ɹ",
+      "ɪ",
+      "s",
+      "t",
+      "ɪ",
+      "ŋ",
+      "k",
+      "w",
+      "ɛ",
+      "s",
+      "tʃ",
+      "ə",
+      "n",
+      "ɪ",
+      "z",
+      "w",
+      "ɛ",
+      "n",
+      "t",
+      "ə",
+      "f",
+      "ɚ",
+      "ɡ",
+      "ɛ",
+      "t",
+      "k",
+      "iː",
+      "p",
+      "ɪ",
+      "t",
+      "t",
+      "uː",
+      "l",
+      "ɑː",
+      "ŋ",
+      "æ",
+      "n",
+      "d",
+      "j",
+      "ɛ",
+      "s",
+      "t",
+      "ɚ",
+      "d",
+      "eɪ",
+      "z",
+      "æ",
+      "n",
+      "s",
+      "ɚ",
+      "l",
+      "ʊ",
+      "k",
+      "s",
+      "l",
+      "aɪ",
+      "k",
+      "t",
+      "ə",
+      "d",
+      "eɪ",
+      "z",
+      "t",
+      "ɹ",
+      "uː",
+      "θ",
+      "s",
+      "oʊ",
+      "w",
+      "ʌ",
+      "t",
+      "ʃ",
+      "ə",
+      "d",
+      "w",
+      "iː",
+      "k",
+      "iː",
+      "p",
+      "æ",
+      "n",
+      "d",
+      "w",
+      "ʌ",
+      "t",
+      "ʃ",
+      "ə",
+      "d",
+      "w",
+      "iː",
+      "ɹ",
+      "ᵻ",
+      "f",
+      "ɹ",
+      "ɛ",
+      "ʃ"
+    ],
+    "frameSeconds": 0.02,
+    "frameOffsetSeconds": 0.0025,
+    "receptiveFieldSamples": 400,
+    "minimumPhonePosterior": 0.0022050284314900637,
+    "medianPhonePosterior": 0.9452550411224365,
+    "lowConfidencePhones": [
+      {
+        "phoneme": "aɪ",
+        "start": 0.2225,
+        "end": 0.2425,
+        "score": 0.027212126180529594,
+        "wordIndex": 0,
+        "firstFrame": 11,
+        "lastFrame": 11
+      },
+      {
+        "phoneme": "m",
+        "start": 0.3225,
+        "end": 0.3425,
+        "score": 0.0022050284314900637,
+        "wordIndex": 0,
+        "firstFrame": 16,
+        "lastFrame": 16
+      },
+      {
+        "phoneme": "ɔː",
+        "start": 0.5225,
+        "end": 0.5425,
+        "score": 0.08756048232316971,
+        "wordIndex": 1,
+        "firstFrame": 26,
+        "lastFrame": 26
+      },
+      {
+        "phoneme": "ɹ",
+        "start": 2.2425,
+        "end": 2.2625,
+        "score": 0.019177420064806938,
+        "wordIndex": 5,
+        "firstFrame": 112,
+        "lastFrame": 112
+      },
+      {
+        "phoneme": "v",
+        "start": 3.9225,
+        "end": 3.9425,
+        "score": 0.018360497429966927,
+        "wordIndex": 10,
+        "firstFrame": 196,
+        "lastFrame": 196
+      },
+      {
+        "phoneme": "ɛ",
+        "start": 5.522500000000001,
+        "end": 5.5425,
+        "score": 0.030329309403896332,
+        "wordIndex": 14,
+        "firstFrame": 276,
+        "lastFrame": 276
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 12.6625,
+        "end": 12.6825,
+        "score": 0.04361831396818161,
+        "wordIndex": 33,
+        "firstFrame": 633,
+        "lastFrame": 633
+      },
+      {
+        "phoneme": "ʊ",
+        "start": 13.9025,
+        "end": 13.9225,
+        "score": 0.06093573570251465,
+        "wordIndex": 38,
+        "firstFrame": 695,
+        "lastFrame": 695
+      }
+    ],
+    "blankPolicy": "Gaps <=120 ms split at midpoint; longer blank gaps keep a pause after 40 ms extension per side",
+    "diphthongPolicy": "Equal visual subdivisions inside each aligned diphthong interval",
+    "normalization": "Internal 24-to-16 kHz polyphase resampling; model-configured zero-mean/unit-variance input; output WAV unchanged",
+    "strictCheckpointLoad": true,
+    "checkpointKeyMigrations": {
+      "wav2vec2.encoder.pos_conv_embed.conv.weight_g": "wav2vec2.encoder.pos_conv_embed.conv.parametrizations.weight.original0",
+      "wav2vec2.encoder.pos_conv_embed.conv.weight_v": "wav2vec2.encoder.pos_conv_embed.conv.parametrizations.weight.original1"
+    },
+    "packages": {
+      "torch": "2.9.1",
+      "transformers": "4.40.1",
+      "numpy": "1.24.3",
+      "scipy": "1.10.1"
+    },
+    "sentenceCues": "Start at next sentence's aligned first word; first cue includes leading silence; final cue includes tail",
+    "limitations": "Automatic phoneme acoustic estimates on 20 ms frames; CTC blanks are not silence labels; no manual phonetic annotation",
+    "fallbackReason": "MFA Windows installation failed in an unrelated GDK post-install dependency"
+  },
+  "checks": {
+    "audioCopiedByteForByte": true,
+    "exactWordOrder": true,
+    "phonemesAndWordsMonotonicAndInBounds": true,
+    "sentenceCount": 6,
+    "wordCount": 41,
+    "ipaIntervalCount": 159
+  }
+}

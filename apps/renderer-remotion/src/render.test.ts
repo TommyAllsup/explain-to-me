@@ -1,17 +1,78 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { once } from "node:events";
 import { createServer } from "node:http";
 import { watch } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import { openBrowser } from "@remotion/renderer";
 import type { ProductionManifest } from "../../../packages/contracts/src/production-manifest.js";
 import { buildTimeline } from "../../../packages/timeline/src/timeline.js";
-import { getBrowserIdentity, renderVideo, startRestrictingProxy } from "./render.js";
+import { copyAssetsIntoPublicDirectory, getBrowserIdentity, renderVideo, startRestrictingProxy, type RenderRequest } from "./render.js";
 import { prepareWindowsBrowserLauncher, writeWindowsBrowserLauncher } from "./windows-browser-launcher.js";
 
 const runSmoke = process.platform === "win32" && process.env.EXPLAIN_TO_ME_RENDER_SMOKE === "1";
+
+test("animated presenter requests reject missing alignment-derived performance before browser launch", async () => {
+  const manifest: ProductionManifest = {
+    version: "1", title: "Aligned Claudia", profile: "preview", targetDurationMs: 10_000, theme: "technical-whiteboard",
+    scenes: ["title", "statement", "outro"].map((kind, index) => ({ id: `scene-${index}`, kind: kind as "title" | "statement" | "outro",
+      title: "A production presenter", narration: [{ id: `chunk-${index}`, text: "These words need matching speech." }],
+      visual: { presenter: { character: "claudia" } } })),
+  };
+  const request: RenderRequest = { manifest, timeline: buildTimeline(manifest, manifest.scenes.map((scene) => ({ id: scene.narration[0]!.id, samples: 72_000 }))),
+    width: 1280, height: 720, fps: 24, outputPath: join(process.cwd(), ".cache", "tests", "must-not-render.mp4") };
+  await assert.rejects(renderVideo(request), /Animated Claudia requires valid presenter animation/);
+  manifest.scenes[0]!.kind = "diagram";
+  await assert.rejects(renderVideo(request), /presenter is supported only/);
+});
+
+test("presenter-only assets are hash-verified and staged once for the renderer", async () => {
+  const scratch = join(process.cwd(), ".cache", "tests");
+  await mkdir(scratch, { recursive: true });
+  const directory = await mkdtemp(join(scratch, "presenter-staging-"));
+  try {
+    const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF1kAAAAASUVORK5CYII=", "base64");
+    const sourcePath = join(directory, "portrait.png");
+    await writeFile(sourcePath, bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const manifest: ProductionManifest = {
+      version: "1", title: "Presenter", profile: "preview", targetDurationMs: 30_000, theme: "technical-whiteboard",
+      assets: [{ id: "presenter", source: "portrait.png", sha256, mimeType: "image/png", provenance: { character: "Example", origin: "manual", credit: "Example artist", aiGenerated: false } }],
+      scenes: ["title", "outro"].map((kind, index) => ({
+        id: `scene-${index}`, kind: kind as "title" | "outro", title: "Local presenter", narration: [{ id: `chunk-${index}`, text: "A local image." }], visual: { presenter: { assetId: "presenter" } },
+      })),
+    };
+    const request: RenderRequest = {
+      manifest,
+      timeline: buildTimeline(manifest, manifest.scenes.flatMap((scene) => scene.narration.map((chunk) => ({ id: chunk.id, samples: 24_000 })))),
+      width: 1280, height: 720, fps: 24, outputPath: join(directory, "video.mp4"),
+      assets: { presenter: { path: await realpath(sourcePath), sha256, mimeType: "image/png" } },
+    };
+    const mapping = await copyAssetsIntoPublicDirectory(request, directory);
+    assert.deepEqual(mapping, { presenter: "asset-01.png" });
+    assert.deepEqual(await readdir(join(directory, "public-assets")), ["asset-01.png"]);
+    assert.deepEqual(await readFile(join(directory, "public-assets", mapping.presenter!)), bytes);
+
+    const missing = { ...request, assets: {} };
+    await assert.rejects(renderVideo(missing), /was not resolved to an approved local file/);
+    const uncredited = structuredClone(request);
+    delete uncredited.manifest.assets![0]!.provenance;
+    await assert.rejects(renderVideo(uncredited), /requires an approved asset with valid provenance/);
+    const unsupported = structuredClone(request);
+    unsupported.manifest.scenes[0]!.kind = "code";
+    await assert.rejects(renderVideo(unsupported), /presenter is supported only/);
+
+    // Changing the input after approval cannot silently alter a presenter frame.
+    await writeFile(sourcePath, Buffer.concat([bytes, Buffer.from("changed")]));
+    const changedStage = join(directory, "changed");
+    await mkdir(changedStage);
+    await assert.rejects(copyAssetsIntoPublicDirectory(request, changedStage), /bytes do not match the approved SHA-256/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 test("Windows Chromium uses the restricting proxy for external and loopback requests", { skip: !runSmoke, timeout: 60_000 }, async () => {
   const browser = getBrowserIdentity();

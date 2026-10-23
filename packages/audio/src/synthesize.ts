@@ -8,8 +8,11 @@ import { ContentAddressedCache, type CacheStats } from "../../assets/src/cache.j
 import type { ProductionManifest } from "../../contracts/src/production-manifest.js";
 import { normalizeTokens } from "../../contracts/src/production-manifest.js";
 import { kokoroReadiness, synthesizeKokoro } from "./kokoro.js";
+import { chatterboxReadiness, synthesizeChatterbox } from "./chatterbox.js";
+import type { NarrationAlignment } from "../../contracts/src/narration-alignment.js";
 import { narrationDurationError } from "./duration-error.js";
 export { kokoroReadiness, kokoroSmokeCheck } from "./kokoro.js";
+export { chatterboxReadiness } from "./chatterbox.js";
 
 export const PCM_SAMPLE_RATE = 24_000;
 export const PCM_CHANNELS = 1;
@@ -40,7 +43,9 @@ export interface NarrationSynthesis {
   totalSamples: number;
   durationMs: number;
   voice: string;
-  backend: "apple" | "kokoro";
+  backend: "apple" | "kokoro" | "chatterbox";
+  alignment?: NarrationAlignment;
+  durationMode?: "natural";
   engine: string;
   warnings: string[];
   cacheStats: CacheStats;
@@ -55,7 +60,7 @@ export interface SynthesisOptions {
   voice: string;
   targetDurationMs: number;
   workDir: string;
-  backend?: "apple" | "kokoro" | "auto";
+  backend?: "apple" | "kokoro" | "chatterbox" | "auto";
   cacheDir?: string;
 }
 
@@ -75,10 +80,15 @@ const narrationItems = (manifest: ProductionManifest) => manifest.scenes.flatMap
 const spokenText = (chunk: ReturnType<typeof narrationItems>[number]) => chunk.spokenText ?? chunk.text;
 
 export function selectNarrationBackend(
-  requested: "auto" | "apple" | "kokoro" = "auto",
-  options: { platform?: NodeJS.Platform; kokoro?: { ready: boolean; reason: string } } = {},
-): { backend: "apple" | "kokoro"; warnings: string[] } {
+  requested: "auto" | "apple" | "kokoro" | "chatterbox" = "auto",
+  options: { platform?: NodeJS.Platform; kokoro?: { ready: boolean; reason: string }; chatterbox?: { ready: boolean; reason: string } } = {},
+): { backend: "apple" | "kokoro" | "chatterbox"; warnings: string[] } {
   const platform = options.platform ?? process.platform;
+  if (requested === "chatterbox") {
+    const readiness = options.chatterbox ?? chatterboxReadiness();
+    if (!readiness.ready) throw new Error(`Claudia Chatterbox backend is unavailable: ${readiness.reason}`);
+    return { backend: "chatterbox", warnings: [] };
+  }
   if (requested === "apple") {
     if (platform !== "darwin") throw new Error("Apple narration requires macOS. Use --tts kokoro or --tts auto on Windows.");
     return { backend: "apple", warnings: [] };
@@ -108,6 +118,13 @@ export async function synthesizeNarration(options: SynthesisOptions): Promise<Na
     requestedVoice = "Samantha";
   }
   const voice = resolveVoice(requestedVoice, backend);
+  if (backend === "chatterbox") {
+    const output = await synthesizeChatterbox(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir);
+    return {
+      ...output, sampleRate: PCM_SAMPLE_RATE, channels: PCM_CHANNELS, voice, backend,
+      warnings: [...warnings, `Chatterbox preserves natural delivery. Requested duration ${(options.targetDurationMs / 1000).toFixed(3)}s is advisory; measured speech is ${(output.durationMs / 1000).toFixed(3)}s.`],
+    };
+  }
   if (backend === "kokoro") {
     const output = await synthesizeKokoro(chunks, voice, options.targetDurationMs, options.workDir, options.cacheDir);
     return {
@@ -272,7 +289,11 @@ async function synthesizeAppleAtRate(
   return { pcmPath: outputPath, chunks: measuredChunks, totalSamples: combined.byteLength / 2 };
 }
 
-function resolveVoice(requestedVoice: string, backend: "apple" | "kokoro"): string {
+function resolveVoice(requestedVoice: string, backend: "apple" | "kokoro" | "chatterbox"): string {
+  if (backend === "chatterbox") {
+    if (requestedVoice !== "auto" && requestedVoice !== "chatterbox-bella") throw new Error("Chatterbox currently supports only --voice chatterbox-bella (or auto)");
+    return "chatterbox-bella";
+  }
   if (requestedVoice !== "auto") return requestedVoice;
   return backend === "kokoro" ? "af_heart" : "Samantha";
 }

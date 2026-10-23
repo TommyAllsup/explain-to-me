@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.5 — 2026-10-22
+
+- Optional animated Claudia presenter in ordinary manifest and document builds, using the selected Bella-reference Chatterbox voice.
+- Fresh speech alignment drives lip sync, expressions, gaze, and connected phrase gestures; reduced motion is available in presenter intent.
+- Explicit local runtime registration and readiness diagnostics, speech/alignment caching, and animation-aware render caching.
+- Chatterbox keeps natural delivery: requested duration is advisory and reports distinguish it from the measured audio/video timeline.
+- A neutral animated example and normal CLI/agent workflow replace the need for story-specific experiment scripts. Existing still presenters and Apple/Kokoro builds remain supported.
+
+General pacing, music, and project configuration remain with the separate 0.3 work.
+
 ## 0.2.1 — 2026-10-17
 
 Release number corrected to 0.2.1 on 2026-10-18. The Windows feature scope is unchanged.

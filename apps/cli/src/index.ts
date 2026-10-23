@@ -21,6 +21,7 @@ import {
   synthesizeNarration,
   kokoroReadiness,
   kokoroSmokeCheck,
+  chatterboxReadiness,
   selectNarrationBackend,
   writeWavFromPcm,
 } from "../../../packages/audio/src/synthesize.js";
@@ -44,6 +45,10 @@ import { prepareNarration } from "../../../packages/audio/src/prepare-narration.
 import { ContentAddressedCache } from "../../../packages/assets/src/cache.js";
 import { configureMediaTools, findExecutable } from "../../../packages/runtime/src/tools.js";
 import { assertNoLinkedPath, assertSupportedFilePath, ensurePrivateDirectory } from "../../../packages/assets/src/file-safety.js";
+import { runPresenter } from "./presenter.js";
+import { describeBuildAssets } from "./asset-report.js";
+import { applyClaudiaPresenter, hasAnimatedClaudia, rendererSourceHashes, selectBuildNarration, type NarrationBackend } from "./claudia.js";
+import { buildPresenterAnimation } from "../../../packages/presenter/src/animation.js";
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DEFAULT_VOICE = "auto";
@@ -65,7 +70,8 @@ interface CliOptions {
   targetDurationMs?: number;
   outputPath?: string;
   voice: string;
-  backend: "apple" | "kokoro" | "auto";
+  backend: NarrationBackend;
+  presenter?: "claudia";
   cacheDir: string;
 }
 
@@ -94,6 +100,10 @@ async function main(argv: string[]): Promise<void> {
     await doctor(rest);
     return;
   }
+  if (command === "presenter") {
+    await runPresenter(rest);
+    return;
+  }
   if (command !== "build") {
     throw new Error(`Unknown command "${command}". Use "explain-to-me --help" for supported commands.`);
   }
@@ -112,13 +122,15 @@ async function doctor(args: string[]): Promise<void> {
     statuses.push({ name, path, ready: path !== null && !detail.startsWith("Error:"), detail });
   }
   const neural = kokoroReadiness();
-  let selected: "apple" | "kokoro" | undefined;
+  let selected: "apple" | "kokoro" | "chatterbox" | undefined;
   let selectionError = "";
   try { selected = selectNarrationBackend("auto", { kokoro: neural }).backend; }
   catch (error) { selectionError = error instanceof Error ? error.message : String(error); }
   const smoke = neural.ready ? kokoroSmokeCheck() : neural;
   statuses.push({ name: "Kokoro neural narrator", path: null, ready: smoke.ready, optional: process.platform === "darwin" && selected !== "kokoro", detail: smoke.reason });
   if (selectionError) statuses.push({ name: "Usable narrator", path: null, ready: false, detail: selectionError });
+  const claudia = chatterboxReadiness();
+  statuses.push({ name: "Claudia / Chatterbox", path: null, ready: claudia.ready, optional: true, detail: claudia.reason });
 
   if (process.platform === "darwin") {
   let voices: string[] = [];
@@ -209,8 +221,13 @@ async function doctor(args: string[]): Promise<void> {
 async function build(options: CliOptions): Promise<void> {
   const invocationStart = performance.now();
   assertSupportedFilePath(options.inputPath ?? options.manifestPath!);
-  await assertBuildPrerequisites(options.voice, options.backend);
   if (options.outputPath && await pathExists(resolve(options.outputPath))) throw new Error("Output target already exists; choose a new directory");
+  // Document direction can be costly: validate explicit choices first. A prepared
+  // manifest is read before backend selection because it may declare Claudia.
+  if (options.inputPath) {
+    const explicit = selectBuildNarration(options.backend, options.voice, options.presenter === "claudia");
+    await assertBuildPrerequisites(explicit.voice, explicit.backend);
+  }
   const stageTimingsMs: Record<string, number> = {};
   const timed = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
     const started = performance.now();
@@ -248,7 +265,11 @@ async function build(options: CliOptions): Promise<void> {
   }
   const parsed = productionManifestSchema.safeParse(rawManifest);
   if (!parsed.success) throw new Error(`Manifest validation failed:\n${formatManifestIssues(parsed.error).map((issue) => `  - ${issue}`).join("\n")}`);
-  const initialManifest = (options.targetDurationMs === undefined ? parsed.data : { ...parsed.data, targetDurationMs: options.targetDurationMs }) as ProductionManifest;
+  const selectedManifest = options.presenter === "claudia" ? applyClaudiaPresenter(parsed.data as ProductionManifest) : parsed.data;
+  const initialManifest = (options.targetDurationMs === undefined ? selectedManifest : { ...selectedManifest, targetDurationMs: options.targetDurationMs }) as ProductionManifest;
+  const animatedClaudia = hasAnimatedClaudia(initialManifest);
+  const narrationOptions = selectBuildNarration(options.backend, options.voice, animatedClaudia);
+  await assertBuildPrerequisites(narrationOptions.voice, narrationOptions.backend);
   const pronunciationConfig = await loadPronunciations(options.pronunciationPath);
   const prepared = await timed("narrationPreparation", async () => prepareNarration(initialManifest, pronunciationConfig.map));
   let manifest: ProductionManifest = productionManifestSchema.parse(prepared.manifest) as ProductionManifest;
@@ -265,12 +286,12 @@ async function build(options: CliOptions): Promise<void> {
   try {
     executionAssets = await timed("assetCopy", () => materializeAssets(resolvedAssets, stagingPath));
     if (manifest.assets?.length) {
-      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/${asset.id}.${assetExtension(asset.mimeType)}` })) };
+      manifest = { ...manifest, assets: manifest.assets.map((asset) => ({ ...asset, source: `assets/asset-${asset.id}.${assetExtension(asset.mimeType)}` })) };
     }
     const synthesis = await timed("narrationSynthesis", () => synthesizeNarration({
       manifest,
-      voice: options.voice,
-      backend: options.backend,
+      voice: narrationOptions.voice,
+      backend: narrationOptions.backend,
       cacheDir: options.cacheDir,
       targetDurationMs: manifest.targetDurationMs,
       workDir: tempRoot,
@@ -288,6 +309,15 @@ async function build(options: CliOptions): Promise<void> {
       return { timeline: built, captions };
     });
 
+    const presenterAnimation = animatedClaudia ? await timed("presenterAnimation", async () => {
+      if (!synthesis.alignment) throw new Error("Animated Claudia requires narration alignment from Chatterbox.");
+      return buildPresenterAnimation({ manifest, timeline: timeline.timeline, alignment: synthesis.alignment, pcm: await readFile(synthesis.pcmPath) });
+    }) : undefined;
+    if (synthesis.alignment) await writeFile(join(stagingPath, "narration-alignment.json"), `${JSON.stringify(synthesis.alignment, null, 2)}\n`);
+    if (presenterAnimation) await writeFile(join(stagingPath, "presenter-animation.json"), `${JSON.stringify(presenterAnimation, null, 2)}\n`);
+    const durationMode = synthesis.durationMode === "natural" ? "natural" : "target";
+    const validationDurationMs = durationMode === "natural" ? synthesis.durationMs : manifest.targetDurationMs;
+
     const renderer = await loadRenderer();
     const browserIdentity = renderer.getBrowserIdentity();
     if (!browserIdentity) throw new Error("No installed renderer browser is available; run setup first");
@@ -300,12 +330,13 @@ async function build(options: CliOptions): Promise<void> {
       height: DEFAULT_HEIGHT,
       fps: DEFAULT_FPS,
       assets: executionAssets,
+      ...(presenterAnimation ? { presenterAnimation } : {}),
     };
     const renderKey = renderCache.key("render-video-v1", {
-      manifest, timeline: timeline.timeline,
+      manifest, timeline: timeline.timeline, ...(presenterAnimation ? { presenterAnimation } : {}),
       width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, fps: DEFAULT_FPS,
       rendererVersion: JSON.parse(await readFile(join(PROJECT_ROOT, "node_modules/remotion/package.json"), "utf8")).version,
-      sourceHashes: await rendererSourceHashes(),
+      sourceHashes: await rendererSourceHashes(PROJECT_ROOT),
       environment: { node: process.version, platform: process.platform, arch: process.arch, osRelease: (await import("node:os")).release(), browser: browserIdentity },
     });
     let renderCacheHit = true;
@@ -345,7 +376,7 @@ async function build(options: CliOptions): Promise<void> {
       pcmPath: synthesis.pcmPath,
       timeline: timeline.timeline,
       captions: timeline.captions,
-      targetDurationMs: manifest.targetDurationMs,
+      targetDurationMs: validationDurationMs,
       rendererFrameCount: rendered.durationInFrames,
       boundarySamples,
     }));
@@ -372,13 +403,17 @@ async function build(options: CliOptions): Promise<void> {
       },
       direction: { ...direction, audience: options.audience, style: options.style, cloudCalls: [] },
       narrationPreparation: { stats: prepared.stats, warnings: prepared.warnings, pronunciations: pronunciationConfig.provenance },
-      assets: resolvedAssets.map((asset) => ({ id: asset.id, source: asset.source, canonicalPath: asset.path, sha256: asset.sha256, mimeType: asset.mimeType, sizeBytes: asset.sizeBytes })),
+      assets: describeBuildAssets(manifest, resolvedAssets),
       createdAt: new Date().toISOString(),
       status: "automated-checks-passed-egress-unverified",
       profile: manifest.profile,
       targetDurationMs: manifest.targetDurationMs,
+      durationMode,
+      requestedDurationMs: manifest.targetDurationMs,
+      measuredDurationMs: synthesis.durationMs,
       manifest: { title: manifest.title, sha256: manifestHash },
-      artifacts: ["video.mp4", "audio.wav", "captions.vtt", "captions.srt", "manifest.json", "report.json"],
+      artifacts: ["video.mp4", "audio.wav", "captions.vtt", "captions.srt", "manifest.json", "report.json", ...(synthesis.alignment ? ["narration-alignment.json"] : []), ...(presenterAnimation ? ["presenter-animation.json"] : [])],
+      presenter: animatedClaudia ? { character: "claudia", credit: "Claudia by anabology", rig: "bundled-manual-svg", sceneIds: manifest.scenes.filter((scene) => scene.visual.presenter && "character" in scene.visual.presenter).map((scene) => scene.id), animationArtifact: "presenter-animation.json" } : null,
       timingsMs: {
         stages: stageTimingsMs,
         totalThroughAutomatedValidation: wallThroughValidationMs,
@@ -396,6 +431,10 @@ async function build(options: CliOptions): Promise<void> {
         channels: synthesis.channels,
         totalSamples: synthesis.totalSamples,
         measuredDurationMs: synthesis.durationMs,
+        durationMode,
+        requestedDurationMs: manifest.targetDurationMs,
+        durationPolicy: durationMode === "natural" ? "Natural speech; requested duration is advisory. No time stretching or target-fitting rate correction." : "Speech synthesis fits the requested duration within tolerance.",
+        alignment: synthesis.alignment ? { artifact: "narration-alignment.json", method: "local acoustic phoneme alignment of exact narration PCM; word times describe spoken text", chunks: synthesis.alignment.chunks.length } : null,
         chunks: synthesis.chunks.map((chunk) => ({ id: chunk.id, sampleCount: chunk.samples })),
         durationAttempts: synthesis.attempts,
       },
@@ -436,7 +475,10 @@ async function build(options: CliOptions): Promise<void> {
         audioSignal: media.audioSignal,
         thresholds: {
           audio: "packages/validation/src/qc.ts AUDIO_QC_THRESHOLDS",
-          requestedDurationToleranceMs: 1_000,
+          durationToleranceMs: 1_000,
+          durationReference: durationMode === "natural" ? "measured narration duration" : "requested target duration",
+          validationDurationMs,
+          requestedDurationToleranceMs: durationMode === "natural" ? null : 1_000,
           avAndCaptionEndToleranceMs: 250,
         },
         sceneBoundarySamples: media.boundarySamples,
@@ -512,7 +554,7 @@ function parseBuildOptions(args: string[]): CliOptions {
       continue;
     }
     const key = argument.slice(2);
-    if (!["manifest", "profile", "duration", "output", "voice", "tts", "cache-dir", "director", "audience", "style", "pronunciations"].includes(key)) {
+    if (!["manifest", "profile", "duration", "output", "voice", "tts", "cache-dir", "director", "audience", "style", "pronunciations", "presenter"].includes(key)) {
       throw new Error(`Unknown build option --${key}`);
     }
     const value = args[index + 1];
@@ -532,7 +574,10 @@ function parseBuildOptions(args: string[]): CliOptions {
   const targetDurationMs = duration === undefined ? undefined : parseDuration(duration);
   const outputPath = values.get("output");
   const backend = values.get("tts") ?? "auto";
-  if (!["auto", "apple", "kokoro"].includes(backend)) throw new Error("--tts must be auto, apple, or kokoro");
+  if (!["auto", "apple", "kokoro", "chatterbox"].includes(backend)) throw new Error("--tts must be auto, apple, kokoro, or chatterbox");
+  const presenter = values.get("presenter");
+  if (presenter !== undefined && presenter !== "claudia") throw new Error("--presenter supports claudia only");
+  selectBuildNarration(backend as NarrationBackend, values.get("voice") ?? DEFAULT_VOICE, presenter === "claudia");
   const directorMode = values.get("director") ?? "auto";
   if (!["auto", "template", "local"].includes(directorMode)) throw new Error("--director must be auto, template, or local");
   const audience = values.get("audience") ?? "software engineers";
@@ -548,7 +593,8 @@ function parseBuildOptions(args: string[]): CliOptions {
     ...(targetDurationMs === undefined ? {} : { targetDurationMs }),
     ...(outputPath === undefined ? {} : { outputPath }),
     voice: values.get("voice") ?? DEFAULT_VOICE,
-    backend: backend as "apple" | "kokoro" | "auto",
+    backend: backend as NarrationBackend,
+    ...(presenter === "claudia" ? { presenter } : {}),
     cacheDir: resolve(values.get("cache-dir") ?? join(PROJECT_ROOT, ".explain-to-me/cache")),
   };
 }
@@ -563,13 +609,17 @@ function parseDuration(value: string): number {
   return milliseconds;
 }
 
-async function assertBuildPrerequisites(voice: string, backend: "auto" | "apple" | "kokoro"): Promise<void> {
+async function assertBuildPrerequisites(voice: string, backend: NarrationBackend): Promise<void> {
   if (Number(process.versions.node.split(".")[0]) < 24) throw new Error("Node.js 24 or newer is required");
   if (process.platform === "win32" && process.arch !== "x64") throw new Error("Windows builds currently require an x64 Node.js installation");
   if (!(await pathExists(RENDER_ENTRY))) {
     throw new Error(`Renderer integration is not ready: ${RENDER_ENTRY} is missing. Build can run after the renderer worker supplies the documented renderVideo boundary.`);
   }
-  const actualBackend = selectNarrationBackend(backend).backend;
+  if (backend === "chatterbox") {
+    const readiness = chatterboxReadiness();
+    if (!readiness.ready) throw new Error(`Claudia / Chatterbox is unavailable: ${readiness.reason}`);
+  }
+  const actualBackend = backend === "chatterbox" ? backend : selectNarrationBackend(backend).backend;
   const executables = actualBackend === "apple" ? ["say", "ffmpeg", "ffprobe"] : ["ffmpeg", "ffprobe"];
   for (const executable of executables) {
     if (!findExecutable(executable)) throw new Error(`Required executable "${executable}" was not found on PATH`);
@@ -621,18 +671,11 @@ async function materializeAssets(assets: ResolvedAsset[], stagingPath: string): 
     if (bytes.length > 8 * 1024 * 1024 || createHash("sha256").update(bytes).digest("hex") !== asset.sha256) {
       throw new Error(`Asset changed after approved resolution: ${asset.id}`);
     }
-    const path = join(directory, `${asset.id}.${assetExtension(asset.mimeType)}`);
+    const path = join(directory, `asset-${asset.id}.${assetExtension(asset.mimeType)}`);
     await writeFile(path, bytes, { mode: 0o600 });
     result[asset.id] = { path, sha256: asset.sha256, mimeType: asset.mimeType };
   }
   return result;
-}
-
-async function rendererSourceHashes(): Promise<Record<string, string>> {
-  const paths = ["apps/renderer-remotion/src/entry.tsx", "apps/renderer-remotion/src/render.ts", "apps/renderer-remotion/src/video.tsx", "apps/renderer-remotion/src/windows-browser-launcher.ts", "apps/renderer-remotion/src/windows-browser-launcher.cs", "packages/renderer-core/src/renderer.ts", "package.json", "pnpm-lock.yaml", "tsconfig.json"];
-  const hashes: Record<string, string> = {};
-  for (const path of paths) hashes[path] = createHash("sha256").update(await readFile(join(PROJECT_ROOT, path))).digest("hex");
-  return hashes;
 }
 
 async function chooseOutputPath(requested: string | undefined, title: string, buildId: string): Promise<string> {
@@ -679,7 +722,10 @@ function printHelp(): void {
     "  explain-to-me doctor",
     "  explain-to-me build <input.md|input.txt> [--director auto|local|template] [--duration 60s] [--audience <text>] [--style <hint>]",
     "  explain-to-me build --manifest <file.json> [--duration 60s]",
-    "  Options: --output <new-dir> --tts auto|apple|kokoro --voice <id> --cache-dir <dir> --pronunciations <map.json>",
+    "  explain-to-me presenter --manifest <file.json> --pack <pack.json> --output <new-dir> [--scenes <id,id>]",
+    "  Options: --output <new-dir> --tts auto|apple|kokoro|chatterbox --voice <id> --cache-dir <dir> --pronunciations <map.json>",
+    "  --presenter claudia adds animated Claudia to title, statement, bullets, and outro scenes.",
+    "  Claudia selects Chatterbox with Bella as reference; its natural duration makes --duration advisory.",
     "",
     "Models are installed during setup only; runtime direction stays local. Template mode is extractive, not AI summarization.",
     "Build output is written only to a new directory. Current visual theme/profile is technical-whiteboard/preview.",

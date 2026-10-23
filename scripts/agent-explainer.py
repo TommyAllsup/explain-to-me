@@ -195,7 +195,8 @@ def main(argv=None):
     parser.add_argument('--pronunciations', type=Path)
     parser.add_argument('--label', default='explainer')
     parser.add_argument('--director', choices=['auto', 'local', 'template'])
-    parser.add_argument('--tts', choices=['auto', 'apple', 'kokoro'], default='auto')
+    parser.add_argument('--tts', choices=['auto', 'apple', 'kokoro', 'chatterbox'], default='auto')
+    parser.add_argument('--presenter', choices=['claudia'])
     parser.add_argument('--voice')
     parser.add_argument('--duration', default='60s')
     parser.add_argument('--audience')
@@ -208,6 +209,10 @@ def main(argv=None):
         parser.error('build requires --input or --manifest')
     if args.command == 'build' and args.manifest and any(value is not None for value in (args.director, args.audience, args.style)):
         parser.error('Director/audience/style options apply to document inputs, not prepared manifests')
+    if args.command == 'build' and args.presenter == 'claudia' and args.tts not in ('auto', 'chatterbox'):
+        parser.error('Animated Claudia requires --tts chatterbox or auto')
+    if args.command == 'build' and (args.presenter == 'claudia' or args.tts == 'chatterbox') and args.voice not in (None, 'auto', 'chatterbox-bella'):
+        parser.error('Chatterbox supports --voice chatterbox-bella or auto only')
     os.umask(0o077)
     record = {'state': 'failed'}
     record_path = None
@@ -242,7 +247,7 @@ def main(argv=None):
             command += ['--tts', args.tts, '--duration', args.duration, '--output', str(paths['output']), '--cache-dir', str(paths['cache'])]
             if not args.manifest:
                 command += ['--director', args.director or 'auto']
-            for flag, value in [('--voice', args.voice), ('--audience', args.audience), ('--style', args.style), ('--pronunciations', str(pronunciation) if pronunciation else None)]:
+            for flag, value in [('--voice', args.voice), ('--presenter', args.presenter), ('--audience', args.audience), ('--style', args.style), ('--pronunciations', str(pronunciation) if pronunciation else None)]:
                 if value:
                     command += [flag, value]
         record['command'] = command

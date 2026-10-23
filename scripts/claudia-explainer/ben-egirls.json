@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "title": "Ben's guide to e-girls",
+  "audience": "Ben, who asked in Slack: what is an e-girl",
+  "tone": "Warm, bubbly, lightly absurd; jokes about internet vocabulary and the dramatic soundtrack",
+  "targetDurationSeconds": 120,
+  "music": "Slogans in the Rain.mp3",
+  "scenes": [
+    {
+      "id": "the-question",
+      "title": "Ben has a question.",
+      "visual": "question",
+      "displayText": ["what is an e-girl", "An extremely unofficial field guide"],
+      "narration": "Ben, you asked, what is an e girl? Great question. The internet added another character class while we were trying to remember a password. I'm Claudia. Welcome to your extremely unofficial field guide. Dramatic soundtrack included."
+    },
+    {
+      "id": "the-definition",
+      "title": "Internet style. Human underneath.",
+      "visual": "definition",
+      "displayText": ["e = electronic", "A style + an online persona", "No charging cable required"],
+      "narration": "E girl means electronic girl. Usually, it's a label for an internet flavored alternative style, and the online persona around it. Think fashion, makeup, and self expression through a very online lens. No charging cable required."
+    },
+    {
+      "id": "the-mix",
+      "title": "A remix, not a uniform.",
+      "visual": "ingredients",
+      "displayText": ["Emo / goth", "Anime / gaming", "Internet creativity", "TikTok spotlight: 2019"],
+      "narration": "The mix often borrows from emo and goth fashion, anime, gaming, and internet culture. TikTok put the look in the spotlight around twenty nineteen. Imagine an alternative fashion mood board that discovered a ring light and started posting."
+    },
+    {
+      "id": "the-look",
+      "title": "The accessories department.",
+      "visual": "accessories",
+      "displayText": ["Winged eyeliner", "Blush + tiny hearts", "Dyed hair / layered shirts / chains", "Cat ears: optional. Extra RAM: zero."],
+      "narration": "Common ingredients include winged eyeliner, strong blush, tiny hearts under the eyes, dyed hair, layered shirts, and chains. Cat ear headphones sometimes make a cameo. They are optional, and tragically, they do not add extra memory to your computer."
+    },
+    {
+      "id": "the-persona",
+      "title": "More than the outfit.",
+      "visual": "persona",
+      "displayText": ["Outfits", "Makeup", "Games", "Memes", "No entrance exam"],
+      "narration": "The persona might involve outfit videos, makeup, games, memes, or a playful online character. Someone can enjoy the style without streaming anything. You do not have to defeat a final boss or complete a makeup certification to participate."
+    },
+    {
+      "id": "the-label",
+      "title": "Let people name their look.",
+      "visual": "labels",
+      "displayText": ["A self-chosen label", "Not every woman who plays games", "Not a personality diagnosis"],
+      "narration": "One useful detail, Ben. It does not mean every woman who plays games or uses the internet. Some people embrace the label. Others hear it used as an insult. Let people name their own look. Eyeliner is not a personality diagnosis."
+    },
+    {
+      "id": "the-test",
+      "title": "The practical test.",
+      "visual": "test",
+      "displayText": ["On a video call? Just a person.", "Curating an internet alt look? Maybe.", "Check the context. Skip the assumptions."],
+      "narration": "So, a person on a video call? Just a person. Someone deliberately curating that internet alternative look? They might call themselves an e girl. Context matters. Owning a headset is not enough. Otherwise, half the customer support department would qualify."
+    },
+    {
+      "id": "ben-unlocked",
+      "title": "Ben: internet lore +1.",
+      "visual": "outro",
+      "displayText": ["Online style + persona", "Alternative fashion meets internet culture", "Question answered. Megacorporation unharmed."],
+      "narration": "There you go, Ben. An online style and persona, where alternative fashion meets internet culture. Your internet vocabulary has received a small update. And despite what this soundtrack suggests, we have explained a fashion trend without overthrowing a single megacorporation."
+    }
+  ],
+  "sources": [
+    {"title": "Dictionary.com: egirl and eboy", "url": "https://www.dictionary.com/culture/pop-culture/egirl-and-eboy", "supports": "Term, style influences, TikTok visibility in 2019, variable use"},
+    {"title": "Teen Vogue: E-Girl Starter Pack", "url": "https://www.teenvogue.com/story/e-girl-starter-pack", "supports": "Common fashion and makeup examples"},
+    {"title": "Christine H. Tran: Never Battle Alone", "url": "https://journals.sagepub.com/doi/full/10.1177/15274764221080930", "supports": "Context, gendered assumptions, and derogatory/reclaimed uses"}
+  ]
+}
