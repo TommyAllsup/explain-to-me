@@ -2,7 +2,7 @@
 
 Version **0.3.0** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
 
-This release adds optional animated Claudia with Chatterbox narration, lip sync, expressions, and gestures. It requires the separate advanced [Claudia setup](claudia-setup.md) on Windows with NVIDIA CUDA. The ordinary installer and commands below still use Kokoro; they do not install Chatterbox.
+Introduced in 0.2.5, optional animated Claudia comes with Chatterbox narration, lip sync, expressions, and gestures. It requires the separate advanced [Claudia setup](claudia-setup.md) on Windows with NVIDIA CUDA. The ordinary installer and commands below still use Kokoro; they do not install Chatterbox.
 
 ## Saved projects in 0.3
 
@@ -30,7 +30,7 @@ without a duplicate selectable subtitle track; SRT/VTT remain separate files.
 
 ## Let your local agent install it
 
-Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-025-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
+Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-030-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
 
 ## Install once
 

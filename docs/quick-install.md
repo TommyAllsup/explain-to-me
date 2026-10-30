@@ -1,6 +1,8 @@
 # Install Explain-to-Me with your local agent
 
 <a id="windows-021-with-codex-or-claude-code"></a>
+<a id="windows-025-with-codex-or-claude-code"></a>
+<a id="windows-026-with-codex-or-claude-code"></a>
 
 ## Windows 0.3.0 with Codex or Claude Code
 
@@ -50,7 +52,7 @@ node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-t
 
 The version command must print `explain-to-me 0.3.0`. Existing output directories are refused. See [Windows setup](windows.md) for private-workspace commands, recovery, supported paths, and the difference between automated QC and human review. Native Windows local AI direction is deferred; use Kokoro with prepared manifests or `--director template`.
 
-For the current macOS v0.3.0 commands, use the [README macOS quickstart](../README.md#macos-quickstart-roll-your-first-tiny-movie).
+For the current macOS v0.3.0 commands, use the [README macOS quickstart](../README.md#macos-quickstart-roll-your-first-tiny-movie). For Linux, follow the [Kokoro setup and private-workspace commands](linux.md).
 
 ## Historical macOS v0.2.0 agent setup
 

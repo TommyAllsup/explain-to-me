@@ -4,11 +4,13 @@
 
 Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrated, captioned explainer videos. A local model can plan the story; deterministic scenes do the drawing; measured speech keeps the whole crew on time.
 
-**v0.3.0 · Windows x64 + macOS · TypeScript CLI · MIT project code**
+**v0.3.0 · Windows x64 + macOS + Linux/Kokoro · TypeScript CLI · MIT project code**
 
 Version 0.3.0 includes [animated Claudia](docs/claudia.md) into normal builds with local Chatterbox speech, lip sync, expressions, and gestures. Claudia needs [optional local setup](docs/claudia-setup.md) in addition to the standard installation below.
 
 The [0.3 saved-project workflow](docs/projects.md) lets you review a script before speech, preview narration, choose pacing, and add one local music track. The quickstarts below use the 0.3.0 source release.
+
+Version 0.3.0 includes the Linux preflight fix from 0.2.6: `doctor` accepts Linux with the required Kokoro narrator, media tools, and rendering browser. See the [Linux setup guide](docs/linux.md) for prepared-manifest and template builds.
 
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
@@ -92,6 +94,19 @@ open out/my-first-explainer/video.mp4
 
 Choose a **new output directory** each time. Existing targets are refused. Doctor explains missing requirements; optional model backends may be absent for this build.
 
+## Linux: Kokoro narration
+
+Linux uses **Kokoro** for ordinary narration. Install Node.js 24+ with npm, Git, Python 3, `uv`, FFmpeg/ffprobe, and the system libraries needed by Chromium. Follow the [Linux setup guide](docs/linux.md) to install the pinned project dependencies, Kokoro, and Remotion Headless Shell, then run:
+
+```bash
+npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm explain-to-me doctor
+npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm explain-to-me build \
+  --manifest fixtures/golden-manifests/whisper-vs-tts.json \
+  --tts kokoro --voice af_heart --duration 60s --output out/my-first-linux-explainer
+```
+
+For Markdown/plain text, use `--director template --tts kokoro`. Apple speech is macOS-only, and `node scripts/setup.mjs` is the Windows installer. Linux preflight still fails when a required dependency or Kokoro synthesis check fails. The [0.2.6 patch release notes](docs/releases/0.2.6.md) distinguish regression coverage from the contributor's Linux media-build report.
+
 ## Three ways to explain a thing
 
 **Animated Claudia in 0.3.0:** after the optional local voice setup, use `--presenter claudia` in a normal build or select her in a reviewed manifest. [Try the example](docs/claudia.md). Local still-image presenter packs remain supported. See the [integration scope](docs/plans/0.2.5-claudia-integration.md).
@@ -125,7 +140,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --output out/document-local
 ```
 
-`--director local` requires that backend on macOS. `--director auto` reports an extractive fallback when local direction is unavailable, including on Windows. For builds without animated Claudia, `--tts auto` prefers installed Kokoro and can fall back to Apple speech on macOS; automatic selection on Windows requires Kokoro. Animated Claudia selects her optional Chatterbox backend. No cloud/subscription model adapter is built in.
+`--director local` requires that backend on macOS. `--director auto` reports an extractive fallback when local direction is unavailable, including on Windows and ordinary Linux installations. For builds without animated Claudia, `--tts auto` prefers installed Kokoro and can fall back to Apple speech on macOS; automatic selection on Windows and Linux requires Kokoro. Animated Claudia selects her optional Chatterbox backend. No cloud/subscription model adapter is built in.
 
 ### “I want to edit the script.”
 
@@ -201,7 +216,7 @@ Repository: https://github.com/TommyAllsup/explain-to-me
 Automated QC is separate from my approval of the script and finished movie.
 ```
 
-[The full agent setup guide](docs/quick-install.md) includes Windows and macOS commands and the private-workspace workflow. The launcher returns structured JSON and retains failed-job diagnostics; it doesn't install models, update Git, or upload your work.
+[The full agent setup guide](docs/quick-install.md) includes Windows and macOS commands and the private-workspace workflow; the [Linux guide](docs/linux.md#private-workspaces-and-agent-builds) includes the Kokoro launcher commands. The launcher returns structured JSON and retains failed-job diagnostics; it doesn't install models, update Git, or upload your work.
 
 ## What's in the goodie bag?
 
@@ -224,7 +239,7 @@ Approved images are copied into `assets/`; scene-boundary samples support review
 
 ## Small release, clear boundaries
 
-The macOS local model director uses a private Unix socket. Windows uses template direction. Renderer requests are restricted and audited on both platforms. Whole-process no-egress verification remains open. Local-first isn't a security certification; see [SECURITY.md](SECURITY.md).
+The macOS local model director uses a private Unix socket. The Windows and Linux quickstarts use prepared manifests or template direction. Renderer requests are restricted and audited. Whole-process no-egress verification remains open. Local-first isn't a security certification; see [SECURITY.md](SECURITY.md).
 
 Model output is constrained manifest data. Approved image paths are bounded, copied, and hash-checked. These controls aren't a sandbox guarantee. Automated checks and source mappings help inspection; they don't establish factual correctness, pleasant narration, or human approval. Watch and listen before sharing.
 

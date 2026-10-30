@@ -14,8 +14,8 @@ test("Kokoro locates the virtual environment interpreter on each platform", () =
   assert.equal(kokoroPythonPath(root, "linux"), join(root, ".venv-kokoro", "bin", "python"));
 });
 
-test("auto uses installed Kokoro on Windows and macOS", () => {
-  for (const platform of ["win32", "darwin"] as const) {
+test("auto uses installed Kokoro on Windows, macOS, and Linux", () => {
+  for (const platform of ["win32", "darwin", "linux"] as const) {
     assert.deepEqual(selectNarrationBackend("auto", { platform, kokoro: available }), { backend: "kokoro", warnings: [] });
   }
 });
@@ -31,8 +31,12 @@ test("Windows auto refuses unavailable Kokoro with setup instructions", () => {
   assert.throws(() => selectNarrationBackend("auto", { platform: "win32", kokoro: missing }), /Kokoro backend is unavailable: Python environment is missing.*node scripts\/setup\.mjs/u);
 });
 
+test("Linux auto requires Kokoro and gives Linux setup instructions", () => {
+  assert.throws(() => selectNarrationBackend("auto", { platform: "linux", kokoro: missing }), /Kokoro backend is unavailable: Python environment is missing.*python3 scripts\/setup-kokoro\.py/u);
+});
+
 test("explicit Kokoro never falls back when unavailable", () => {
-  for (const platform of ["win32", "darwin"] as const) {
+  for (const platform of ["win32", "darwin", "linux"] as const) {
     assert.throws(() => selectNarrationBackend("kokoro", { platform, kokoro: missing }), /Kokoro backend is unavailable/u);
   }
 });
@@ -41,7 +45,8 @@ test("macOS missing Kokoro keeps the Python setup guidance", () => {
   assert.throws(() => selectNarrationBackend("kokoro", { platform: "darwin", kokoro: missing }), /python3 scripts\/setup-kokoro\.py/u);
 });
 
-test("Apple is selectable on macOS without Kokoro and rejected on Windows", () => {
+test("Apple is selectable on macOS without Kokoro and rejected on Windows and Linux", () => {
   assert.deepEqual(selectNarrationBackend("apple", { platform: "darwin", kokoro: missing }), { backend: "apple", warnings: [] });
   assert.throws(() => selectNarrationBackend("apple", { platform: "win32", kokoro: available }), /Apple narration requires macOS/u);
+  assert.throws(() => selectNarrationBackend("apple", { platform: "linux", kokoro: available }), /Apple narration requires macOS.*Windows or Linux/u);
 });

@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for helping make explanations clearer. This is a local-first CLI project by Tommy Allsup, with macOS and Windows 11 x64 workflows. Start with the [README](README.md) and [roadmap](ROADMAP.md).
+Thanks for helping make explanations clearer. This is a local-first CLI project by Tommy Allsup, with macOS, Windows 11 x64, and Linux/Kokoro workflows. Start with the [README](README.md) and [roadmap](ROADMAP.md).
 
 ## Before starting
 
 For a substantial feature, open an issue to agree on scope. Small fixes, documentation improvements and synthetic examples are welcome. Keep changes focused; do not mix feature work with unrelated refactoring.
 
-Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. The `v0.3.0` Windows release uses `node scripts/setup.mjs` for Kokoro/template builds; macOS retains Apple speech and optional local models. [Windows setup](docs/windows.md) prepares the local toolchain, and [agent setup](docs/quick-install.md) includes Codex and Claude Code examples. Unit tests and typechecking are configured in Windows and Linux CI.
+Use Node.js 24+ and pnpm 10.18.3. The README shows setup without a global pnpm installation. The `v0.3.0` Windows release uses `node scripts/setup.mjs` for Kokoro/template builds; macOS retains Apple speech and optional local models. [Windows setup](docs/windows.md) prepares the local toolchain; [Linux setup](docs/linux.md) covers required Kokoro and media tools. [Agent setup](docs/quick-install.md) includes Codex and Claude Code examples. Unit tests and typechecking are configured in Windows and Linux CI.
 
 Animated Claudia uses separate optional [Windows/CUDA setup](docs/claudia-setup.md). The ordinary installer does not install Chatterbox, and static checks do not require its models.
 

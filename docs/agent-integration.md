@@ -39,9 +39,11 @@ On Windows 11 x64, clone `v0.3.0` and run `node scripts/setup.mjs` once, then us
 
 The launcher uses Windows Job Objects for owned cleanup and sets the job's `TEMP`, `TMP`, and `TMPDIR`. See [Windows setup](windows.md) for exact commands and supported local paths. Scoped harness approval may be needed for setup downloads, private workspace access, Chromium/media execution, or Windows directory protection. Report the blocked operation when policy prevents it; do not change unrelated harness settings.
 
-## macOS release workflow
+## macOS and Linux release workflows
 
-Use `python3 scripts/agent-explainer.py doctor --workspace /absolute/private/workspace` followed by `build --workspace ... --manifest /absolute/private/workspace/story.json --tts apple --duration 60s`. For text input, use `--input source.md --director local --tts kokoro --voice af_heart` with installed optional models. Python 3.9+, Git and the normal runtime prerequisites are required. Invoke the script by absolute path from any working directory; it resolves its own software checkout.
+On macOS, use `python3 scripts/agent-explainer.py doctor --workspace /absolute/private/workspace` followed by `build --workspace ... --manifest /absolute/private/workspace/story.json --tts apple --duration 60s`. For text input, use `--input source.md --director local --tts kokoro --voice af_heart` with installed optional models. Python 3.9+, Git and the normal runtime prerequisites are required. Invoke the script by absolute path from any working directory; it resolves its own software checkout.
+
+For Linux v0.3.0, follow the [Kokoro setup and agent commands](linux.md#private-workspaces-and-agent-builds) with a prepared manifest or `--director template`.
 
 ## Common job contract
 
