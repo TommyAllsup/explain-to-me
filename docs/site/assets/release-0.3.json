@@ -1,0 +1,45 @@
+{
+  "release": "0.3.0",
+  "source": {
+    "file": "explain-to-me-v0.3-the-latest-release.mp4",
+    "bytes": 60876671,
+    "sha256": "f4d09e5603cd585f2bb5e7e8fd87a91957d25af4bc9dd7f12bc91eefd8f25ff4"
+  },
+  "web": {
+    "file": "explain-to-me-v0.3.mp4",
+    "bytes": 14169695,
+    "sha256": "8a9cd4ebba598b4e3e4a645402051c42792f5a2946469d9396efac74dcb11540"
+  },
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "side_data_list": [
+          {}
+        ]
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "227.669000"
+    }
+  },
+  "poster": {
+    "file": "release-0.3.jpg",
+    "sourceTimeSeconds": 8
+  },
+  "webEncoding": {
+    "video": "H.264, 1280x720, CRF 23",
+    "audio": "AAC 128 kbit/s",
+    "fastStart": true
+  },
+  "note": "User-supplied release film; web version is compressed for playback. Original available as a v0.3.0 GitHub release asset. No caption sidecar supplied; the unrelated 0.2 caption track is not attached."
+}

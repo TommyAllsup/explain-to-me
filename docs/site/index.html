@@ -9,7 +9,7 @@
     <meta property="og:description" content="Meet v0.3.0: review scripts before speech, preview narration, choose pacing, and add a local soundtrack. Standard Windows setup keeps the Kokoro workflow.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tommyallsup.github.io/explain-to-me/">
-    <meta property="og:image" content="https://tommyallsup.github.io/explain-to-me/assets/how-it-works.jpg">
+    <meta property="og:image" content="https://tommyallsup.github.io/explain-to-me/assets/release-0.3.jpg">
     <title>Explain-to-Me — Give your docs a speaking part</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
@@ -33,27 +33,26 @@
       <main id="main">
         <section class="hero" aria-labelledby="hero-title">
           <div class="hero-copy">
-            <p class="eyebrow"><span class="release-dot" aria-hidden="true"></span> V0.3.0 · SCRIPT, PACE & SOUNDTRACK</p>
+            <p class="eyebrow"><span class="release-dot" aria-hidden="true"></span> V0.3.0 · SCRIPT, PACE &amp; SOUNDTRACK</p>
             <h1 id="hero-title">Give your docs<br> a <span class="speaking">speaking</span><br> part<span class="orange">.</span></h1>
-            <p class="hero-description">Turn local documents into narrated, captioned explainer videos. For the big ideas that deserve more than another wall of text.</p>
+            <p class="hero-description">Review the script. Preview the voice. Choose the pace and add a soundtrack. Turn your local documents into an explainer worth pressing play on.</p>
             <div class="hero-actions">
               <a class="button button-dark" href="#quickstart">Make your first movie <span aria-hidden="true">↗</span></a>
               <a class="text-link" href="#agent-installer">Give your agent the setup <span aria-hidden="true">↗</span></a>
             </div>
-            <p class="hero-meta">Windows + macOS <span aria-hidden="true">✳</span> Local-first <span aria-hidden="true">✳</span> MIT project code</p>
+            <p class="hero-meta">Windows + macOS + Linux/Kokoro <span aria-hidden="true">✳</span> Local-first <span aria-hidden="true">✳</span> MIT project code</p>
           </div>
 
           <div class="hero-stage" id="watch">
             <div class="stage-doodle doodle-star" aria-hidden="true">✳</div>
             <span class="sticker">less “huh?”<br> more “aha!”</span>
             <figure class="video-frame">
-              <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>the extremely helpful picture show</span><span aria-hidden="true">✦</span></div>
-              <video id="explainer-video" controls playsinline preload="metadata" poster="assets/how-it-works.jpg" aria-label="Watch the historical v0.2.0 Explain-to-Me introduction">
-                <source src="assets/explain-to-me-v0.2.mp4" type="video/mp4">
-                <track kind="captions" src="assets/captions.vtt" srclang="en" label="English">
-                Your browser cannot play this video. <a href="https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4">Download the introduction.</a>
+              <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>0.3 · the latest release</span><span aria-hidden="true">✦</span></div>
+              <video id="explainer-video" controls playsinline preload="metadata" poster="assets/release-0.3.jpg" aria-label="Watch Explain-to-Me 0.3 — The Latest Release">
+                <source src="assets/explain-to-me-v0.3.mp4" type="video/mp4">
+                Your browser cannot play this video. <a href="https://github.com/TommyAllsup/explain-to-me/releases/download/v0.3.0/explain-to-me-v0.3-the-latest-release.mp4">Download the release video.</a>
               </video>
-              <figcaption><span><span class="tiny-star" aria-hidden="true">✷</span> The original v0.2.0 introduction.</span><a href="https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4">Download film <span aria-hidden="true">↓</span></a></figcaption>
+              <figcaption><span><span class="tiny-star" aria-hidden="true">✷</span> 0.3 · The Latest Release · 3:48</span><a href="https://github.com/TommyAllsup/explain-to-me/releases/download/v0.3.0/explain-to-me-v0.3-the-latest-release.mp4">Download film <span aria-hidden="true">↓</span></a></figcaption>
             </figure>
             <div class="stage-caption"><svg viewBox="0 0 74 45" fill="none" aria-hidden="true"><path d="M69 4C55 36 29 37 8 27m0 0 8-4m-8 4 5 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>press play. bring your brain.</div>
           </div>
@@ -67,11 +66,11 @@
           <div class="section-heading"><div><p class="eyebrow">A SMALL PRODUCTION LINE FOR BIG IDEAS</p><h2 id="how-title">From brain dump<br> to brain <span class="serif-word">click.</span></h2></div><p>You bring the idea. Explain-to-Me gives it a script, a voice, and a timeline you can actually inspect.</p></div>
           <ol class="pipeline">
             <li><span class="step-number">01</span><div class="step-illustration document-art" aria-hidden="true"><div class="mini-doc"><b></b><i></i><i></i><i></i><span>hello, idea!</span></div><span class="art-spark">✧</span></div><h3>Feed it a document</h3><p>Start with Markdown, plain text, or a prepared production manifest. Your source stays on your machine during local processing.</p><span class="step-tag">.md · .txt · manifest.json</span></li>
-            <li><span class="step-number">02</span><div class="step-illustration plan-art" aria-hidden="true"><div class="plan-row"><b>01</b><span></span><i>✓</i></div><div class="plan-row"><b>02</b><span></span><i>✓</i></div><div class="plan-row"><b>03</b><span></span><i>✓</i></div></div><h3>Give the idea a plan</h3><p>On Windows, select document material with template direction or use a prepared manifest. Review the script and scenes before sharing.</p><span class="step-tag">A script you can read & revise</span></li>
-            <li><span class="step-number">03</span><div class="step-illustration voice-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><i>♪</i></div><h3>Let the words drive</h3><p>Local Kokoro voices narrate on Windows. Apple speech is available on macOS. Measured audio sets the scene timing and captions.</p><span class="step-tag">Real narration. Measured timing.</span></li>
-            <li><span class="step-number">04</span><div class="step-illustration movie-art" aria-hidden="true"><div class="mini-movie"><span>▶</span><i></i></div><b>ta-da!</b></div><h3>Hit play. Have an aha.</h3><p>Get a captioned MP4, narration audio, the manifest, and a validation report. Watch it, listen, and make the final human call.</p><span class="step-tag">video.mp4 + all the receipts</span></li>
+            <li><span class="step-number">02</span><div class="step-illustration plan-art" aria-hidden="true"><div class="plan-row"><b>01</b><span></span><i>✓</i></div><div class="plan-row"><b>02</b><span></span><i>✓</i></div><div class="plan-row"><b>03</b><span></span><i>✓</i></div></div><h3>Give the idea a plan</h3><p>Save an editable plan before speech or rendering. Read and revise the narration and scenes, then preview the voice before a full build.</p><span class="step-tag">A script you can read & revise</span></li>
+            <li><span class="step-number">03</span><div class="step-illustration voice-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><i>♪</i></div><h3>Let the words drive</h3><p>Choose local Kokoro narration, or Apple speech on macOS. Set project, scene or passage pacing; measured speech drives captions and timing.</p><span class="step-tag">Real narration. Measured timing.</span></li>
+            <li><span class="step-number">04</span><div class="step-illustration movie-art" aria-hidden="true"><div class="mini-movie"><span>▶</span><i></i></div><b>ta-da!</b></div><h3>Hit play. Have an aha.</h3><p>Add one local music track with fades and narration ducking. Get the captioned MP4, separate audio stems, manifest and validation report.</p><span class="step-tag">video.mp4 + all the receipts</span></li>
           </ol>
-          <p class="production-note"><span aria-hidden="true">✳</span> The film above is the original v0.2.0 introduction, with custom cartoons and music. Its Mac setup walkthrough predates Windows support. The v0.3.0 CLI renders technical-whiteboard scenes at 720p / 24 fps and adds optional animated Claudia; the introduction's custom cartoons are separate production work. Saved projects now support one local music track.</p>
+          <p class="production-note"><span aria-hidden="true">✳</span> The new release film introduces the 0.3 workflow. The CLI produces technical-whiteboard scenes at 720p / 24 fps, with optional animated Claudia. The film’s custom presentation design is separate from the CLI renderer. <a href="https://github.com/TommyAllsup/explain-to-me/releases/tag/v0.3.0">Read the release notes.</a></p>
         </section>
 
         <section class="quickstart-section section-space" id="quickstart" aria-labelledby="quickstart-title">
@@ -95,6 +94,15 @@ node --input-type=module -e 'import {ensureBrowser} from "@remotion/renderer"; a
 node scripts/explain.mjs doctor
 node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --tts apple --voice Samantha --duration 60s --output out/first-movie
 open out/first-movie/video.mp4</code></pre></div><a class="text-link" href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/docs/quick-install.md">Full macOS installation guide <span aria-hidden="true">↗</span></a></div></details>
+        </section>
+
+        <section class="section-space" id="saved-projects" aria-labelledby="project-title">
+          <div class="section-heading"><div><p class="eyebrow">NEW IN 0.3 · MAKE IT YOUR TAKE</p><h2 id="project-title">Review first.<br> <span class="serif-word">Then roll.</span></h2></div><p>Keep your source, voice, pacing and music in one local project. Edit the plan before expensive production, and retain earlier outputs.</p></div>
+          <div class="example-list">
+            <article><span class="example-symbol mint" aria-hidden="true">✓</span><div><p class="example-label">YOUR SCRIPT, BEFORE SPEECH</p><h3>Plan → review → preview → build.</h3><p>Edit the saved manifest and audition a short narration excerpt using the same voice, pronunciations and pace as the full movie.</p></div><a href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/docs/projects.md">Try saved projects <span aria-hidden="true">↗</span></a></article>
+            <article><span class="example-symbol peach" aria-hidden="true">♪</span><div><p class="example-label">A SOUNDTRACK THAT KNOWS ITS PLACE</p><h3>Change the music. Keep the work.</h3><p>One local track, gain, ducking and fades. A music-only revision reuses narration and rendered frames, with separate narration, music and mixed stems.</p></div><a href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/docs/projects.md#soundtrack-outputs-and-revisions">Explore soundtrack settings <span aria-hidden="true">↗</span></a></article>
+          </div>
+          <p class="small-copy">On Linux? <a href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/docs/linux.md">Follow the Kokoro setup guide</a> for prepared manifests and template direction.</p>
         </section>
 
         <section class="agent-section section-space" id="agent-installer" aria-labelledby="agent-title">
@@ -134,7 +142,7 @@ Automated QC is separate from my approval of the script and finished movie.</pre
           </div>
         </section>
 
-        <aside class="honest-note" aria-labelledby="honest-title"><div class="note-face" aria-hidden="true">☺</div><div><h2 id="honest-title">A friendly tool. Clear release boundaries.</h2><p>v0.3.0 supports Windows 11 x64 with Kokoro narration and template direction or prepared manifests. Optional Claudia adds Chatterbox speech, lip sync, expressions, and gestures after separate advanced Windows/CUDA setup. Native local AI direction and Windows ARM64 are deferred. macOS keeps its Apple speech path. Setup downloads tools and models; whole-process network isolation remains unverified. Review the script, captions, and finished movie.</p><p>Project code is MIT-licensed; dependencies, model weights, voices, and assets have their own terms. <a href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/THIRD_PARTY_NOTICES.md">Read the third-party notices <span aria-hidden="true">↗</span></a></p></div></aside>
+        <aside class="honest-note" aria-labelledby="honest-title"><div class="note-face" aria-hidden="true">☺</div><div><h2 id="honest-title">A friendly tool. Clear release boundaries.</h2><p>v0.3.0 supports Windows 11 x64 with Kokoro narration and template direction or prepared manifests. Optional Claudia adds Chatterbox speech, lip sync, expressions, and gestures after separate advanced Windows/CUDA setup. Native Windows local AI direction and Windows ARM64 are deferred. macOS supports Apple speech and Kokoro; Linux uses the documented Kokoro/template path. Saved projects add script review, narration previews, chosen pacing and one local music track. Setup downloads tools and models; whole-process network isolation remains unverified. Review the script, captions, and finished movie.</p><p>Project code is MIT-licensed; dependencies, model weights, voices, and assets have their own terms. <a href="https://github.com/TommyAllsup/explain-to-me/blob/v0.3.0/THIRD_PARTY_NOTICES.md">Read the third-party notices <span aria-hidden="true">↗</span></a></p></div></aside>
 
         <section class="closing" aria-labelledby="closing-title"><span class="closing-star" aria-hidden="true">✳</span><p class="eyebrow">ALL RIGHT. YOUR IDEA HAS THE FLOOR.</p><h2 id="closing-title">Go make something<br> make <span class="serif-word">sense.</span></h2><a class="button button-dark" href="https://github.com/TommyAllsup/explain-to-me">Get Explain-to-Me on GitHub <span aria-hidden="true">↗</span></a><p>Made by <a href="https://github.com/TommyAllsup">Tommy Allsup</a>, for the joy of a good explanation.</p></section>
       </main>
