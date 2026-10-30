@@ -2,17 +2,19 @@
 
 In 0.2.5, animated Claudia is an optional part of the normal build. Complete the separate advanced [Windows/CUDA runtime setup](claudia-setup.md), then pass `--presenter claudia` to the CLI or agent wrapper. A manifest can also select `visual.presenter.character: "claudia"` per supported scene. Automatic voice/backend selection uses the accepted Chatterbox/Bella profile; requested duration is advisory for its natural delivery. See the [presenter workflow](claudia.md) for outputs, scene selection, and the still-image pack alternative. The tag-pinned installation instructions below use Kokoro and do not install Chatterbox.
 
-## Windows v0.2.5
+## Windows v0.2.6
 
-Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-025-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.
+Start with the [tag-pinned installer prompt](install-windows-agent.txt) in an existing Codex, Claude Code, or other local terminal-capable harness. [Agent setup examples](quick-install.md#windows-026-with-codex-or-claude-code) describe that workflow. The prompt installs Explain-to-Me; it does not install or reconfigure the harness.
 
-On Windows 11 x64, clone `v0.2.5` and run `node scripts/setup.mjs` once, then use the setup-created `.venv-kokoro/Scripts/python.exe` with `scripts/agent-explainer.py`. No global Python, pnpm, uv, or FFmpeg installation is needed. Select `--tts kokoro` and `--director template` for document inputs. Prepared manifests bypass direction. Native Windows local AI direction is deferred.
+On Windows 11 x64, clone `v0.2.6` and run `node scripts/setup.mjs` once, then use the setup-created `.venv-kokoro/Scripts/python.exe` with `scripts/agent-explainer.py`. No global Python, pnpm, uv, or FFmpeg installation is needed. Select `--tts kokoro` and `--director template` for document inputs. Prepared manifests bypass direction. Native Windows local AI direction is deferred.
 
 The launcher uses Windows Job Objects for owned cleanup and sets the job's `TEMP`, `TMP`, and `TMPDIR`. See [Windows setup](windows.md) for exact commands and supported local paths. Scoped harness approval may be needed for setup downloads, private workspace access, Chromium/media execution, or Windows directory protection. Report the blocked operation when policy prevents it; do not change unrelated harness settings.
 
-## macOS release workflow
+## macOS and Linux release workflows
 
-Use `python3 scripts/agent-explainer.py doctor --workspace /absolute/private/workspace` followed by `build --workspace ... --manifest /absolute/private/workspace/story.json --tts apple --duration 60s`. For text input, use `--input source.md --director local --tts kokoro --voice af_heart` with installed optional models. Python 3.9+, Git and the normal runtime prerequisites are required. Invoke the script by absolute path from any working directory; it resolves its own software checkout.
+On macOS, use `python3 scripts/agent-explainer.py doctor --workspace /absolute/private/workspace` followed by `build --workspace ... --manifest /absolute/private/workspace/story.json --tts apple --duration 60s`. For text input, use `--input source.md --director local --tts kokoro --voice af_heart` with installed optional models. Python 3.9+, Git and the normal runtime prerequisites are required. Invoke the script by absolute path from any working directory; it resolves its own software checkout.
+
+For Linux v0.2.6, follow the [Kokoro setup and agent commands](linux.md#private-workspaces-and-agent-builds) with a prepared manifest or `--director template`.
 
 ## Common job contract
 

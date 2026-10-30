@@ -114,7 +114,7 @@ async function doctor(args: string[]): Promise<void> {
   if (args.length > 0) throw new Error("doctor does not accept additional arguments");
   const statuses: { name: string; path: string | null; ready: boolean; optional?: boolean; detail?: string }[] = [];
   statuses.push({ name: "Node.js >=24", path: process.execPath, ready: Number(process.versions.node.split(".")[0]) >= 24, detail: process.versions.node });
-  statuses.push({ name: "Supported platform (macOS / Windows x64)", path: null, ready: process.platform === "darwin" || (process.platform === "win32" && process.arch === "x64"), detail: `${process.platform}/${process.arch}` });
+  statuses.push({ name: "Supported platform (macOS / Windows x64 / Linux)", path: null, ready: process.platform === "darwin" || process.platform === "linux" || (process.platform === "win32" && process.arch === "x64"), detail: `${process.platform}/${process.arch}` });
   for (const name of ["ffmpeg", "ffprobe"]) {
     const path = findExecutable(name);
     let detail = "";
@@ -166,6 +166,8 @@ async function doctor(args: string[]): Promise<void> {
     optional: selected !== "apple",
     detail: voiceSampleCount > 0 ? `${voiceSampleCount} samples synthesized` : voiceSampleError || "synthesis produced no PCM samples",
   });
+  } else {
+    statuses.push({ name: "Apple speech", path: null, ready: false, optional: true, detail: "macOS-only; use --tts kokoro --voice af_heart" });
   }
   const localDirector = localDirectorReadiness();
   statuses.push({ name: "Local model director", path: null, ready: localDirector.ready, optional: true, detail: localDirector.reason });
@@ -200,11 +202,16 @@ async function doctor(args: string[]): Promise<void> {
   process.stdout.write([
     "",
     "Setup guidance (setup may download dependencies; doctor does not install anything):",
-    "  Node.js: use version 24 or newer. Supported platforms: macOS and Windows x64.",
+    "  Node.js: use version 24 or newer. Supported platforms: macOS, Windows x64, and Linux.",
     ...(process.platform === "win32" ? [
       "  Windows: run node scripts/setup.mjs to prepare Kokoro, the browser, and the launcher. FFmpeg is bundled with Remotion.",
       "  Kokoro is required on Windows. Setup prepares its isolated Python environment and downloads the pinned model/voices.",
       "  Use a prepared manifest or --director template; native Windows local AI direction is deferred.",
+    ] : process.platform === "linux" ? [
+      "  Linux: install FFmpeg/ffprobe with your distribution's package manager and ensure both are on PATH.",
+      "  Kokoro is required on Linux: install Python 3 and uv, then run python3 scripts/setup-kokoro.py.",
+      "  Browser: follow docs/linux.md for one-time Remotion Headless Shell setup and system libraries; builds never download it.",
+      "  Use --tts kokoro --voice af_heart with a prepared manifest or --director template; Apple speech is macOS-only.",
     ] : [
       "  ffmpeg/ffprobe: install FFmpeg, e.g. brew install ffmpeg on macOS with Homebrew.",
       "  Apple speech: check say -v '?' and install the Samantha voice in macOS settings if missing.",
