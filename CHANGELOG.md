@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — 2026-10-30
+
+- Versioned local projects bind source/manifest, direction, narration, pacing, music and output settings.
+- Plan and edit scripts before speech or rendering; audition short narration previews through the same production preparation and caches.
+- Passage > scene > project pacing survives sentence splitting. Chosen pace controls measured timing; opt-in strict duration checks fail with recovery guidance without retiming speech.
+- Optional connected Kokoro delivery preserves scene context and measured passage boundaries.
+- One local soundtrack with gain, narration ducking and fades; separate narration/music/mixed stems and rights provenance. Music-only revisions reuse narration and rendered frames.
+- Canonical project/plan image boundaries reject external assets-directory symlink escapes.
+- Existing legacy duration fitting and optional Claudia/Chatterbox production remain supported.
+- Includes the 0.2.6 Linux preflight repair and required Kokoro checks, with Linux setup guidance.
+
 ## 0.2.6 — 2026-10-30
 
 - Fix `doctor` rejecting Linux despite an available Kokoro build path. Linux now passes the platform check while Kokoro readiness, synthesis, media tools, and browser checks remain required.

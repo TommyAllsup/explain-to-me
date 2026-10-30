@@ -7,6 +7,12 @@ import { fileURLToPath } from "node:url";
 import { ContentAddressedCache, type CacheStats } from "../../assets/src/cache.js";
 import type { NarrationChunk } from "../../contracts/src/production-manifest.js";
 import { narrationDurationError } from "./duration-error.js";
+import { assertPacedDuration, type DurationPolicy } from "./pacing.js";
+import {
+  CONNECTED_CACHE_NAMESPACE, CONNECTED_GROUPING_POLICY, connectedCacheInput, connectedGroupText, connectedSpokenText, connectedSynthesisBatches,
+  decodeConnectedAudio, encodeConnectedAudio, validateConnectedDelivery, validateConnectedGroups, validatePassageTimings,
+  type ConnectedAudio, type ConnectedDelivery, type ConnectedGroup, type ConnectedPassageTiming,
+} from "./connected.js";
 
 const SAMPLE_RATE = 24_000;
 const MIN_SPEED = 0.8;
@@ -38,13 +44,14 @@ export interface KokoroAttempt {
 
 export interface KokoroOutput {
   pcmPath: string;
-  chunks: { id: string; samples: number }[];
+  chunks: { id: string; samples: number; speed?: number; pace?: number }[];
   totalSamples: number;
   durationMs: number;
   attempts: KokoroAttempt[];
   speed: number;
   engine: string;
   cacheStats: CacheStats;
+  synthesisWorkCount: number;
   provenance: Record<string, unknown>;
 }
 
@@ -113,8 +120,15 @@ export function kokoroSmokeCheck(): { ready: boolean; reason: string } {
 
 export async function synthesizeKokoro(
   chunks: NarrationChunk[], voice: string, targetDurationMs: number, workDir: string, cacheDir?: string,
+  pacedRequest?: { policy: DurationPolicy; defaultPace: number; paceByChunkId: Record<string, number> },
+  connected?: { delivery: ConnectedDelivery; groups: ConnectedGroup[] },
 ): Promise<KokoroOutput> {
   validateChunks(chunks);
+  if (connected) {
+    if (!pacedRequest) throw new Error("Connected delivery requires explicit project pacing; legacy duration correction is unchanged");
+    validateConnectedDelivery(connected.delivery);
+    validateConnectedGroups(connected.groups, chunks, pacedRequest.paceByChunkId, pacedRequest.defaultPace);
+  }
   const runtime = runtimeMetadata ?? readRuntimeMetadata();
   const [modelSha256, voicesSha256, pythonSha256, adapterSha256, bridgeSha256] = await Promise.all([
     hashFile(MODEL), hashFile(VOICES), hashFile(PYTHON), hashFile(fileURLToPath(import.meta.url)), hashFile(BRIDGE),
@@ -130,6 +144,7 @@ export async function synthesizeKokoro(
   };
   const identity = {
     modelSha256, voicesSha256, runtime, adapterSha256, bridgeSha256,
+    ...(connected ? { connectedSha256: await hashFile(fileURLToPath(new URL("./connected.ts", import.meta.url))) } : {}),
     environment: {
       platform: process.platform, architecture: process.arch, node: process.version,
       pythonExecutableSha256: pythonSha256, onnxProvider: process.env.ONNX_PROVIDER ?? null,
@@ -138,13 +153,38 @@ export async function synthesizeKokoro(
     },
   };
   const cache = new ContentAddressedCache(cacheDir ?? join(PROJECT_ROOT, ".explain-to-me/cache/audio"));
+  if (pacedRequest) {
+    const output = connected
+      ? await synthesizeConnected(connected.groups, connected.delivery, voice, workDir, cache, identity)
+      : await synthesizeAtSpeed(chunks, voice, pacedRequest.defaultPace, workDir, 1, cache, identity, pacedRequest.paceByChunkId);
+    const durationMs = output.totalSamples / SAMPLE_RATE * 1_000;
+    assertPacedDuration(pacedRequest.policy, durationMs, targetDurationMs);
+    return {
+      ...output, durationMs, speed: pacedRequest.defaultPace,
+      attempts: [{ attempt: 1, speed: pacedRequest.defaultPace, sampleCount: output.totalSamples, durationMs, withinTolerance: Math.abs(durationMs - targetDurationMs) <= DURATION_TOLERANCE_MS }],
+      engine: `kokoro-onnx ${runtime.packages["kokoro-onnx"]}`, cacheStats: cache.snapshotStats(),
+      provenance: {
+        ...provenance, durationPolicy: pacedRequest.policy, paceByChunkId: pacedRequest.paceByChunkId,
+        ...(connected ? {
+          delivery: connected.delivery, groupingPolicy: CONNECTED_GROUPING_POLICY,
+          timingMethod: "kokoro-native-phoneme-start-boundaries", synthesisWorkUnit: "connected-group",
+          groups: connected.groups.map((group) => ({
+            id: group.id, passageIds: group.chunks.map((chunk) => chunk.id), speed: group.speed,
+            samples: output.chunks.filter((chunk) => group.chunks.some((passage) => passage.id === chunk.id)).reduce((sum, chunk) => sum + chunk.samples, 0),
+          })),
+        } : {}),
+      },
+    };
+  }
   const attempts: KokoroAttempt[] = [];
   let speed = 1;
-  let last: Pick<KokoroOutput, "pcmPath" | "chunks" | "totalSamples"> | undefined;
+  let last: Pick<KokoroOutput, "pcmPath" | "chunks" | "totalSamples" | "synthesisWorkCount"> | undefined;
   let durationMs = 0;
+  let synthesisWorkCount = 0;
 
   for (let attempt = 1; attempt <= MAX_CORRECTIONS + 1; attempt += 1) {
     const audio = await synthesizeAtSpeed(chunks, voice, speed, workDir, attempt, cache, identity);
+    synthesisWorkCount += audio.synthesisWorkCount;
     durationMs = audio.totalSamples / SAMPLE_RATE * 1_000;
     const withinTolerance = Math.abs(durationMs - targetDurationMs) <= DURATION_TOLERANCE_MS;
     attempts.push({ attempt, speed, sampleCount: audio.totalSamples, durationMs, withinTolerance });
@@ -165,17 +205,97 @@ export async function synthesizeKokoro(
     speed: attempts.at(-1)!.speed,
     engine: `kokoro-onnx ${runtime.packages["kokoro-onnx"]}`,
     cacheStats: cache.snapshotStats(),
+    synthesisWorkCount,
     provenance,
   };
+}
+
+async function synthesizeConnected(
+  groups: ConnectedGroup[], delivery: ConnectedDelivery, voice: string, workDir: string,
+  cache: ContentAddressedCache, identity: Record<string, unknown>,
+): Promise<Pick<KokoroOutput, "pcmPath" | "chunks" | "totalSamples" | "synthesisWorkCount">> {
+  const keyed = groups.map((group) => ({ group, key: cache.key(CONNECTED_CACHE_NAMESPACE, connectedCacheInput(group, delivery, voice, identity)) }));
+  const loaded = await Promise.all(keyed.map(async (item) => ({ ...item, envelope: await cache.read(item.key) })));
+  const missing = loaded.filter((item) => item.envelope === null);
+  const audioByGroup = new Map<string, ConnectedAudio>();
+  for (const item of loaded) {
+    if (item.envelope !== null) audioByGroup.set(item.group.id, decodeConnectedAudio(item.envelope, item.group.chunks.map((chunk) => chunk.id)));
+  }
+
+  if (missing.length > 0) {
+    await mkdir(workDir, { recursive: true });
+    const runDir = join(workDir, `kokoro-${randomUUID()}`);
+    await mkdir(runDir);
+    try {
+      let outputIndex = 0;
+      const missingById = new Map(missing.map((item) => [item.group.id, item]));
+      for (const batchGroups of connectedSynthesisBatches(missing.map((item) => item.group))) {
+        const speed = batchGroups[0]!.speed;
+        const batch = batchGroups.map((group) => missingById.get(group.id)!);
+        const requests = batch.map(({ group }) => ({
+          id: group.id, text: connectedGroupText(group),
+          outputPath: join(runDir, `group-${String(++outputIndex).padStart(3, "0")}.pcm`),
+          passages: group.chunks.map((chunk) => ({ id: chunk.id, text: connectedSpokenText(chunk) })),
+        }));
+        const stdout = runBridge(JSON.stringify({ modelPath: MODEL, voicesPath: VOICES, voice, speed, delivery, chunks: requests }));
+        const reported = parseConnectedBridgeResult(stdout, batch.map((item) => item.group));
+        for (const [index, request] of requests.entries()) {
+          const pcm = validatePcm(await readFile(request.outputPath), request.id);
+          const report = reported.get(request.id)!;
+          if (report.samples !== pcm.byteLength / 2) throw new Error(`Kokoro returned inconsistent sample count for connected group ${request.id}`);
+          const audio = { pcm, passages: report.passages };
+          await cache.write(batch[index]!.key, encodeConnectedAudio(audio, request.passages.map((passage) => passage.id)));
+          audioByGroup.set(request.id, audio);
+        }
+      }
+    } finally {
+      await rm(runDir, { recursive: true, force: true });
+    }
+  }
+
+  const measured: KokoroOutput["chunks"] = [];
+  const parts: Buffer[] = [];
+  for (const group of groups) {
+    const audio = audioByGroup.get(group.id);
+    if (!audio) throw new Error(`Kokoro did not return audio for connected group ${group.id}`);
+    // Preserve contiguous model audio byte-for-byte; measured boundaries only assign
+    // its samples to original passage IDs for timelines and captions.
+    parts.push(audio.pcm);
+    measured.push(...audio.passages.map((passage) => ({ ...passage, speed: group.speed, pace: group.speed })));
+  }
+  const combined = Buffer.concat(parts);
+  await mkdir(workDir, { recursive: true });
+  const pcmPath = join(workDir, `narration-kokoro-${randomUUID()}-connected.pcm`);
+  await writeFile(pcmPath, combined);
+  return { pcmPath, chunks: measured, totalSamples: combined.byteLength / 2, synthesisWorkCount: missing.length };
+}
+
+export function parseConnectedBridgeResult(stdout: string, expectedGroups: ConnectedGroup[]): Map<string, { samples: number; passages: ConnectedPassageTiming[] }> {
+  let payload: unknown;
+  try { payload = JSON.parse(stdout); } catch (error) { throw new Error(`Kokoro bridge returned invalid JSON: ${message(error)}`); }
+  if (!isRecord(payload) || !Array.isArray(payload.chunks) || payload.chunks.length !== expectedGroups.length) throw new Error("Kokoro bridge returned invalid connected group coverage");
+  const result = new Map<string, { samples: number; passages: ConnectedPassageTiming[] }>();
+  for (const [index, item] of payload.chunks.entries()) {
+    const group = expectedGroups[index]!;
+    if (!isRecord(item) || item.id !== group.id || result.has(group.id) || item.sampleRate !== SAMPLE_RATE
+      || !Number.isSafeInteger(item.samples) || (item.samples as number) < 1) throw new Error("Kokoro bridge returned invalid connected group metadata or order");
+    result.set(group.id, {
+      samples: item.samples as number,
+      passages: validatePassageTimings(item.passages, group.chunks.map((chunk) => chunk.id), item.samples as number),
+    });
+  }
+  return result;
 }
 
 async function synthesizeAtSpeed(
   chunks: NarrationChunk[], voice: string, speed: number, workDir: string, attempt: number,
   cache: ContentAddressedCache, identity: Record<string, unknown>,
-): Promise<Pick<KokoroOutput, "pcmPath" | "chunks" | "totalSamples">> {
+  paceByChunkId?: Record<string, number>,
+): Promise<Pick<KokoroOutput, "pcmPath" | "chunks" | "totalSamples" | "synthesisWorkCount">> {
   const keyed = chunks.map((chunk) => ({
     chunk,
-    key: cache.key("kokoro-pcm-chunk-v1", { backend: "kokoro", ...identity, voice, text: spokenText(chunk), speed, sampleRate: SAMPLE_RATE }),
+    speed: paceByChunkId?.[chunk.id] ?? speed,
+    key: cache.key("kokoro-pcm-chunk-v1", { backend: "kokoro", ...identity, voice, text: spokenText(chunk), speed: paceByChunkId?.[chunk.id] ?? speed, sampleRate: SAMPLE_RATE }),
   }));
   const loaded = await Promise.all(keyed.map(async (item) => ({ ...item, pcm: await cache.read(item.key) })));
   const missing = loaded.filter((item) => item.pcm === null);
@@ -187,17 +307,23 @@ async function synthesizeAtSpeed(
     const runDir = join(workDir, `kokoro-${randomUUID()}`);
     await mkdir(runDir);
     try {
-      const requests = missing.map((item, index) => ({
-        id: item.chunk.id, text: spokenText(item.chunk), outputPath: join(runDir, `chunk-${String(index + 1).padStart(3, "0")}.pcm`),
-      }));
-      const input = JSON.stringify({ modelPath: MODEL, voicesPath: VOICES, voice, speed, chunks: requests });
-      const stdout = runBridge(input);
-      const reported = parseBridgeResult(stdout, missing.map((item) => item.chunk.id));
-      for (const [index, request] of requests.entries()) {
-        const pcm = validatePcm(await readFile(request.outputPath), request.id);
-        if (reported.get(request.id) !== pcm.byteLength / 2) throw new Error(`Kokoro returned inconsistent sample count for chunk ${request.id}`);
-        await cache.write(missing[index]!.key, pcm);
-        audioById.set(request.id, pcm);
+      // The existing bridge accepts one speed per batch. Group only uncached chunks,
+      // then restore reviewed order when concatenating; no PCM time stretching.
+      let outputIndex = 0;
+      for (const batchSpeed of new Set(missing.map((item) => item.speed))) {
+        const batch = missing.filter((item) => item.speed === batchSpeed);
+        const requests = batch.map((item) => ({
+          id: item.chunk.id, text: spokenText(item.chunk), outputPath: join(runDir, `chunk-${String(++outputIndex).padStart(3, "0")}.pcm`),
+        }));
+        const input = JSON.stringify({ modelPath: MODEL, voicesPath: VOICES, voice, speed: batchSpeed, chunks: requests });
+        const stdout = runBridge(input);
+        const reported = parseBridgeResult(stdout, batch.map((item) => item.chunk.id));
+        for (const [index, request] of requests.entries()) {
+          const pcm = validatePcm(await readFile(request.outputPath), request.id);
+          if (reported.get(request.id) !== pcm.byteLength / 2) throw new Error(`Kokoro returned inconsistent sample count for chunk ${request.id}`);
+          await cache.write(batch[index]!.key, pcm);
+          audioById.set(request.id, pcm);
+        }
       }
     } finally {
       await rm(runDir, { recursive: true, force: true });
@@ -209,14 +335,15 @@ async function synthesizeAtSpeed(
   for (const chunk of chunks) {
     const pcm = audioById.get(chunk.id);
     if (!pcm) throw new Error(`Kokoro did not return audio for chunk ${chunk.id}`);
-    measured.push({ id: chunk.id, samples: pcm.byteLength / 2 });
+    const pace = paceByChunkId?.[chunk.id];
+    measured.push({ id: chunk.id, samples: pcm.byteLength / 2, speed: pace ?? speed, ...(pace === undefined ? {} : { pace }) });
     parts.push(pcm);
   }
   const combined = Buffer.concat(parts);
   await mkdir(workDir, { recursive: true });
   const pcmPath = join(workDir, `narration-kokoro-${randomUUID()}-attempt-${attempt}.pcm`);
   await writeFile(pcmPath, combined);
-  return { pcmPath, chunks: measured, totalSamples: combined.byteLength / 2 };
+  return { pcmPath, chunks: measured, totalSamples: combined.byteLength / 2, synthesisWorkCount: missing.length };
 }
 
 function runBridge(input: string): string {

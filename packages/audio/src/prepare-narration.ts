@@ -32,18 +32,27 @@ interface PronunciationMatcher {
 
 export interface PreparedNarration {
   manifest: ProductionManifest;
+  /** Prepared chunk IDs retain their original reviewed passage identity after splitting. */
+  originByChunkId: Record<string, string>;
   stats: Record<string, number>;
   warnings: string[];
+}
+
+export interface NarrationPreparationOptions {
+  /** Keep reviewed speech in its original passage; display/speech boundaries may differ. */
+  preserveReviewedSpeech?: boolean;
 }
 
 export function prepareNarration(
   manifest: ProductionManifest,
   pronunciationMap?: Record<string, string>,
+  options: NarrationPreparationOptions = {},
 ): PreparedNarration {
   const matcher = createPronunciationMatcher(pronunciationMap);
   const originalIds = new Set(manifest.scenes.flatMap((scene) => scene.narration.map((chunk) => chunk.id)));
   const allocatedIds = new Set(originalIds);
   const warnings: string[] = [];
+  const originByChunkId: Record<string, string> = {};
   const warningSet = new Set<string>();
   let originalChunks = 0;
   let normalizedChunks = 0;
@@ -58,7 +67,8 @@ export function prepareNarration(
 
     for (const chunk of scene.narration) {
       originalChunks += 1;
-      const displayParts = splitDisplayText(chunk.text);
+      const retainReviewedSpeech = options.preserveReviewedSpeech && chunk.spokenText !== undefined;
+      const displayParts = retainReviewedSpeech ? [chunk.text] : splitDisplayText(chunk.text);
       if (displayParts.length > 1) splitChunks += 1;
 
       let tokenStart = 0;
@@ -69,9 +79,9 @@ export function prepareNarration(
           : deriveChunkId(chunk.id, index + 1, allocatedIds);
         const tokenEnd = tokenStart + normalizeTokens(text).length;
         const speech = prepareSpeechText({
-          displayText: text,
-          ...(displayParts.length === 1 && chunk.spokenText !== undefined ? { existingSpokenText: chunk.spokenText } : {}),
-          preserveExistingSpokenText: matcher.rules.length === 0 && displayParts.length === 1,
+          sourceText: retainReviewedSpeech || (matcher.rules.length === 0 && displayParts.length === 1)
+            ? chunk.spokenText ?? text
+            : text,
           matcher,
         });
         pronunciationChanges += speech.replacements;
@@ -88,12 +98,13 @@ export function prepareNarration(
         }
 
         const outputChunk: NarrationChunk = { ...chunk, id, text };
-        if (speech.text !== text || (chunk.spokenText !== undefined && displayParts.length === 1 && matcher.rules.length === 0)) {
+        if (speech.text !== text || (chunk.spokenText !== undefined && displayParts.length === 1 && (matcher.rules.length === 0 || retainReviewedSpeech))) {
           outputChunk.spokenText = speech.text;
         } else {
           delete outputChunk.spokenText;
         }
         narration.push(outputChunk);
+        originByChunkId[id] = chunk.id;
         preparedParts.push({ id, text, tokenStart, tokenEnd });
         tokenStart = tokenEnd;
       }
@@ -131,6 +142,7 @@ export function prepareNarration(
 
   return {
     manifest: { ...manifest, scenes },
+    originByChunkId,
     stats: { originalChunks, normalizedChunks, splitChunks, pronunciationChanges, remappedCues },
     warnings,
   };
@@ -248,17 +260,13 @@ function deriveChunkId(originalId: string, part: number, allocatedIds: Set<strin
 }
 
 function prepareSpeechText(options: {
-  displayText: string;
-  existingSpokenText?: string;
-  preserveExistingSpokenText: boolean;
+  sourceText: string;
   matcher: PronunciationMatcher;
 }): { text: string; replacements: number; neutralizedAppleMarkup: boolean } {
   let replacements = 0;
-  let text = options.preserveExistingSpokenText && options.existingSpokenText !== undefined
-    ? options.existingSpokenText
-    : options.displayText;
+  let text = options.sourceText;
 
-  if (!options.preserveExistingSpokenText && options.matcher.pattern) {
+  if (options.matcher.pattern) {
     text = text.replace(options.matcher.pattern, (matched) => {
       const rule = options.matcher.rules.find(({ term }) => term.toLocaleLowerCase("en") === matched.toLocaleLowerCase("en"));
       if (!rule) return matched;

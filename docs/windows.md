@@ -1,20 +1,44 @@
-# Explain-to-Me 0.2.6 on Windows
+# Explain-to-Me 0.3.0 on Windows
 
-Version **0.2.6** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
+Version **0.3.0** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
 
 Introduced in 0.2.5, optional animated Claudia comes with Chatterbox narration, lip sync, expressions, and gestures. It requires the separate advanced [Claudia setup](claudia-setup.md) on Windows with NVIDIA CUDA. The ordinary installer and commands below still use Kokoro; they do not install Chatterbox.
 
+## Saved projects in 0.3
+
+The [project workflow](projects.md) uses the same installed Kokoro and media tools. It is included in the tag-pinned 0.3.0 checkout below, alongside the optional Claudia integration. Choose `narration.backend: "kokoro"` and `narration.voice: "af_heart"` in the saved project; use prepared manifests or `direction.mode: "template"` for documents. For animated Claudia, follow the [project compatibility settings](projects.md#animated-claudia-in-a-saved-project) after the separate Chatterbox setup: select Claudia in the manifest, use backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, and keep natural pace without Kokoro delivery settings.
+
+```powershell
+node scripts/create-example-project.mjs --output out/measured-walk
+node scripts/explain.mjs plan --project out/measured-walk/project.json --output out/measured-walk/plan
+# Review/edit plan/manifest.json before synthesizing speech.
+node scripts/explain.mjs preview --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/preview
+node scripts/explain.mjs build --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/movie
+Start-Process out/measured-walk/movie/video.mp4
+```
+
+Inside project JSON, use forward-slash paths relative to the project file, including paths with spaces/non-ASCII names. Existing local-drive and reparse-point restrictions apply. Chosen pacing controls measured duration; optional strict checking fails instead of adjusting it. `audio.wav` stays narration-only; music adds `music.wav` and `mixed.wav`. The mixer uses bounded PCM processing and the bundled media decoder, avoiding reliance on optional FFmpeg mixing filters.
+
+Native Windows 11 x64 project builds with Kokoro and separately configured Chatterbox passed the [Claudia merge verification](benchmarks/0.3-claudia-merge.md), including music-only reuse and strict-duration failures. On a prepared Windows machine, `node scripts/verify-project.mjs --tts kokoro --output out/project-verification-kokoro` repeats the Kokoro media/cache checks. Human listening and viewing approval remains separate. See [project settings and limitations](projects.md).
+
+Optional `narration.delivery` settings use the same Kokoro adapter for connected
+phrasing and bounded sentence/clause pauses. They require native model duration
+output; pronunciation/alignment failures are explicit. Preview retains full scene
+context and extracts measured passages. This refinement has macOS evidence only;
+native Windows verification remains pending. Captions are drawn into the MP4,
+without a duplicate selectable subtitle track; SRT/VTT remain separate files.
+
 ## Let your local agent install it
 
-Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-026-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
+Give an existing Codex or Claude Code session the [Windows installer prompt](install-windows-agent.txt). The agent needs local terminal access to this Windows computer; a chat without that access cannot perform the installation. See [agent setup](quick-install.md#windows-030-with-codex-or-claude-code) for examples. This installs Explain-to-Me, using the agent harness you already have.
 
 ## Install once
 
 Install [Node.js 24 LTS or newer with npm](https://nodejs.org/en/download) and [Git for Windows](https://git-scm.com/downloads/win). Open a new PowerShell terminal after installing Node, then:
 
 ```powershell
-git clone --branch v0.2.6 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.6
-cd explain-to-me-v0.2.6
+git clone --branch v0.3.0 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.3.0
+cd explain-to-me-v0.3.0
 git rev-parse HEAD
 node scripts/setup.mjs
 ```
@@ -87,4 +111,4 @@ Setup needs download access and write access to the checkout. Agent jobs also ne
 
 The recorded Windows validation encountered sandbox denials for Chromium/media execution and directory access-control changes. If that happens, inspect the exact error and request approval for the specific setup or build command and required directories, according to the harness and organization policy. Running an approved command as the ordinary Windows user is separate from administrator elevation. If policy prevents the needed operation, report it and let the user run the documented command in PowerShell. Keep unrelated permissions and protections in place.
 
-The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.2.6 release notes](releases/0.2.6.md) describe the shipped scope and remaining limits.
+The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.3.0 release notes](releases/0.3.0.md) describe the shipped scope and remaining limits.

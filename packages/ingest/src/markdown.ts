@@ -37,6 +37,8 @@ export interface SourceDocument {
 
 export interface LoadDocumentOptions {
   projectRoot?: string;
+  /** Saved projects constrain every resolved image to their canonical root. */
+  restrictToProjectRoot?: boolean;
 }
 
 const MAX_SOURCE_BYTES = 256 * 1024;
@@ -75,7 +77,9 @@ export async function loadDocument(inputPath: string, options: LoadDocumentOptio
 
   const sourceDirectory = await realpath(join(sourcePath, ".."));
   const projectAssets = await optionalAssetsRoot(options.projectRoot ?? process.cwd());
-  const roots = [sourceDirectory, ...(projectAssets ? [projectAssets] : [])];
+  const roots = options.restrictToProjectRoot
+    ? [await realpath(options.projectRoot ?? process.cwd())]
+    : [sourceDirectory, ...(projectAssets ? [projectAssets] : [])];
   const lines = sourceLines(source);
   const warnings: string[] = [];
   const parsedImages = extension === ".md" ? collectImages(lines) : [];
@@ -137,7 +141,9 @@ export async function resolveManifestAssets(
   if (!(await stat(inputPath)).isFile()) throw new Error("Prepared manifest input must be a regular file");
   const sourceDirectory = await realpath(join(inputPath, ".."));
   const projectAssets = await optionalAssetsRoot(options.projectRoot ?? process.cwd());
-  const roots = [sourceDirectory, ...(projectAssets ? [projectAssets] : [])];
+  const roots = options.restrictToProjectRoot
+    ? [await realpath(options.projectRoot ?? process.cwd())]
+    : [sourceDirectory, ...(projectAssets ? [projectAssets] : [])];
   const entries = manifest.assets ?? [];
   if (entries.length > MAX_IMAGES) throw new Error(`Manifest may reference at most ${MAX_IMAGES} assets`);
   const seenIds = new Set<string>();

@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "manifest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "additionalProperties": false
+    },
+    "direction": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "mode": {
+          "default": "auto",
+          "type": "string",
+          "enum": [
+            "auto",
+            "template",
+            "local"
+          ]
+        },
+        "audience": {
+          "default": "software engineers",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "style": {
+          "default": "friendly technical whiteboard",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      },
+      "additionalProperties": false
+    },
+    "narration": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "backend": {
+          "default": "auto",
+          "type": "string",
+          "enum": [
+            "auto",
+            "apple",
+            "kokoro",
+            "chatterbox"
+          ]
+        },
+        "voice": {
+          "default": "auto",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "pronunciations": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "pacing": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "default": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0.65,
+              "maximum": 1.25
+            },
+            "scenes": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "minimum": 0.65,
+                "maximum": 1.25
+              }
+            },
+            "passages": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+              },
+              "additionalProperties": {
+                "type": "number",
+                "minimum": 0.65,
+                "maximum": 1.25
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "connected"
+            },
+            "sentencePauseMs": {
+              "default": 250,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "clausePauseMs": {
+              "default": 100,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 500
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "music": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "gainDb": {
+          "default": -24,
+          "type": "number",
+          "minimum": -60,
+          "maximum": 0
+        },
+        "duckingDb": {
+          "default": -8,
+          "type": "number",
+          "minimum": -30,
+          "maximum": 0
+        },
+        "fadeInMs": {
+          "default": 1000,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "fadeOutMs": {
+          "default": 1000,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "holder": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            },
+            "license": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "profile": {
+          "default": "preview",
+          "type": "string",
+          "const": "preview"
+        },
+        "directory": {
+          "default": "outputs",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "desiredDurationMs": {
+          "default": 60000,
+          "type": "integer",
+          "minimum": 10000,
+          "maximum": 600000
+        },
+        "durationPolicy": {
+          "default": "paced",
+          "type": "string",
+          "enum": [
+            "paced",
+            "strict"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "title",
+    "input"
+  ],
+  "additionalProperties": false,
+  "$comment": "Runtime validation additionally enforces exactly one input, portable bounded relative paths, nonblank text, pronunciation uniqueness/combined limits, pacing override counts, narrator voice/delivery compatibility, and total serialized bytes. Passage keys identify original reviewed-manifest narration chunks before preparation. Plan validation resolves animated Claudia to Chatterbox and requires natural pace (1) for every effective passage."
+}

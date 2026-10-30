@@ -1,30 +1,39 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v0.2.5 releases the bounded [Claudia integration](docs/plans/0.2.5-claudia-integration.md), following the v0.2.1 Windows patch release. The owner authorized its merge and release on 2026-10-22. The 0.3 narration/music work remains separate and in progress. Broader milestones remain proposed, not blanket implementation authorization.
-**Baseline:** v0.1.0, tagged at `1d62754`.
+**Status:** v0.3.0 is the current release: saved projects, editable plans before speech, narration previews, deliberate pacing and one local soundtrack. Later milestone numbers and scope remain proposed.
+**Baseline:** v0.3.0, with macOS and Windows 11 x64 support within the documented feature matrix; Claudia's optional runtime has separate Windows/CUDA setup requirements.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
 **Tech stack:** Existing TypeScript/Node/pnpm pipeline, React/Remotion adapter, FFmpeg/ffprobe, local narration and direction adapters.
 
-> This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan only for the next approved slice. Historical implementation plans and benchmark records remain evidence, not an instruction to execute every deferred idea.
+> This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan for the next approved slice. Historical plans and benchmark records remain evidence with their original limits, not an instruction to execute every deferred idea.
 
-## Current release: v0.2.5 — Claudia joins the app
+## Current release: v0.3.0 — Review the script, choose the pace, add music
+
+Saved projects separate planning from production, preserve reviewed passage pacing,
+and reuse narration and frames for music-only revisions. See the
+[release notes](docs/releases/0.3.0.md), [project guide](docs/projects.md), and
+[verification record](docs/benchmarks/0.3-project-results.md).
+
+## Previous release: v0.2.5 — Claudia joins the app
 
 Animated Claudia is an optional presenter in ordinary builds, using the selected local Chatterbox voice and fresh audio alignment. Existing Apple/Kokoro and still-presenter paths remain supported. See the [release notes](docs/releases/0.2.5.md), [setup](docs/claudia-setup.md), and [validation record](docs/benchmarks/claudia-0.2.5.md).
 
 ## Previous release: v0.2.1 — Windows installation and local agent workflow
 
-Windows 11 x64 now has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
+Windows 11 x64 has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
 
-Native Windows local AI direction, ARM64, whole-process egress proof, general music/cartoon controls, and the broader review/project workflow remain deferred. The v0.2.1 package number does not mean the historical product milestones below have all shipped. Their original numbers describe the earlier planning sequence; scope future release tags separately.
+macOS retains Apple speech, optional Kokoro, prepared manifests, template direction and the optional local AI director. Native Windows local AI direction, ARM64, whole-process egress proof and general cartoon controls remain deferred. Saved projects, narration controls and one-track music shipped in 0.3.0 below. Supported platforms need not have identical optional backends; document and test the supported paths explicitly.
 
 ## What 1.0 means
 
-A user on the documented supported platform can install the tool, provide local material, review and revise a story, choose narration and visuals, add optional music, and export a usable captioned video through documented commands. Revisions preserve approved work and rebuild only affected stages. The workflow does not require hand-editing private scripts or an agent repairing every build.
+A user on a supported platform can install the tool, provide local Markdown/plain text or a prepared manifest, review and revise a story, choose narration and visuals, add optional local music, and export a usable captioned video through documented commands. Revisions preserve approved work and rebuild only affected stages. The workflow does not require private production scripts or an agent repairing every build.
 
-This broader milestone means a dependable, bounded product—not every possible input, voice, effect or deployment platform. The v0.2.1 source supports macOS and Windows 11 x64; Windows uses Kokoro and template direction, with local AI direction deferred. See [Windows validation](docs/benchmarks/windows-support.md). Other platforms require separate validation. Repository visibility and software licensing are explicit owner decisions, not automatic consequences of completing a milestone.
+The supported matrix starts with macOS and Windows 11 x64. Windows uses Kokoro and template direction; native local AI direction remains deferred. The stable release includes the bounded project/review workflow, narration and one-track music controls, two visual styles, and preview/delivery output. New document formats, a Studio UI and platform/backend parity are separate work.
 
-## Baseline: 0.1 — Released
+## Completed foundation
+
+### 0.1 — Local production pipeline, released
 
 - Local Markdown/plain text and prepared manifests.
 - Local model-backed direction or explicitly extractive templates.
@@ -34,165 +43,159 @@ This broader milestone means a dependable, bounded product—not every possible 
 - Direction/speech/render caches, media validation and provenance.
 - Preview output at 720p/24 fps.
 
-Custom cartoons, imported music, human-selected sentence pacing and listening evaluations demonstrated a stronger production workflow, but are not general CLI features in 0.1. The approved custom video does not constitute acceptance of every CLI path.
+### 0.2 / 0.2.1 — Repeatable first run and Windows support, released
 
-## Release sequence
+- Public MIT-licensed project code, documented source installation and verified quickstarts.
+- Package-backed CLI version reporting, platform-aware doctor checks and actionable setup/duration diagnostics.
+- Private director socket fixes, static CI, clean-checkout fixtures and agent job integration.
+- Windows 11 x64 setup, Kokoro/template builds, owned-process cleanup and platform/file-boundary checks.
 
-### 0.2 — A repeatable first-run experience
+See the [0.2.0 release notes](docs/releases/0.2.0.md), [0.2.1 release notes](docs/releases/0.2.1.md), and [changelog](CHANGELOG.md). Project code licensing does not relicense dependencies, models, voices or supplied assets.
 
-**State:** Implemented and owner-reviewed; authorized for the first public release. See [release notes](docs/releases/0.2.0.md) for publication details.
+Custom cartoons, imported music and human-selected sentence pacing have demonstrated a stronger production workflow, but are not general v0.2.1 CLI features. A custom demonstration does not establish acceptance of every product path.
 
-**Outcome:** Install, diagnose prerequisites and build a first video without environment troubleshooting.
-
-- Integrate the already prepared portability/version/documentation fixes selectively; do not restart their development from scratch.
-- Clear setup versus offline execution, documented prerequisites and actionable doctor output.
-- Resolve the long-TMPDIR socket failure while retaining private Unix transport and owned cleanup.
-- Fix clean-checkout test assumptions; add lightweight static CI and package-backed CLI version reporting.
-- Improve infeasible-duration diagnostics and document a verified quickstart.
-
-**Done when:** A clean supported setup completes the documented example; missing prerequisites and infeasible targets produce useful errors; the existing golden paths remain working.
-
-### 0.2.5 — Claudia in ordinary builds
+### 0.2.5 — Claudia in ordinary builds, released
 
 **Scope:** Optional animated Claudia in the existing presenter panel, with the selected Bella-reference Chatterbox voice, fresh word/phoneme alignment, expressions, gaze, connected gestures, local setup diagnostics, and reproducible caches. Existing still presenters and narration backends remain supported.
 
 **Acceptance:** A neutral reviewed manifest completes the ordinary CLI pipeline with fresh speech and standard media QC, and a warm rebuild reuses speech and frames. Requested duration is advisory for natural-speed Chatterbox. See the [integration plan](docs/plans/0.2.5-claudia-integration.md) and [release notes](docs/releases/0.2.5.md).
 
-### 0.3 — Narration and music as product features
+## 0.3 — A saved project, a reviewed script, and a soundtrack, released
 
-**Outcome:** Reproduce the human-preferred soundtrack through supported configuration rather than custom scripts.
+**Outcome:** Reproduce the preferred narration-and-music workflow through supported commands, with a script review before expensive production.
 
-- Project-level voice, pronunciation and pace settings.
-- Per-scene/per-sentence pace overrides, including an explicit slower passage.
-- Short matched narration previews before committing to a full render.
-- Local music import, gain, narration ducking, looping/crossfades and start/end fades.
-- Narration/music stems and soundtrack-only rebuilds that preserve approved visuals.
-- Record music source and user-supplied rights information without implying automatic clearance.
+- Introduce a minimal versioned saved project for source/manifest bindings, direction hints, voice, pronunciations, pacing, one music track and output settings. Reuse the existing manifest and adapters; avoid a general editor or a second production engine.
+- Separate planning from narration/rendering. Save a reviewable script/scene plan before TTS so the user can inspect and edit it without completing a video.
+- Provide a short narration preview using the same preparation, pronunciation and pacing behavior as the full build.
+- Support project-level voice/pronunciation/pace and bounded scene/passage overrides, including an explicitly slower passage. Keep override identities stable through narration preparation.
+- In the new project workflow, approved pacing takes precedence over a desired running time. Strict duration fitting is opt-in; an infeasible combination must fail with measured recovery guidance rather than silently undo explicit pacing, truncate speech or add padding.
+- Preserve existing CLI behavior, including legacy duration-fitting commands. Document precedence among project defaults, explicit overrides, pacing and duration policy; do not silently change older invocations.
+- Import **one local music track** with gain, narration ducking and start/end fades. Keep narration/music stems and mixed output meanings explicit. Looping and crossfades are deferred.
+- Keep soundtrack configuration and cache identity separate from visual production so a music-only edit reuses narration and rendered frames. Preserve previous outputs.
+- Record music source, hashes and user-supplied rights information without implying automatic clearance. Apply bounded local-file and owned-process controls to new inputs and tools.
 
-**Done when:** A neutral example demonstrates normal pacing, a slower passage and background music without obscuring speech. A music-only edit does not regenerate narration or rendered frames. Previous outputs remain intact.
+**Done when:** One neutral saved project can be planned and reviewed before TTS, previewed, and rendered with normal narration, an explicitly slower passage and unobtrusive music. A music-only revision produces a new output with no TTS or frame-render work; a pacing revision updates the measured timeline/captions and invalidates dependent work correctly. Legacy examples retain their behavior.
 
-### 0.4 — Engaging explanatory visuals
+**Verification:** Use focused regressions and representative macOS and Windows 11 x64 builds for the supported backend combinations. Record commands, environment, cache behavior, media checks and human watch/listen results separately. If a platform or backend cannot be exercised, mark that verification unavailable with the reason; do not infer a pass from another platform. Native Windows local AI direction is outside this milestone.
 
-**Outcome:** Make the explanation easier to follow, not merely more decorative.
+## Proposed sequence after 0.3
 
-- A bounded, original upbeat animated style alongside technical-whiteboard.
-- Reusable motion vocabulary: progressive reveals, emphasis, movement along a process and purposeful transitions.
-- Process/flow diagrams and comparison/timeline layouts selected from validated scene primitives.
-- Code syntax/line emphasis and local image callouts, crop/pan/zoom.
-- Simple-English and attention-friendly presets that shorten language and segment ideas without losing qualifications.
-- Legibility rules, configurable motion intensity and a reduced-motion option.
+The following numbers describe a proposed order, not authorization to implement every milestone or a promise that all scopes will ship unchanged.
 
-**Done when:** The same reviewed story can render in both styles without changing claims, caption text or source references. Human review confirms readable information and helpful—not distracting—motion.
+### 0.4 — Review, approve and revise
 
-### 0.5 — Review, approve and revise
+**Outcome:** Make the complete revision loop understandable and dependable before adding another visual style.
 
-**Outcome:** Control the story before spending time on a complete video.
+- Expand the minimum 0.3 review step into script/storyboard inspection with source references, qualifications and uncertainty preserved.
+- Edit narration, scene choices, pronunciations and pacing through the documented project format.
+- Show what changed and which stages a revision invalidates; compare preserved versions and their outputs.
+- Persist human script/output review state separately from automated QC, tied to the version that was reviewed.
+- Treat simple-English or attention-friendly language presets as direction/review changes. They may rewrite narration and require fresh review; they are not renderer themes.
 
-- Separate direction/planning from narration and rendering.
-- Export a reviewable script/storyboard with source references, uncertainty and qualifications.
-- Edit and approve narration, scene choices, pronunciations and pacing through a documented project format.
-- Show what changed and which stages a revision invalidates.
-- Preserve approved versions and produce a new output rather than overwrite prior work.
-- Persist human review state separately from automated QC results.
+**Done when:** A user can correct one sentence or scene, inspect the affected work, rebuild and compare versions without losing prior outputs. Source mappings support inspection but never certify semantic correctness. A changed script cannot inherit approval by accident.
 
-**Done when:** A user can correct one sentence or scene, rebuild only affected work and compare versions. Source mappings aid review but are never presented as proof that generated claims are true.
+### 0.5 — Engaging explanatory visuals
 
-**Dependency note:** Source mappings and preservation already exist in parts of the pipeline. Introduce the minimum review configuration needed by 0.3/0.4 early; reserve the complete multi-step workflow for this release.
+**Outcome:** Make the same reviewed explanation easier and more enjoyable to follow.
 
-### 0.6 — Reusable projects and bounded local inputs
+- Add one bounded, original upbeat cartoon style alongside technical-whiteboard.
+- Use a small reusable motion vocabulary: progressive reveals, emphasis, process movement and purposeful transitions.
+- Extend validated scene primitives only where they improve explanations: diagrams/comparisons, code emphasis and local image callouts.
+- Enforce legibility and motion limits, including a reduced-motion option.
 
-**Outcome:** Reuse a production recipe and ingest common local material without opening arbitrary remote content.
+**Done when:** The same reviewed story renders in both styles without rewriting claims, captions or source references. Human review confirms readable information and helpful motion. Language rewriting remains part of direction/review, separate from style selection.
 
-- A versioned project configuration for source, audience, style, voice, music and output settings.
-- Reusable recipes for a technical walkthrough, concept lesson and simple-English explanation.
-- Local source-code files with explicit selection and exact preserved excerpts.
-- Local text-based PDF extraction with page references and clear failure/quality diagnostics.
-- Keep scanned-PDF OCR, arbitrary websites and browser automation outside this release.
+### 0.6 — 1080p delivery and faster iteration
 
-**Done when:** A saved project can be rebuilt from documented local inputs. New adapters preserve traceable source locations and reject unsupported or unsafe material clearly. Generated summaries remain reviewable.
+**Outcome:** Upgrade an approved project for delivery while keeping draft/revision work efficient.
 
-**Scope valve:** If either new input adapter materially delays the core workflow, move it after 1.0. Reliable Markdown/plain-text/projects are sufficient for the initial stable product.
+- Retain 720p/24 fps preview and add a documented 1080p/30 fps delivery profile.
+- Preserve the approved story, narration and captions across profile changes; recompute frame boundaries for the selected frame rate.
+- Extend existing stage timings, resource bounds, cache identity, diagnostics, cancellation and retry behavior where the new profiles require it.
+- Keep delivery resolution distinct from a future deadline-aware scheduling policy. No generated-asset scheduler is required for this release.
+- Measure cold/warm and preview/delivery behavior on named supported hardware, with preconditions and misses recorded.
 
-### 0.7 — Faster iteration and useful output profiles
+**Done when:** The same approved project produces valid preview and delivery outputs. Repeated builds reuse unchanged work; configuration changes invalidate only dependent stages. Performance results are observations, not universal latency promises.
 
-**Outcome:** Produce drafts quickly and upgrade the same approved project for delivery.
+### 0.7 — Offline, file-boundary and supported-matrix evidence
 
-- Retain 720p/24 fps preview; add a documented 1080p/30 fps delivery/fast profile.
-- Stage timings, explicit resource limits and deadline-aware optional-work policies.
-- Cancellation, retained diagnostics and safe retry/reuse of completed stages.
-- Strengthen cache identity when imported behavior/configuration changes.
-- A short feedback loop for narration/scene previews; avoid unnecessary full-video rerenders.
+**Outcome:** Close the cross-process evidence gaps for the supported product configuration.
 
-**Done when:** Preview and delivery use the same approved story. Unchanged warm builds avoid expensive synthesis and rendering; changed inputs invalidate the correct stages. Performance is measured on named hardware, not advertised universally.
+- Exercise whole-process offline execution under an external-egress deny/record harness, separately from permitted setup downloads.
+- Complete the bounded local-file and failure matrix for Markdown/plain text, manifests, approved images, project files and imported music.
+- Verify controlled subprocess environments, user-owned cleanup, cancellation and retained diagnostics across supported macOS/Windows paths.
+- Document the platform/backend matrix, including explicitly unavailable optional capabilities and any unverified paths.
+- Report dependency/model/renderer and imported-asset terms without conflating project code and model/asset permissions.
 
-**Targets:** Use the existing golden-fixture cold/warm targets in `docs/benchmarks/acceptance.md` as provisional goals. Record misses and preconditions; do not quietly redefine targets after measurement.
+**Done when:** Supported offline builds have recorded deny-harness evidence, critical boundary/failure cases have focused checks, and unsupported or unavailable paths are clear. Existing renderer request auditing remains distinct from whole-process egress evidence.
 
-### 0.8 — Trust, privacy and targeted quality checks
+**Dependency note:** Security and privacy work starts with each feature, not at 0.7. Earlier milestones must preserve existing controls and add focused checks for their new boundaries; this milestone closes the matrix and evidence gaps.
 
-**Outcome:** Know what the tool did, what it checked and what still needs human judgment.
+### 0.8 — Workflow hardening, examples and migration
 
-- Whole-process offline execution exercised under an external-egress deny/record harness, separate from permitted setup downloads.
-- Complete the local-file boundary and failure matrix for supported inputs.
-- Bounded file reads, controlled subprocess environments and user-owned cleanup.
-- Optional local transcript QC focused on missing/repeated speech, numbers and important qualifiers; handle ASR homophones as uncertain findings.
-- Reviewable narration-preview comparisons; automated naturalness scores are optional research, not an approval gate.
-- Report dependency/model/renderer and imported-asset license status without conflating code and model-weight permissions.
+**Outcome:** Make the chosen workflow reproducible without maintainer intervention.
 
-**Done when:** Supported offline builds have recorded deny-harness evidence; critical boundaries/failure paths have focused tests; uncertain ASR findings and manual review remain visibly distinct from automated passes.
+- Exercise short/long, image/code, narration/music, fallback, failed-stage and retry workflows within documented bounds.
+- Add a small set of neutral reusable example projects and clear troubleshooting/recovery guidance.
+- Harden source/project migration, cache invalidation and preserved-version behavior; extend existing cancellation/resource controls where concrete failures require it.
+- Document legacy-command compatibility and project/schema migration, including actionable errors for unsupported versions.
+- Maintain source/artifact provenance and explicitly separate automated checks, human review and unverified claims.
 
-**Dependency note:** Safety is not deferred until 0.8. Each earlier feature must preserve existing boundaries and add focused checks for its new inputs. This release closes the cross-process evidence gaps.
+**Done when:** Representative users or agents can install, revise and recover documented examples across the supported matrix, with no silent data loss or unexplained rebuilds. Migration and recovery paths have actual evidence.
 
 ### 0.9 — Release candidate
 
-**Outcome:** Stabilize the chosen 1.0 scope rather than add another feature wave.
+**Outcome:** Stabilize the selected 1.0 scope without adding another feature wave.
 
-- Freeze the public CLI/project schema and document migration from earlier projects.
-- Exercise clean installation and representative neutral projects across the supported environment matrix.
-- Complete short, long, image/code, music, fallback and failed-stage workflows within the documented bounds.
-- Record human approval of representative end-to-end outputs.
-- Publish release notes, troubleshooting, supported-platform limits and remaining known issues.
-- Decide distribution and software-license policy; keep commercial-use claims conditional on reviewed dependency terms.
+- Freeze the public CLI/project contracts and verify migration from earlier supported projects.
+- Run clean installations and representative neutral projects across the supported environment matrix.
+- Record human approval of representative end-to-end outputs alongside automated media/timing/caption checks.
+- Publish release notes, known issues, platform/backend limits and troubleshooting.
+- Confirm the existing MIT/source distribution policy and document separate dependency/model/asset terms and any remaining distribution limits. Do not imply blanket commercial-use clearance.
 
-**Done when:** No known critical safety defects, missing/repeated narration, broken supported quickstart or silent data loss remains. Documentation matches the shipped behavior; nonblocking limitations are explicit.
+**Done when:** No known critical safety defects, missing/repeated narration, broken supported quickstart or silent data loss remains. Documentation matches the shipped behavior; nonblocking limitations and unavailable verification are explicit.
 
 ### 1.0 — Stable local explainer workflow
 
 **Required release gates:**
 
-- A supported clean install and working documented first build.
-- A reviewed source-to-story-to-video workflow with revisions and preserved versions.
-- Supported narration controls, optional local music and both bounded visual styles.
-- Complete MP4/WAV/VTT/SRT/manifest/report outputs and documented preview/delivery profiles.
-- Correct cache invalidation and measurable repeat-build behavior; no promise of bit-identical cold TTS.
-- Offline and local-file-boundary evidence for the supported configuration.
+- A supported clean install and working documented first build on the declared macOS/Windows matrix.
+- A versioned saved project and reviewed source-to-story-to-video workflow with revisions and preserved versions.
+- Supported narration controls, an explicit slower passage, optional one-track local music, and both bounded visual styles.
+- Complete MP4/WAV/VTT/SRT/manifest/report outputs with clear narration/stem/mix meanings and documented preview/delivery profiles.
+- Correct cache invalidation and measurable repeat-build behavior, including music-only reuse; no promise of bit-identical cold TTS.
+- Whole-process offline and local-file-boundary evidence for the supported configuration.
 - Automated media/timing/caption checks plus separate human review on representative projects.
 - Stable CLI/project contracts, actionable errors, safe cancellation and migration guidance.
-- Explicit supported-platform, license and distribution statements.
+- Explicit supported-platform/backend, license and distribution statements.
 
-Tag 1.0 when these outcomes are demonstrated, not merely when the version sequence is exhausted.
+Tag 1.0 when these outcomes are demonstrated, not when every proposed feature or version number has been exhausted. Reassess scope at each milestone rather than expanding the release gates by accumulation.
 
 ## Explicitly after 1.0 unless reprioritized
 
+- New local PDF and source-code input adapters; scanned-PDF OCR and recorded-narration import/alignment.
 - Local Studio/desktop editing UI.
+- Native Windows local AI direction/backend parity, ARM64 and full Linux video-build support.
+- Music looping, crossfades and richer multi-track production.
 - Arbitrary remote webpages, authenticated browser captures and broad document ingestion.
-- Scanned-PDF OCR and recorded-narration import/alignment.
-- Word-by-word highlighting requiring validated word timing.
+- ASR/transcript QC, automated listening/naturalness research and word-aligned highlighting.
 - Generated images/B-roll, optional cloud adapters, and general avatar or consented voice-cloning workflows beyond the fixed Claudia profile authorized for 0.2.5.
 - General-purpose video editing, collaborative cloud projects and automatic publishing.
-- Default 4K and universal Windows/Linux support.
+- Default 4K, extensive animation primitives and deadline-aware optional-generation scheduling.
 - Alternative renderer implementation; bring its evaluation forward only if licensing or technical constraints block the selected 1.0 scope.
 
-## Delivery discipline
+## Evidence and delivery discipline
 
-- No dates or effort promises until the next milestone is scoped.
-- Implement one approved vertical slice at a time; do not start all milestone work in parallel.
-- Routine slices: focused tests plus typecheck; a representative render when media behavior changes.
-- Documentation/metadata-only changes do not justify new full-video builds.
-- Broad fault/egress/acceptance runs belong at the relevant milestone gates, not every commit.
-- Use existing review evidence when code is unchanged. Independent reviews are for substantive safety/architecture changes, not repeated ceremonial passes.
+- No dates or effort promises until the next milestone is scoped. Implement one approved vertical slice at a time.
+- Keep the validated manifest boundary, local adapters, measured audio timing and content-addressed caches. Avoid a second production engine for new workflows.
+- Preserve bounded/canonicalized local assets, controlled subprocess environments, private transport where applicable, owned-process cleanup and new-output protection. Extend checks with each new input or behavior.
+- Routine slices use focused tests plus typecheck and a representative render when media behavior changes. Documentation-only changes do not justify full-video builds.
+- Broader fault/egress/acceptance runs belong at their milestone gates. Use existing evidence for unchanged behavior; add checks for substantive new risks or regressions.
+- The [historical acceptance benchmark](docs/benchmarks/acceptance.md) retains its original scope and unimplemented assumptions. Carry forward useful media/timing invariants and provisional measurements; write current, scoped acceptance criteria for each new milestone instead of inheriting that entire contract.
+- Record actual commands, environment, outputs, limitations and unavailable verification. A configured workflow, a sampled frame or an automated pass is not full human approval.
 - Keep private production material, model weights and credentials out of source releases. Include only deliberately selected, documented demonstration media.
-- Preserve the historical v0.2.0 release and the authorized v0.2.1 Windows scope; future release scope still requires an owner decision.
+- Preserve the published v0.2.0/v0.2.1/v0.2.5 history. This roadmap authorizes no product implementation, commit, push, tag or publication by itself.
 
-## Next recommended slice
+## Next implementation slice
 
-Continue the separate 0.3 narration-pacing and imported-music work after the 0.2.5 Claudia release. Keep those boundaries explicit before expanding formats or building a UI.
+Scope the proposed 0.4 review-and-revision workflow before implementation. Preserve the released 0.3 project, narration, soundtrack, Claudia and legacy command behavior. General cartoon authoring and new input adapters remain later milestones.

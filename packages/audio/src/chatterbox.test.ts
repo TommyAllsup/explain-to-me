@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import type { AlignedNarrationChunk } from "../../contracts/src/narration-alignment.js";
+import { productionManifestSchema, type ProductionManifest } from "../../contracts/src/production-manifest.js";
 import { ContentAddressedCache } from "../../assets/src/cache.js";
 import { chatterboxReadiness, decodeChatterboxCache, encodeChatterboxCache, validateChatterboxAlignment, validateChatterboxChunks } from "./chatterbox.js";
-import { selectNarrationBackend } from "./synthesize.js";
+import { selectNarrationBackend, synthesizeNarration } from "./synthesize.js";
+import { assertChatterboxPacing, resolveChunkPacing } from "./pacing.js";
+import { prepareNarration } from "./prepare-narration.js";
 
 const pcm = Buffer.alloc(48_000, 32);
 const alignment: AlignedNarrationChunk = {
@@ -21,6 +24,34 @@ test("Chatterbox is explicit and never replaces ordinary auto narration", () => 
   assert.deepEqual(selectNarrationBackend("chatterbox", { chatterbox: { ready: true, reason: "ready" } }), { backend: "chatterbox", warnings: [] });
   assert.throws(() => selectNarrationBackend("chatterbox", { chatterbox: { ready: false, reason: "register the runtime" } }), /register the runtime/u);
   assert.equal(selectNarrationBackend("auto", { platform: "win32", kokoro: { ready: true, reason: "ready" }, chatterbox: { ready: true, reason: "ready" } }).backend, "kokoro");
+});
+
+test("Chatterbox checks effective saved-project pacing before loading its optional runtime", async () => {
+  const manifest = productionManifestSchema.parse(JSON.parse(await readFile(new URL("../../../fixtures/golden-manifests/whisper-vs-tts.json", import.meta.url), "utf8"))) as ProductionManifest;
+  manifest.scenes = [{ ...manifest.scenes[0]!, narration: [{ id: "reviewed", text: "A natural delivery. The timing follows the voice." }] }];
+  const prepared = prepareNarration(manifest);
+  const options = {
+    manifest: prepared.manifest, voice: "auto", backend: "chatterbox" as const,
+    targetDurationMs: 10_000, workDir: tmpdir(), passageOrigins: prepared.originByChunkId,
+  };
+  const previousConfig = process.env.EXPLAIN_TO_ME_CLAUDIA_CONFIG;
+  process.env.EXPLAIN_TO_ME_CLAUDIA_CONFIG = join(tmpdir(), "missing-claudia-pacing-check-a65fb43a.json");
+  try {
+    for (const pacing of [
+      { default: 0.9 },
+      { default: 1, scenes: { [manifest.scenes[0]!.id]: 0.9 } },
+      { default: 1, passages: { reviewed: 0.9 } },
+    ]) {
+      await assert.rejects(() => synthesizeNarration({ ...options, pacing }), /Claudia Chatterbox.*only pace 1/u);
+    }
+    const overriddenPace = { default: 0.9, passages: { reviewed: 1 } };
+    assert.doesNotThrow(() => assertChatterboxPacing(resolveChunkPacing(prepared.manifest, overriddenPace, prepared.originByChunkId)));
+    await assert.rejects(() => synthesizeNarration({ ...options, pacing: overriddenPace }), /Claudia Chatterbox backend is unavailable/u);
+    await assert.rejects(() => synthesizeNarration({ ...options, pacing: { default: 1 }, delivery: { mode: "connected", sentencePauseMs: 180, clausePauseMs: 80 } }), /Connected delivery requires Kokoro/u);
+  } finally {
+    if (previousConfig === undefined) delete process.env.EXPLAIN_TO_ME_CLAUDIA_CONFIG;
+    else process.env.EXPLAIN_TO_ME_CLAUDIA_CONFIG = previousConfig;
+  }
 });
 
 test("Chatterbox cache round-trip binds delivered PCM to exact spoken text and local intervals", async () => {

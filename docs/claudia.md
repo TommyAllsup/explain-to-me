@@ -2,7 +2,7 @@
 
 Claudia is an optional animated presenter in the normal explainer pipeline. She uses the selected **Bella-reference Chatterbox** voice, with lip sync, expressions, gaze, and connected gestures derived from each new recording. The model runs locally after explicit setup. The bundled character rig is credited to **Claudia by anabology**.
 
-This feature is available in [v0.2.5](releases/0.2.5.md). General voice pacing, music, and project configuration stay with the separate 0.3 work. The earlier videos remain experiments and review records.
+This feature is available in [v0.2.5](releases/0.2.5.md). Version 0.3.0 builds on it with [saved projects and optional music](projects.md); the historical 0.2.5 tag does not include project commands. The earlier videos remain experiments and review records.
 
 ## Build an animated explainer
 
@@ -29,6 +29,12 @@ Claudia selects `--tts chatterbox --voice chatterbox-bella` when the backend and
 Build outputs include the ordinary video, audio, captions, manifest, and report, plus `narration-alignment.json` and, for animated builds, `presenter-animation.json`. Word and phoneme timings are bound to the exact synthesized PCM. Pronunciation overrides change spoken alignment while preserving display captions. The original audition timing is not reused for new scripts.
 
 Review `video.mp4` before sharing: automatic alignment estimates phonemes and words; the phrase gestures are deterministic heuristics, not a semantic performance director. Unchanged speech/alignment and rendered frames can be reused from the normal cache. Rebuild an emitted `manifest.json` into another fresh directory to retain scene selection.
+
+## Claudia with saved projects and music (0.3)
+
+The [project workflow](projects.md#animated-claudia-in-a-saved-project) accepts Claudia selected in an input manifest or reviewed saved plan. Set project narration to backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, keep every effective pace at `1`, and omit Kokoro's `delivery` settings. Project commands select the presenter from the manifest; they do not accept `--presenter`. An incompatible backend, voice or pace is rejected.
+
+Preview and build share the same voice settings. Lip sync and expressions follow the unmixed Chatterbox narration; optional project music is mixed afterward. Music-only revisions reuse speech and frames. The project's optional `strict` duration policy checks the measured take without speeding it up or slowing it down. These commands require the 0.3 branch and the same optional local runtime setup described above.
 
 ## Still-image presenter packs
 

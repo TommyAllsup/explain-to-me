@@ -94,6 +94,7 @@ export interface ChatterboxOutput {
   speed: number;
   engine: string;
   cacheStats: CacheStats;
+  synthesisWorkCount: number;
   provenance: Record<string, unknown>;
 }
 
@@ -213,6 +214,7 @@ export async function synthesizeChatterbox(chunks: NarrationChunk[], voice: stri
     durationMode: "natural", alignment: { version: 1, chunks: items.map((item) => item.audio!.alignment) },
     attempts: [{ attempt: 1, speed: 1, sampleCount: totalSamples, durationMs, withinTolerance: Math.abs(durationMs - targetDurationMs) <= 1000 }],
     speed: 1, engine: "Chatterbox Original English 500M / chatterbox-tts 0.1.7",
+    synthesisWorkCount: missing.length,
     cacheStats: { hits: stats.hits - invalidPayloads, misses: stats.misses + invalidPayloads, writes: stats.writes, corruptions: stats.corruptions + invalidPayloads },
     provenance: { backend: "chatterbox", voice, ...identity, requestedDurationMs: targetDurationMs, measuredDurationMs: durationMs, durationMode: "natural", timing: "Exact delivered PCM; local per-chunk phoneme CTC with contextual eSpeak words", postProcessing: "Float master retained on generation; constant gain to -18 LUFS (under 400ms: -21dBFS RMS), limited to -1 dBFS peak; native Perth watermark retained; no time stretching" },
   };

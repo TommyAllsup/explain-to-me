@@ -1,6 +1,6 @@
 # Linux setup with Kokoro
 
-Version 0.2.6 fixes `doctor` rejecting Linux even when the Kokoro build prerequisites are present. The Linux workflow uses Kokoro narration with a prepared manifest or template-directed Markdown/plain text. Apple speech is macOS-only. `node scripts/setup.mjs` is the Windows installer; use the explicit Linux steps below.
+Version 0.3.0 includes the 0.2.6 fix for `doctor` rejecting Linux even when the Kokoro build prerequisites are present. The Linux workflow uses Kokoro narration with a prepared manifest or template-directed Markdown/plain text. Apple speech is macOS-only. `node scripts/setup.mjs` is the Windows installer; use the explicit Linux steps below.
 
 ## Prerequisites
 
@@ -16,8 +16,8 @@ Use a native Linux checkout and Linux executables throughout, including under WS
 Choose a new directory, then run:
 
 ```bash
-git clone --branch v0.2.6 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.6
-cd explain-to-me-v0.2.6
+git clone --branch v0.3.0 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.3.0
+cd explain-to-me-v0.3.0
 
 # Install the pinned package manager and project dependencies.
 npm exec --cache .cache/npm --yes --package=pnpm@10.18.3 -- pnpm install --frozen-lockfile
@@ -30,7 +30,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
 npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm explain-to-me doctor
 ```
 
-The version command should print `explain-to-me 0.2.6`. Kokoro setup verifies pinned model hashes and synthesizes a short sample. Doctor requires Kokoro readiness and a successful synthesis check on Linux, alongside the media tools and browser. Apple speech and the local director do not block this workflow. Doctor and builds do not install missing dependencies.
+The version command should print `explain-to-me 0.3.0`. Kokoro setup verifies pinned model hashes and synthesizes a short sample. Doctor requires Kokoro readiness and a successful synthesis check on Linux, alongside the media tools and browser. Apple speech and the local director do not block this workflow. Doctor and builds do not install missing dependencies.
 
 The cached `--offline` npm launcher refuses to download a missing pnpm launcher; it does not establish whole-process network isolation. Setup intentionally downloads dependencies, model assets, and the browser. See [third-party notices](../THIRD_PARTY_NOTICES.md) for their separate terms.
 
@@ -78,4 +78,4 @@ The launcher returns job JSON with output and diagnostic paths. For documents, p
 - Browser failure: rerun the explicit Headless Shell setup and inspect missing shared-library errors. An existing browser file alone does not prove that the OS can launch it.
 - Missing local director: use `--director template` or a prepared manifest. Local AI direction is outside this Linux setup path.
 
-The original [issue #1](https://github.com/TommyAllsup/explain-to-me/issues/1) reports a successful Arch Linux x64 golden-manifest build. This patch addresses preflight and guidance; it does not change audio encoding or certify all distributions, architectures, or playback devices. See [0.2.6 release notes](releases/0.2.6.md) for the verification record.
+The original [issue #1](https://github.com/TommyAllsup/explain-to-me/issues/1) reports a successful Arch Linux x64 golden-manifest build. The 0.2.6 patch addresses preflight and guidance; it does not change audio encoding or certify all distributions, architectures, or playback devices. See [0.2.6 release notes](releases/0.2.6.md) for the verification record.

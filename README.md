@@ -4,17 +4,19 @@
 
 Explain-to-Me turns local Markdown, plain text, or a reviewed script into narrated, captioned explainer videos. A local model can plan the story; deterministic scenes do the drawing; measured speech keeps the whole crew on time.
 
-**v0.2.6 · Windows x64 + macOS + Linux/Kokoro · TypeScript CLI · MIT project code**
+**v0.3.0 · Windows x64 + macOS + Linux/Kokoro · TypeScript CLI · MIT project code**
 
-Version 0.2.5 integrates [animated Claudia](docs/claudia.md) into normal builds with local Chatterbox speech, lip sync, expressions, and gestures. Claudia needs [optional local setup](docs/claudia-setup.md) in addition to the standard installation below. The separate 0.3 narration/music work remains in progress.
+Version 0.3.0 includes [animated Claudia](docs/claudia.md) into normal builds with local Chatterbox speech, lip sync, expressions, and gestures. Claudia needs [optional local setup](docs/claudia-setup.md) in addition to the standard installation below.
 
-Version 0.2.6 fixes Linux preflight: `doctor` accepts Linux with the required Kokoro narrator, media tools, and rendering browser. See the [Linux setup guide](docs/linux.md) for prepared-manifest and template builds.
+The [0.3 saved-project workflow](docs/projects.md) lets you review a script before speech, preview narration, choose pacing, and add one local music track. The quickstarts below use the 0.3.0 source release.
+
+Version 0.3.0 includes the Linux preflight fix from 0.2.6: `doctor` accepts Linux with the required Kokoro narrator, media tools, and rendering browser. See the [Linux setup guide](docs/linux.md) for prepared-manifest and template builds.
 
 [![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
 **[▶ Watch the getting-started movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
 
-*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 0.2.5 produces the technical-whiteboard style shown below; bespoke cartoons and soundtrack mixing are separate production work; animated Claudia is now available through the normal build. The movie's original Mac setup predates the Windows instructions below.*
+*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 0.3.0 produces the technical-whiteboard style shown below; the introduction’s bespoke cartoons are separate production work; local soundtrack mixing is supported in saved projects; animated Claudia is now available through the normal build. The movie's original Mac setup predates the Windows instructions below.*
 
 *Movie music: “Business As Usual” by tommyallsup.*
 
@@ -33,15 +35,15 @@ Your document → story manifest → local narration → measured timeline → v
 
 ![Actual technical-whiteboard output from the bundled caching example](docs/images/preview.png)
 
-*Real output, not a mockup. Version 0.2.5 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
+*Real output, not a mockup. Version 0.3.0 renders 1280 × 720 at 24 fps with the technical-whiteboard theme.*
 
 ## Windows: one setup command
 
-Version **0.2.6 supports Windows 11 x64 with Kokoro narration and template direction**. Install **Node.js 24+ with npm** and **Git**, then run these commands in PowerShell:
+Version **0.3.0 supports Windows 11 x64 with Kokoro narration and template direction**. Install **Node.js 24+ with npm** and **Git**, then run these commands in PowerShell:
 
 ```powershell
-git clone --branch v0.2.6 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.6
-cd explain-to-me-v0.2.6
+git clone --branch v0.3.0 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.3.0
+cd explain-to-me-v0.3.0
 node scripts/setup.mjs
 node scripts/explain.mjs build --manifest fixtures/golden-manifests/whisper-vs-tts.json --output out/first-movie
 Start-Process out/first-movie/video.mp4
@@ -55,7 +57,7 @@ For your own document:
 node scripts/explain.mjs build path/to/document.md --director template --duration 60s --output out/my-document
 ```
 
-Template direction selects source text; it does not summarize with an AI model. Native Windows local AI direction is deferred. Kokoro is the Windows narrator; Apple speech is available on macOS. See the [Windows setup and troubleshooting guide](docs/windows.md) for private workspaces, diagnostics, and supported paths, or [give your AI harness the installer prompt](#let-your-agent-handle-setup).
+Template direction selects source text; it does not summarize with an AI model. Native Windows local AI direction is deferred. Kokoro is the standard Windows narrator; animated Claudia uses the optional Chatterbox setup. Apple speech is available on macOS. See the [Windows setup and troubleshooting guide](docs/windows.md) for private workspaces, diagnostics, and supported paths, or [give your AI harness the installer prompt](#let-your-agent-handle-setup).
 
 <a id="quickstart-roll-your-first-tiny-movie"></a>
 
@@ -66,8 +68,8 @@ The first build uses a prepared manifest and Apple's installed voice. **No LLM o
 ### 1. Bring in the crew
 
 ```bash
-git clone --branch v0.2.6 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.6
-cd explain-to-me-v0.2.6
+git clone --branch v0.3.0 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.3.0
+cd explain-to-me-v0.3.0
 
 # Install the pinned package manager and project dependencies.
 npm exec --cache .cache/npm --yes --package=pnpm@10.18.3 -- pnpm install --frozen-lockfile
@@ -103,11 +105,11 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --tts kokoro --voice af_heart --duration 60s --output out/my-first-linux-explainer
 ```
 
-For Markdown/plain text, use `--director template --tts kokoro`. Apple speech is macOS-only, and `node scripts/setup.mjs` is the Windows installer. Linux preflight still fails when a required dependency or Kokoro synthesis check fails. The [release notes](docs/releases/0.2.6.md) distinguish regression coverage from the contributor's Linux media-build report.
+For Markdown/plain text, use `--director template --tts kokoro`. Apple speech is macOS-only, and `node scripts/setup.mjs` is the Windows installer. Linux preflight still fails when a required dependency or Kokoro synthesis check fails. The [0.2.6 patch release notes](docs/releases/0.2.6.md) distinguish regression coverage from the contributor's Linux media-build report.
 
 ## Three ways to explain a thing
 
-**Animated Claudia in 0.2.5:** after the optional local voice setup, use `--presenter claudia` in a normal build or select her in a reviewed manifest. [Try the example](docs/claudia.md). Local still-image presenter packs remain supported. See the [integration scope](docs/plans/0.2.5-claudia-integration.md).
+**Animated Claudia in 0.3.0:** after the optional local voice setup, use `--presenter claudia` in a normal build or select her in a reviewed manifest. [Try the example](docs/claudia.md). Local still-image presenter packs remain supported. See the [integration scope](docs/plans/0.2.5-claudia-integration.md).
 
 ### “Use this document. Keep setup simple.”
 
@@ -120,7 +122,7 @@ npm exec --cache .cache/npm --offline --yes --package=pnpm@10.18.3 -- pnpm expla
   --duration 60s --output out/document-template
 ```
 
-Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 0.2.6.
+Markdown supports headings, paragraphs, lists, fenced code, and bounded local PNG/JPEG/WebP references. Code and HTML stay inert. Web pages and PDFs aren't inputs in 0.3.0.
 
 ### “Let a local model direct it.”
 
@@ -157,23 +159,41 @@ Useful knobs:
 
 Run `pnpm explain-to-me --help` or `--version` through the cached launcher above. This is a source checkout CLI; no global executable or npm package is published.
 
+## Save a project and review before production (0.3)
+
+With the updated checkout installed, create the neutral example and save its editable plan:
+
+```sh
+node scripts/create-example-project.mjs --output out/measured-walk
+node scripts/explain.mjs plan --project out/measured-walk/project.json --output out/measured-walk/plan
+```
+
+Review and edit `plan/manifest.json`, then preview and build:
+
+```sh
+node scripts/explain.mjs preview --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/preview
+node scripts/explain.mjs build --project out/measured-walk/project.json --plan out/measured-walk/plan --output out/measured-walk/movie
+```
+
+Project pacing takes precedence over desired runtime; strict duration checking is opt-in. `audio.wav` remains narration; music projects also emit `music.wav` and `mixed.wav`. Music-only changes reuse speech and rendered frames. See [project settings, slower passages, soundtrack rights, revisions, and verification](docs/projects.md). Automated QC and human script/watch/listen approval remain separate.
+
 ## Let your agent handle setup
 
-Use your existing local coding agent to install v0.2.6 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
+Use your existing local coding agent to install v0.3.0 on Windows. Explain-to-Me is a local CLI, so any harness that can read files and run Windows commands can follow the same prompt; no Explain-to-Me plugin or cloud API key is required for the Kokoro/template pipeline.
 
 | Harness | Example |
 |---|---|
-| **Codex app or CLI** | Open a local Windows folder in Codex, or start `codex` there. Paste: “Install Explain-to-Me v0.2.6 on this Windows PC using the Windows installer prompt below, then make the bundled demo.” |
-| **Claude Code** | Open a local project in Claude Code, or start `claude` there. Paste: “Set up Explain-to-Me v0.2.6 on this Windows PC. Follow the Windows installer prompt below and return the demo video path.” |
+| **Codex app or CLI** | Open a local Windows folder in Codex, or start `codex` there. Paste: “Install Explain-to-Me v0.3.0 on this Windows PC using the Windows installer prompt below, then make the bundled demo.” |
+| **Claude Code** | Open a local project in Claude Code, or start `claude` there. Paste: “Set up Explain-to-Me v0.3.0 on this Windows PC. Follow the Windows installer prompt below and return the demo video path.” |
 | **Another local AI harness** | Give it the same prompt with local terminal/file access. A remote chat without access to this PC cannot install local tools. |
 
 Copy the full prompt below, or open the [plain-text installer prompt](docs/install-windows-agent.txt). It installs the ordinary Kokoro/template workflow; [animated Claudia needs additional local setup](docs/claudia-setup.md). Your harness may request scoped permission for setup downloads, workspace creation, or native Windows media processes. Follow its normal approval flow. [Codex Windows guidance](https://learn.chatgpt.com/docs/windows/windows-sandbox) · [Claude Code setup](https://code.claude.com/docs/en/setup).
 
 ```text
-Install Explain-to-Me v0.2.6 on this Windows x64 PC and make its first demo video.
+Install Explain-to-Me v0.3.0 on this Windows x64 PC and make its first demo video.
 Repository: https://github.com/TommyAllsup/explain-to-me
 
-1. Use a new checkout of tag v0.2.6 named explain-to-me-v0.2.6. Leave existing
+1. Use a new checkout of tag v0.3.0 named explain-to-me-v0.3.0. Leave existing
    projects unchanged. Read README.md, docs/windows.md, and
    docs/agent-integration.md at that tag before running setup.
 2. Check Node.js 24+ with npm and Git. Resolve missing prerequisites through
@@ -181,7 +201,7 @@ Repository: https://github.com/TommyAllsup/explain-to-me
 3. From the checkout, run node scripts/setup.mjs. It prepares the pinned package
    manager, local Python/Kokoro, render browser, and Windows launcher, and uses
    bundled FFmpeg. Do not install global Python/pnpm/FFmpeg or download a local
-   AI director. Verify node scripts/explain.mjs --version reports 0.2.6.
+   AI director. Verify node scripts/explain.mjs --version reports 0.3.0.
 4. Create a new private workspace outside the checkout. Copy the bundled
    fixtures/golden-manifests/whisper-vs-tts.json there as story.json. Follow
    docs/windows.md to run scripts/agent-explainer.py with the setup-created
@@ -203,7 +223,8 @@ Automated QC is separate from my approval of the script and finished movie.
 | File | Contents |
 |---|---|
 | `video.mp4` / `audio.wav` | The movie and narration audio. |
-| `captions.vtt` / `captions.srt` | Captions timed to measured sentence/phrase audio chunks. |
+| `music.wav` / `mixed.wav` | For 0.3 projects with music: processed music stem and narration-plus-music mix. |
+| `captions.vtt` / `captions.srt` | Separate caption files timed to measured sentence/phrase audio chunks. The MP4 draws captions into its frames without an additional selectable subtitle track. |
 | `manifest.json` | The validated script and scene plan. |
 | `report.json` | Automated media checks, timings, cache state, assets, and provenance. |
 
@@ -222,13 +243,13 @@ The macOS local model director uses a private Unix socket. The Windows and Linux
 
 Model output is constrained manifest data. Approved image paths are bounded, copied, and hash-checked. These controls aren't a sandbox guarantee. Automated checks and source mappings help inspection; they don't establish factual correctness, pleasant narration, or human approval. Watch and listen before sharing.
 
-General cartoon authoring, imported music, per-sentence pacing, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI aren't built-in 0.2.6 features. The [roadmap](ROADMAP.md) tracks what's next.
+Imported music and explicit pacing are available in the [0.3 project workflow](docs/projects.md). General cartoon authoring beyond the fixed Claudia presenter, word-aligned captions, ASR/listening review, PDF input, 1080p output, and a Studio UI remain deferred. The [roadmap](ROADMAP.md) tracks what's next.
 
 ## Help make the explanations better
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports, small fixes, and synthetic examples are welcome. Windows and Linux CI cover typechecking and unit tests; real narration/media builds need their own checks.
 
-- [Changelog](CHANGELOG.md) · [0.2.6 release notes](docs/releases/0.2.6.md)
+- [Changelog](CHANGELOG.md) · [0.3.0 release notes](docs/releases/0.3.0.md)
 - [Windows verification evidence](docs/benchmarks/windows-support.md) · [Acceptance targets](docs/benchmarks/acceptance.md)
 - [Agent integration](docs/agent-integration.md) · [System boundaries](docs/architecture/0001-system-boundaries.md) · [Renderer decision](docs/architecture/0002-renderer-selection.md)
 
