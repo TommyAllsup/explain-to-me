@@ -12,13 +12,11 @@ The [0.3 saved-project workflow](docs/projects.md) lets you review a script befo
 
 Version 0.3.0 includes the Linux preflight fix from 0.2.6: `doctor` accepts Linux with the required Kokoro narrator, media tools, and rendering browser. See the [Linux setup guide](docs/linux.md) for prepared-manifest and template builds.
 
-[![Watch the goofy Explain-to-Me getting-started video](docs/images/how-it-works.jpg)](https://tommyallsup.github.io/explain-to-me/)
+[![Watch Explain-to-Me 0.3 — The Latest Release](docs/site/assets/release-0.3.jpg)](https://tommyallsup.github.io/explain-to-me/)
 
-**[▶ Watch the getting-started movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
+**[▶ Watch the 0.3 release movie](https://tommyallsup.github.io/explain-to-me/)** · [Download the MP4](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.3.0/explain-to-me-v0.3-the-latest-release.mp4) · [Give your agent the installer prompt](#let-your-agent-handle-setup)
 
-*The v0.2.0 introduction gets a bespoke cartoon-and-music treatment; [its production source is here](scripts/release-video/README.md). Version 0.3.0 produces the technical-whiteboard style shown below; the introduction’s bespoke cartoons are separate production work; local soundtrack mixing is supported in saved projects; animated Claudia is now available through the normal build. The movie's original Mac setup predates the Windows instructions below.*
-
-*Movie music: “Business As Usual” by tommyallsup.*
+*The 0.3 release movie introduces saved projects, script review, narration previews, pacing and a local soundtrack. Its custom presentation design is separate from the CLI’s 720p/24 fps technical-whiteboard renderer and optional Claudia presenter. The [original 0.2 introduction](https://github.com/TommyAllsup/explain-to-me/releases/download/v0.2.0/explain-to-me-v0.2.mp4) remains available.*
 
 ## Meet your extremely small film crew
 
