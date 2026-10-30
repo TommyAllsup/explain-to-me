@@ -90,7 +90,7 @@ export function selectNarrationBackend(
     return { backend: "chatterbox", warnings: [] };
   }
   if (requested === "apple") {
-    if (platform !== "darwin") throw new Error("Apple narration requires macOS. Use --tts kokoro or --tts auto on Windows.");
+    if (platform !== "darwin") throw new Error("Apple narration requires macOS. Use --tts kokoro or --tts auto on Windows or Linux.");
     return { backend: "apple", warnings: [] };
   }
   const readiness = options.kokoro ?? kokoroReadiness();

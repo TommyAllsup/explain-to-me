@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.6 — 2026-10-30
+
+- Fix `doctor` rejecting Linux despite an available Kokoro build path. Linux now passes the platform check while Kokoro readiness, synthesis, media tools, and browser checks remain required.
+- Add Linux-specific setup guidance and a [Kokoro/template setup guide](docs/linux.md), preserving macOS Apple speech and Windows x64 behavior.
+- Add focused Linux preflight and narrator-selection regressions. Audio synthesis, encoding, timing, and rendering are unchanged.
+
+Adapted from [AstraeusDotDev's report and proposal](https://github.com/TommyAllsup/explain-to-me/issues/1), with the existing Windows support retained. See the [release notes](docs/releases/0.2.6.md) for validation and scope.
+
 ## 0.2.5 — 2026-10-22
 
 - Optional animated Claudia presenter in ordinary manifest and document builds, using the selected Bella-reference Chatterbox voice.

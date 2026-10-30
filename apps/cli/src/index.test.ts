@@ -56,6 +56,14 @@ test("doctor gives platform-specific recovery guidance with an empty PATH", () =
   if (process.platform === "win32") {
     assert.match(result.stdout, /node scripts\/setup\.mjs/u);
     assert.doesNotMatch(result.stdout, /Kokoro \(optional\)/u);
+  } else if (process.platform === "linux") {
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /OK {2}Supported platform.*Linux/u);
+    assert.match(result.stdout, /(?:OK|MISSING) {2}Kokoro neural narrator \(/u);
+    assert.match(result.stdout, /OPTIONAL {2}Apple speech \(optional\)/u);
+    assert.match(result.stdout, /Kokoro is required on Linux.*python3 scripts\/setup-kokoro\.py/u);
+    assert.match(result.stdout, /--director template/u);
+    assert.doesNotMatch(result.stdout, /brew install|Apple voice Samantha|Apple say 24|Kokoro \(optional\)/u);
   } else {
     assert.equal(result.status, 1);
     assert.match(result.stdout, /brew install ffmpeg/u);
