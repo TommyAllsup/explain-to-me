@@ -28,5 +28,12 @@ jobs:
           python-version: '3.11'
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm test
+      - name: Test (Linux)
+        if: runner.os != 'Windows'
+        run: pnpm test
+      # Each test file can launch PowerShell for reparse-point/ACL checks.
+      # Bound parallel files to avoid starving those checks on hosted Windows.
+      - name: Test (Windows, bounded process concurrency)
+        if: runner.os == 'Windows'
+        run: pnpm exec tsx --test --test-concurrency=2 packages/*/src/*.test.ts apps/*/src/*.test.ts
       - run: pnpm test:agent
