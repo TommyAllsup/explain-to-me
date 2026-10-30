@@ -1,6 +1,6 @@
-# Saved projects, reviewed scripts, and music (0.3 working tree)
+# Saved projects, reviewed scripts, and music (0.3)
 
-This unreleased workflow adds project JSON, a script review before speech, narration previews, chosen pacing, and one local music track. It builds on the released 0.2.5 Claudia integration and uses the existing 720p/24 fps technical-whiteboard renderer. The tag-pinned 0.2.5 quickstarts describe the published release; project commands require the 0.3 feature branch checkout.
+Version 0.3.0 adds project JSON, a script review before speech, narration previews, chosen pacing, and one local music track. It builds on the released 0.2.5 Claudia integration and uses the existing 720p/24 fps technical-whiteboard renderer. Use the tag-pinned 0.3.0 quickstarts to install this workflow.
 
 ## Plan, review, preview, build
 

@@ -1,7 +1,7 @@
-Install Explain-to-Me v0.2.5 on this Windows x64 PC and make its first demo video.
+Install Explain-to-Me v0.3.0 on this Windows x64 PC and make its first demo video.
 Repository: https://github.com/TommyAllsup/explain-to-me
 
-1. Use a new checkout of tag v0.2.5 named explain-to-me-v0.2.5. Leave existing
+1. Use a new checkout of tag v0.3.0 named explain-to-me-v0.3.0. Leave existing
    projects unchanged. Read README.md, docs/windows.md, and
    docs/agent-integration.md at that tag before running setup.
 2. Check Node.js 24+ with npm and Git. Resolve missing prerequisites through
@@ -9,7 +9,7 @@ Repository: https://github.com/TommyAllsup/explain-to-me
 3. From the checkout, run node scripts/setup.mjs. It prepares the pinned package
    manager, local Python/Kokoro, render browser, and Windows launcher, and uses
    bundled FFmpeg. Do not install global Python/pnpm/FFmpeg or download a local
-   AI director. Verify node scripts/explain.mjs --version reports 0.2.5.
+   AI director. Verify node scripts/explain.mjs --version reports 0.3.0.
 4. Create a new private workspace outside the checkout. Copy the bundled
    fixtures/golden-manifests/whisper-vs-tts.json there as story.json. Follow
    docs/windows.md to run scripts/agent-explainer.py with the setup-created

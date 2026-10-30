@@ -1,6 +1,6 @@
 # Architecture Decision 0003: Saved project and soundtrack boundaries
 
-- Status: implemented in the unreleased 0.3 working tree
+- Status: implemented in 0.3.0
 - Date: 2026-10-21
 - Scope: [implementation plan](../plans/0.3-saved-project.md)
 

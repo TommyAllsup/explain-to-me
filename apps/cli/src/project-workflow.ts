@@ -67,7 +67,7 @@ export async function createPlan(project: LoadedProject, output: string, cacheDi
   let manifest: ProductionManifest;
   let direction: Record<string, unknown> = { method: "prepared-manifest", warnings: [] };
   if (project.config.input.source) {
-    const document = await loadDocument(source.path, { projectRoot: project.root });
+    const document = await loadDocument(source.path, { projectRoot: project.root, restrictToProjectRoot: true });
     if (document.sha256 !== source.sha256) throw new Error("Project source changed during planning");
     const result = await directDocument(document, {
       mode: project.config.direction.mode, audience: project.config.direction.audience,
@@ -81,7 +81,7 @@ export async function createPlan(project: LoadedProject, output: string, cacheDi
   }
   manifest = productionManifestSchema.parse({ ...manifest, title: project.config.title, targetDurationMs: project.config.output.desiredDurationMs }) as ProductionManifest;
   // Resolve only source-approved assets, then copy them into the portable plan.
-  const assets = await resolveManifestAssets(manifest, source.path, { projectRoot: project.root });
+  const assets = await resolveManifestAssets(manifest, source.path, { projectRoot: project.root, restrictToProjectRoot: true });
   await withNewOutput(output, async (staging) => {
     if (assets.length) {
       await mkdir(join(staging, "assets"), { mode: 0o700 });
@@ -117,7 +117,7 @@ export async function loadPlan(project: LoadedProject, planPath: string): Promis
   validatePacing(project.config.narration.pacing, manifest);
   selectProjectNarration(project.config, manifest);
   // Validate plan assets even for preview; only the explicitly selected plan is read.
-  await resolveManifestAssets(manifest, join(planPath, "manifest.json"), { projectRoot: planPath });
+  await resolveManifestAssets(manifest, join(planPath, "manifest.json"), { projectRoot: planPath, restrictToProjectRoot: true });
   return { project, planPath, manifest, planSha256: saved.sha256, planRecordSha256: savedRecord.sha256, provenance: record };
 }
 

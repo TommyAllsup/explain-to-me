@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -187,4 +187,43 @@ test("plan assets with valid Windows device IDs receive portable filenames", asy
     assert.doesNotThrow(() => assertSupportedFilePath(asset.source, "win32"));
     assert.deepEqual(await readFile(join(planPath, asset.source)), image);
   } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+
+test("saved projects reject assets that resolve outside the project or selected plan", { skip: process.platform === "win32" }, async () => {
+  const root = await mkdtemp(join(tmpdir(), "etm-project-asset-boundary-"));
+  const outside = await mkdtemp(join(tmpdir(), "etm-outside-assets-"));
+  try {
+    const image = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jp1sAAAAASUVORK5CYII=", "base64");
+    await writeFile(join(outside, "private.png"), image);
+    const story = { ...manifest, assets: [{ id: "image", source: "assets/private.png",
+      sha256: createHash("sha256").update(image).digest("hex"), mimeType: "image/png" }] };
+    await writeFile(join(root, "story.json"), JSON.stringify(story));
+    await writeFile(join(root, "project.json"), JSON.stringify({ version: "1", title: "Bounded images", input: { manifest: "story.json" } }));
+    const project = await loadProject(join(root, "project.json"));
+    await symlink(outside, join(root, "assets"), "dir");
+    await assert.rejects(() => createPlan(project, join(root, "rejected-plan"), join(root, "cache")), /outside the approved local roots|Linked/);
+    assert.equal((await readdir(root)).includes("rejected-plan"), false);
+
+    // An initially safe plan must also reject an edited manifest pointing through
+    // its own assets symlink, including the legacy bare-filename fallback.
+    await writeFile(join(root, "story.json"), JSON.stringify(manifest));
+    const plan = join(root, "plan");
+    await createPlan(project, plan, join(root, "cache"));
+    await symlink(outside, join(plan, "assets"), "dir");
+    for (const source of ["assets/private.png", "private.png"]) {
+      await writeFile(join(plan, "manifest.json"), JSON.stringify({ ...story, assets: [{ ...story.assets[0], source }] }));
+      await assert.rejects(() => loadPlan(project, plan), /outside the approved local roots|Linked/);
+    }
+
+    await writeFile(join(root, "source.md"), "# Boundary\n\n![Private](assets/private.png)\n");
+    await writeFile(join(root, "project.json"), JSON.stringify({ version: "1", title: "Bounded source", input: { source: "source.md" }, direction: { mode: "template" } }));
+    await assert.rejects(() => createPlanFromFile(), /outside the approved local roots|Linked/);
+    async function createPlanFromFile() {
+      await createPlan(await loadProject(join(root, "project.json")), join(root, "rejected-source-plan"), join(root, "cache"));
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(outside, { recursive: true, force: true });
+  }
 });

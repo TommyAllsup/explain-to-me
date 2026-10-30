@@ -2,7 +2,7 @@
 
 Claudia is an optional animated presenter in the normal explainer pipeline. She uses the selected **Bella-reference Chatterbox** voice, with lip sync, expressions, gaze, and connected gestures derived from each new recording. The model runs locally after explicit setup. The bundled character rig is credited to **Claudia by anabology**.
 
-This feature is available in [v0.2.5](releases/0.2.5.md). The unreleased 0.3 feature branch builds on it with saved projects and optional music; those project commands are not included in the 0.2.5 tag. The earlier videos remain experiments and review records.
+This feature is available in [v0.2.5](releases/0.2.5.md). Version 0.3.0 builds on it with [saved projects and optional music](projects.md); the historical 0.2.5 tag does not include project commands. The earlier videos remain experiments and review records.
 
 ## Build an animated explainer
 
@@ -30,7 +30,7 @@ Build outputs include the ordinary video, audio, captions, manifest, and report,
 
 Review `video.mp4` before sharing: automatic alignment estimates phonemes and words; the phrase gestures are deterministic heuristics, not a semantic performance director. Unchanged speech/alignment and rendered frames can be reused from the normal cache. Rebuild an emitted `manifest.json` into another fresh directory to retain scene selection.
 
-## Claudia with saved projects and music (0.3 feature branch)
+## Claudia with saved projects and music (0.3)
 
 The [project workflow](projects.md#animated-claudia-in-a-saved-project) accepts Claudia selected in an input manifest or reviewed saved plan. Set project narration to backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, keep every effective pace at `1`, and omit Kokoro's `delivery` settings. Project commands select the presenter from the manifest; they do not accept `--presenter`. An incompatible backend, voice or pace is rejected.
 

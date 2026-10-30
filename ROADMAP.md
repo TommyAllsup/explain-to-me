@@ -1,14 +1,21 @@
 # Explain-to-Me: Product roadmap
 
-**Status:** v0.2.5 is the current release and includes the bounded [Claudia integration](docs/plans/0.2.5-claudia-integration.md). The unreleased 0.3 saved-project, narration and music work now builds on that release in this feature branch. Later milestone numbers and scope remain proposed.
-**Baseline:** v0.2.5, with macOS and Windows 11 x64 support within the documented feature matrix; Claudia's optional runtime has separate Windows/CUDA setup requirements.
+**Status:** v0.3.0 is the current release: saved projects, editable plans before speech, narration previews, deliberate pacing and one local soundtrack. Later milestone numbers and scope remain proposed.
+**Baseline:** v0.3.0, with macOS and Windows 11 x64 support within the documented feature matrix; Claudia's optional runtime has separate Windows/CUDA setup requirements.
 **Goal:** Turn local source material into an accurate, engaging, human-reviewable explainer without custom production scripts.
 **Architecture:** Keep the validated, renderer-neutral production manifest, local adapters, measured narration timeline, deterministic information layer and content-addressed caches. Productize the successful production workflows around those boundaries rather than build a general video editor.
 **Tech stack:** Existing TypeScript/Node/pnpm pipeline, React/Remotion adapter, FFmpeg/ffprobe, local narration and direction adapters.
 
 > This is a feature roadmap, not a task-by-task implementation plan. Scope each release before coding; write a small implementation plan for the next approved slice. Historical plans and benchmark records remain evidence with their original limits, not an instruction to execute every deferred idea.
 
-## Current release: v0.2.5 — Claudia joins the app
+## Current release: v0.3.0 — Review the script, choose the pace, add music
+
+Saved projects separate planning from production, preserve reviewed passage pacing,
+and reuse narration and frames for music-only revisions. See the
+[release notes](docs/releases/0.3.0.md), [project guide](docs/projects.md), and
+[verification record](docs/benchmarks/0.3-project-results.md).
+
+## Previous release: v0.2.5 — Claudia joins the app
 
 Animated Claudia is an optional presenter in ordinary builds, using the selected local Chatterbox voice and fresh audio alignment. Existing Apple/Kokoro and still-presenter paths remain supported. See the [release notes](docs/releases/0.2.5.md), [setup](docs/claudia-setup.md), and [validation record](docs/benchmarks/claudia-0.2.5.md).
 
@@ -16,7 +23,7 @@ Animated Claudia is an optional presenter in ordinary builds, using the selected
 
 Windows 11 x64 has one-command setup, Kokoro narration, prepared-manifest and template-directed builds, structured private-workspace agent jobs, measured captions/timelines, cache reuse, and existing media QC. The installer prepares local tooling without global Python/pnpm/FFmpeg installs. Existing Codex and Claude Code harnesses can follow the same tag-pinned installer prompt. See [release notes](docs/releases/0.2.1.md), [Windows setup](docs/windows.md), and [validation evidence](docs/benchmarks/windows-support.md).
 
-macOS retains Apple speech, optional Kokoro, prepared manifests, template direction and the optional local AI director. Native Windows local AI direction, ARM64, whole-process egress proof and general cartoon controls remain deferred. Saved projects, narration controls and one-track music are in progress for 0.3 below. Supported platforms need not have identical optional backends; document and test the supported paths explicitly.
+macOS retains Apple speech, optional Kokoro, prepared manifests, template direction and the optional local AI director. Native Windows local AI direction, ARM64, whole-process egress proof and general cartoon controls remain deferred. Saved projects, narration controls and one-track music shipped in 0.3.0 below. Supported platforms need not have identical optional backends; document and test the supported paths explicitly.
 
 ## What 1.0 means
 
@@ -53,7 +60,7 @@ Custom cartoons, imported music and human-selected sentence pacing have demonstr
 
 **Acceptance:** A neutral reviewed manifest completes the ordinary CLI pipeline with fresh speech and standard media QC, and a warm rebuild reuses speech and frames. Requested duration is advisory for natural-speed Chatterbox. See the [integration plan](docs/plans/0.2.5-claudia-integration.md) and [release notes](docs/releases/0.2.5.md).
 
-## Next: 0.3 — A saved project, a reviewed script, and a soundtrack
+## 0.3 — A saved project, a reviewed script, and a soundtrack, released
 
 **Outcome:** Reproduce the preferred narration-and-music workflow through supported commands, with a script review before expensive production.
 
@@ -191,4 +198,4 @@ Tag 1.0 when these outcomes are demonstrated, not when every proposed feature or
 
 ## Next implementation slice
 
-Continue the 0.3 saved-project and pre-TTS review foundation on the released Claudia integration, with narration previews, deliberate pacing and one-track music. Prove one neutral project on the supported macOS/Windows paths, preserve the released Claudia and legacy commands, and leave full revision tooling, general cartoon authoring and new input adapters to their later milestones.
+Scope the proposed 0.4 review-and-revision workflow before implementation. Preserve the released 0.3 project, narration, soundtrack, Claudia and legacy command behavior. General cartoon authoring and new input adapters remain later milestones.

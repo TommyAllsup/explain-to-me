@@ -1,12 +1,12 @@
-# Explain-to-Me 0.2.5 on Windows
+# Explain-to-Me 0.3.0 on Windows
 
-Version **0.2.5** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
+Version **0.3.0** supports Windows 11 x64 with Kokoro narration and prepared manifests or template-directed Markdown/plain text. Native Windows local AI direction and Windows ARM64 are deferred. The historical `v0.2.0` release remains macOS-first.
 
 This release adds optional animated Claudia with Chatterbox narration, lip sync, expressions, and gestures. It requires the separate advanced [Claudia setup](claudia-setup.md) on Windows with NVIDIA CUDA. The ordinary installer and commands below still use Kokoro; they do not install Chatterbox.
 
-## Saved projects in the 0.3 working tree
+## Saved projects in 0.3
 
-The unreleased [project workflow](projects.md) uses the same installed Kokoro and media tools. It is available from the 0.3 feature branch, which includes the released Claudia integration; it is not included in the tag-pinned 0.2.5 checkout below. Choose `narration.backend: "kokoro"` and `narration.voice: "af_heart"` in the saved project; use prepared manifests or `direction.mode: "template"` for documents. For animated Claudia, follow the [project compatibility settings](projects.md#animated-claudia-in-a-saved-project) after the separate Chatterbox setup: select Claudia in the manifest, use backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, and keep natural pace without Kokoro delivery settings.
+The [project workflow](projects.md) uses the same installed Kokoro and media tools. It is included in the tag-pinned 0.3.0 checkout below, alongside the optional Claudia integration. Choose `narration.backend: "kokoro"` and `narration.voice: "af_heart"` in the saved project; use prepared manifests or `direction.mode: "template"` for documents. For animated Claudia, follow the [project compatibility settings](projects.md#animated-claudia-in-a-saved-project) after the separate Chatterbox setup: select Claudia in the manifest, use backend/voice `auto`/`auto` or `chatterbox`/`chatterbox-bella`, and keep natural pace without Kokoro delivery settings.
 
 ```powershell
 node scripts/create-example-project.mjs --output out/measured-walk
@@ -37,8 +37,8 @@ Give an existing Codex or Claude Code session the [Windows installer prompt](ins
 Install [Node.js 24 LTS or newer with npm](https://nodejs.org/en/download) and [Git for Windows](https://git-scm.com/downloads/win). Open a new PowerShell terminal after installing Node, then:
 
 ```powershell
-git clone --branch v0.2.5 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.2.5
-cd explain-to-me-v0.2.5
+git clone --branch v0.3.0 --depth 1 https://github.com/TommyAllsup/explain-to-me.git explain-to-me-v0.3.0
+cd explain-to-me-v0.3.0
 git rev-parse HEAD
 node scripts/setup.mjs
 ```
@@ -111,4 +111,4 @@ Setup needs download access and write access to the checkout. Agent jobs also ne
 
 The recorded Windows validation encountered sandbox denials for Chromium/media execution and directory access-control changes. If that happens, inspect the exact error and request approval for the specific setup or build command and required directories, according to the harness and organization policy. Running an approved command as the ordinary Windows user is separate from administrator elevation. If policy prevents the needed operation, report it and let the user run the documented command in PowerShell. Keep unrelated permissions and protections in place.
 
-The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.2.5 release notes](releases/0.2.5.md) describe the shipped scope and remaining limits.
+The [Windows validation record](benchmarks/windows-support.md) includes setup without global Python/pnpm/FFmpeg, managed Python synthesis, full cold/warm builds, proxy checks, and process cleanup tests. The [0.3.0 release notes](releases/0.3.0.md) describe the shipped scope and remaining limits.

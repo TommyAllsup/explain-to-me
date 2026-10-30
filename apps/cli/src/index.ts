@@ -284,7 +284,7 @@ async function build(options: CliOptions): Promise<void> {
     : await loadPronunciations(options.pronunciationPath);
   const prepared = await timed("narrationPreparation", async () => prepareNarration(initialManifest, pronunciationConfig.map, { preserveReviewedSpeech: Boolean(options.project) }));
   let manifest: ProductionManifest = productionManifestSchema.parse(prepared.manifest) as ProductionManifest;
-  const resolvedAssets = await timed("assetResolution", () => resolveManifestAssets(manifest, inputFile, { projectRoot: options.project?.planPath ?? process.cwd() }));
+  const resolvedAssets = await timed("assetResolution", () => resolveManifestAssets(manifest, inputFile, { projectRoot: options.project?.planPath ?? process.cwd(), restrictToProjectRoot: Boolean(options.project) }));
   const buildId = randomUUID();
   const finalOutput = await chooseOutputPath(options.outputPath, manifest.title, buildId);
   if (await pathExists(finalOutput)) throw new Error(`Output target already exists; choose a new path: ${finalOutput}`);

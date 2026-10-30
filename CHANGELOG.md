@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-10-30
+
+- Versioned local projects bind source/manifest, direction, narration, pacing, music and output settings.
+- Plan and edit scripts before speech or rendering; audition short narration previews through the same production preparation and caches.
+- Passage > scene > project pacing survives sentence splitting. Chosen pace controls measured timing; opt-in strict duration checks fail with recovery guidance without retiming speech.
+- Optional connected Kokoro delivery preserves scene context and measured passage boundaries.
+- One local soundtrack with gain, narration ducking and fades; separate narration/music/mixed stems and rights provenance. Music-only revisions reuse narration and rendered frames.
+- Canonical project/plan image boundaries reject external assets-directory symlink escapes.
+- Existing legacy duration fitting and optional Claudia/Chatterbox production remain supported.
+
 ## 0.2.5 — 2026-10-22
 
 - Optional animated Claudia presenter in ordinary manifest and document builds, using the selected Bella-reference Chatterbox voice.
